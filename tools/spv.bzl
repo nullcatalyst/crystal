@@ -65,8 +65,9 @@ def _spv_library_impl(ctx):
         )
         tmps.append(frag_out)
 
-    # out = ctx.actions.declare_file(name)
-    out = ctx.outputs.spv
+    out = ctx.actions.declare_file(name)
+
+    out = ctx.outputs.out
     args = ctx.actions.args()
     args.add("-o", out.path)
     for tmp in tmps:
@@ -81,18 +82,18 @@ def _spv_library_impl(ctx):
     )
 
     return [
-        DefaultInfo(files = depset([out])),
+        DefaultInfo(
+            files = depset(direct = [ctx.outputs.out]),
+            runfiles = ctx.runfiles(files = [ctx.outputs.out]),
+        ),
     ]
 
 spv_library = rule(
     implementation = _spv_library_impl,
     attrs = {
-        "srcs": attr.label_list(
-            allow_files = True,
-        ),
-        "vert": attr.label(
-            allow_single_file = True,
-        ),
+        "out": attr.output(mandatory = True),
+        "srcs": attr.label_list(allow_files = True),
+        "vert": attr.label(allow_single_file = True),
         "frag": attr.label(
             allow_single_file = True,
         ),
@@ -110,8 +111,5 @@ spv_library = rule(
             cfg = "host",
         ),
     },
-    outputs = {
-        "spv": "%{name}.spv",
-    },
-    output_to_genfiles = True,
+    provides = [DefaultInfo],
 )

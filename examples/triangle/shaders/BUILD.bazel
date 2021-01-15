@@ -11,11 +11,8 @@ filegroup(
 )
 
 spv_library(
-    name = "shader",
-    srcs = [
-        "shader.frag.glsl",
-        "shader.vert.glsl",
-    ],
+    name = "shader.spv",
+    out = "shader.spv",
     frag = "shader.frag.glsl",
     vert = "shader.vert.glsl",
     visibility = [

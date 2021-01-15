@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
 
   float angle = 0.0f;
 
-#if 1
+#if 0
   auto window = create_window<crystal::opengl::Context>("triangle (opengl)", 1280, 720);
   auto ctx    = crystal::opengl::Context(crystal::opengl::Context::Desc{}, window);
   auto view   = TriangleView<crystal::opengl::Context>::create(ctx, angle);
