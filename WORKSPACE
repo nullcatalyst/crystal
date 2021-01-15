@@ -87,7 +87,7 @@ http_archive(
 )
 
 # Vulkan
-load("//third_party/external:vulkan.bzl", "use_local_vulkan")
+load("//tools:vulkan.bzl", "use_local_vulkan")
 
 use_local_vulkan(
     name = "vulkan",
