@@ -1,0 +1,24 @@
+load("//tools:spv.bzl", "spv_library")
+
+filegroup(
+    name = "glsl",
+    srcs = glob([
+        "*.glsl",
+    ]),
+    visibility = [
+        "//examples/triangle:__subpackages__",
+    ],
+)
+
+spv_library(
+    name = "shader",
+    srcs = [
+        "shader.frag.glsl",
+        "shader.vert.glsl",
+    ],
+    frag = "shader.frag.glsl",
+    vert = "shader.vert.glsl",
+    visibility = [
+        "//examples/triangle:__subpackages__",
+    ],
+)

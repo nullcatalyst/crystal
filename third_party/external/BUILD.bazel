@@ -1,0 +1,3 @@
+exports_files([
+    "sdl_config.macos.h",
+])

@@ -1,0 +1,11 @@
+load("//tools:cc.bzl", "cc_library")
+
+cc_library(
+    name = "interface",
+    hdrs = glob([
+        "*.inl",
+    ]),
+    visibility = [
+        "//:__subpackages__",
+    ],
+)

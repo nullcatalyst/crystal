@@ -1,0 +1,20 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "stb_image",
+    srcs = [
+        "stb_image.cpp",
+    ],
+    hdrs = [
+        "stb_image.h",
+    ],
+    defines = [
+        "STBI_NO_STDIO=1",
+        "STBI_ONLY_JPEG=1",
+        "STBI_ONLY_PNG=1",
+    ],
+    include_prefix = "stb_image",
+    visibility = [
+        "//visibility:public",
+    ],
+)

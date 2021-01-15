@@ -1,0 +1,20 @@
+load("//tools:cc.bzl", "cc_binary")
+
+cc_binary(
+    name = "triangle",
+    srcs = [
+        "triangle_view.hpp",
+        "main.cpp",
+    ],
+    data = [
+        "//examples/triangle/shaders:glsl",
+        "//examples/triangle/shaders:shader.spv",
+    ],
+    deps = [
+        "//crystal/opengl:opengl_sdl2",
+        "//crystal/vulkan:vulkan_sdl2",
+        "@glm",
+        "@sdl2",
+        "@sdl2//:sdl2_main",
+    ],
+)

@@ -1,0 +1,21 @@
+load("//tools:cc.bzl", "cc_library")
+
+cc_library(
+    name = "net",
+    srcs = [
+        "network.cpp",
+    ],
+    hdrs = [
+        "client.hpp",
+        "network.hpp",
+        "server.hpp",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        "//util/msg",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@game_networking_sockets",
+    ],
+)

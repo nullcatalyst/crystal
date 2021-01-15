@@ -1,0 +1,181 @@
+load("//tools:cc.bzl", "cc_library")
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+config_setting(
+    name = "windows",
+    constraint_values = [
+        "@platforms//os:windows",
+    ],
+)
+
+config_setting(
+    name = "macos",
+    constraint_values = [
+        "@platforms//os:macos",
+    ],
+)
+
+config_setting(
+    name = "linux",
+    constraint_values = [
+        "@platforms//os:linux",
+    ],
+)
+
+config_setting(
+    name = "dbg",
+    values = {
+        "compilation_mode": "dbg",
+    },
+)
+
+config_setting(
+    name = "opt",
+    values = {
+        "compilation_mode": "opt",
+    },
+)
+
+selects.config_setting_group(
+    name = "windows_opt",
+    match_all = [
+        ":windows",
+        ":opt",
+    ],
+)
+
+selects.config_setting_group(
+    name = "macos_opt",
+    match_all = [
+        ":macos",
+        ":opt",
+    ],
+)
+
+selects.config_setting_group(
+    name = "linux_opt",
+    match_all = [
+        ":linux",
+        ":opt",
+    ],
+)
+
+
+cc_library(
+    name = "common",
+    hdrs = glob([
+        "common/**/*.hpp",
+    ]),
+    visibility = [
+        "//visibility:public",
+    ],
+)
+
+cc_library(
+    name = "interface",
+    hdrs = glob([
+        "interface/**/*.inl",
+    ]),
+)
+
+cc_library(
+    name = "opengl_sdl2",
+    srcs = glob([
+        "opengl/**/*.cpp",
+    ]),
+    hdrs = glob([
+        "opengl/**/*.hpp",
+        "opengl/**/*.inl",
+    ]),
+    defines = select({
+        "//:opt": [
+            "CRYSTAL_USE_SDL2",
+            "CRYSTAL_RELEASE",
+        ],
+        "//conditions:default": [
+            "CRYSTAL_USE_SDL2",
+        ],
+    }),
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":common",
+        ":interface",
+        "//third_party/glad:gl42",
+        "//util/fs",
+        "//util/memory",
+        "//util/msg",
+        "//util/unsafe",
+        "@com_google_absl//absl/container:inlined_vector",
+        "@sdl2//:sdl2_hdrs",
+    ],
+)
+
+# cc_library(
+#     name = "opengles_sdl2",
+#     srcs = glob([
+#         "opengles/**/*.cpp",
+#     ]),
+#     hdrs = glob([
+#         "opengles/**/*.hpp",
+#         "opengles/**/*.inl",
+#     ]),
+#     defines = select({
+#         "//:opt": [
+#             "CRYSTAL_USE_SDL2",
+#             "CRYSTAL_RELEASE",
+#         ],
+#         "//conditions:default": [
+#             "CRYSTAL_USE_SDL2",
+#         ],
+#     }),
+#     visibility = [
+#         "//visibility:public",
+#     ],
+#     deps = [
+#         ":common",
+#         ":interface",
+#         "//third_party/glad:es30",
+#         "//util/fs",
+#         "//util/memory",
+#         "//util/msg",
+#         "@com_google_absl//absl/container:inlined_vector",
+#         "@sdl2//:sdl2_hdrs",
+#     ],
+# )
+
+cc_library(
+    name = "vulkan_sdl2",
+    srcs = glob([
+        "vulkan/**/*.cpp",
+    ]),
+    hdrs = glob([
+        "vulkan/**/*.hpp",
+        "vulkan/**/*.inl",
+    ]),
+    defines = select({
+        "//:opt": [
+            "CRYSTAL_USE_SDL2",
+            "CRYSTAL_RELEASE",
+        ],
+        "//conditions:default": [
+            "CRYSTAL_USE_SDL2",
+        ],
+    }),
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":common",
+        ":interface",
+        "//third_party/vulkan_memory_allocator",
+        "//util/fs",
+        "//util/memory",
+        "//util/msg",
+        "//util/unsafe",
+        "@com_google_absl//absl/container:inlined_vector",
+        "@sdl2//:sdl2_hdrs",
+        "@vulkan",
+    ],
+)

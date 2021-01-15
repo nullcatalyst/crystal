@@ -1,0 +1,66 @@
+load("//tools:cc.bzl", "cc_library")
+
+cc_library(
+    name = "opengl",
+    srcs = glob([
+        "*.cpp",
+    ]),
+    hdrs = glob([
+        "*.hpp",
+        "*.inl",
+    ]),
+    defines = select({
+        "//:opt": [
+            "CRYSTAL_RELEASE",
+        ],
+        "//conditions:default": [],
+    }),
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        "//crystal/common",
+        "//crystal/interface",
+        "//third_party/glad:gl42",
+        "//util/fs",
+        "//util/memory",
+        "//util/msg",
+        "//util/unsafe",
+        "@com_google_absl//absl/container:inlined_vector",
+        "@sdl2//:sdl2_hdrs",
+    ],
+)
+
+cc_library(
+    name = "opengl_sdl2",
+    srcs = glob([
+        "*.cpp",
+    ]),
+    hdrs = glob([
+        "*.hpp",
+        "*.inl",
+    ]),
+    defines = select({
+        "//:opt": [
+            "CRYSTAL_USE_SDL2",
+            "CRYSTAL_RELEASE",
+        ],
+        "//conditions:default": [
+            "CRYSTAL_USE_SDL2",
+        ],
+    }),
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        "//crystal/common",
+        "//crystal/interface",
+        "//third_party/glad:gl42",
+        "//util/fs",
+        "//util/memory",
+        "//util/msg",
+        "//util/unsafe",
+        "@com_google_absl//absl/container:inlined_vector",
+        "@sdl2//:sdl2_hdrs",
+    ],
+)

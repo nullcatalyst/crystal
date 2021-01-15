@@ -1,0 +1,11 @@
+load("//tools:cc.bzl", "cc_library")
+
+cc_library(
+    name = "unsafe",
+    hdrs = [
+        "deferred_ctor.hpp",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+)
