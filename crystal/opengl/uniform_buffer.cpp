@@ -11,9 +11,7 @@ UniformBuffer::UniformBuffer(UniformBuffer&& other)
 }
 
 UniformBuffer& UniformBuffer::operator=(UniformBuffer&& other) {
-  if (ctx_ != nullptr) {
-    ctx_->release_buffer_(buffer_);
-  }
+  destroy();
 
   ctx_      = other.ctx_;
   buffer_   = other.buffer_;
@@ -26,12 +24,18 @@ UniformBuffer& UniformBuffer::operator=(UniformBuffer&& other) {
   return *this;
 }
 
-UniformBuffer::~UniformBuffer() {
+UniformBuffer::~UniformBuffer() { destroy(); }
+
+void UniformBuffer::destroy() {
   if (ctx_ == nullptr) {
     return;
   }
 
   ctx_->release_buffer_(buffer_);
+
+  ctx_      = nullptr;
+  buffer_   = 0;
+  capacity_ = 0;
 }
 
 UniformBuffer::UniformBuffer(Context& ctx, const size_t byte_length)

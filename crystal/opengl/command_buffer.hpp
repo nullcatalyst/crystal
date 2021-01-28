@@ -8,29 +8,59 @@
 
 typedef struct SDL_Window SDL_Window;
 
-#define CRYSTAL_IMPL opengl
-#define CRYSTAL_IMPL_PROPERTIES \
-  Pipeline*   pipeline_;        \
-  SDL_Window* window_;
-#define CRYSTAL_IMPL_CTOR                                            \
-  CommandBuffer(SDL_Window* window, uint32_t width, uint32_t height) \
-      : pipeline_(nullptr), window_(window) {                        \
-    width_  = width;                                                 \
-    height_ = height;                                                \
-  }
+#endif  // ^^^ defined(CRYSTAL_USE_SDL2)
 
-#else
+namespace crystal::opengl {
 
-#define CRYSTAL_IMPL opengl
-#define CRYSTAL_IMPL_PROPERTIES Pipeline* pipeline_;
+class Context;
+class Mesh;
+class Pipeline;
+class RenderPass;
+class UniformBuffer;
 
-#define CRYSTAL_IMPL_CTOR                                               \
-  CommandBuffer(uint32_t width, uint32_t height) : pipeline_(nullptr) { \
-    width_  = width;                                                    \
-    height_ = height;                                                   \
-  }
+class CommandBuffer {
+#ifdef CRYSTAL_USE_SDL2
 
-#endif  // CRYSTAL_USE_SDL2
+  SDL_Window* window_      = nullptr;
+  RenderPass* render_pass_ = nullptr;
+  Pipeline*   pipeline_    = nullptr;
 
-#define CRYSTAL_IMPL_METHODS
-#include "crystal/interface/command_buffer.inl"
+#else  // ^^^ defined(CRYSTAL_USE_SDL2) / !defined(CRYSTAL_USE_SDL2) vvv
+
+  RenderPass* render_pass_ = nullptr;
+  Pipeline*   pipeline_    = nullptr;
+
+#endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
+
+public:
+  CommandBuffer(const CommandBuffer&) = delete;
+  CommandBuffer& operator=(const CommandBuffer&) = delete;
+
+  CommandBuffer(CommandBuffer&&) = delete;
+  CommandBuffer& operator=(CommandBuffer&&) = delete;
+
+  ~CommandBuffer();
+
+  void use_render_pass(RenderPass& render_pass);
+  void use_pipeline(Pipeline& pipeline);
+  void use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t binding);
+  void use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t location, uint32_t binding);
+
+  void draw(Mesh& mesh, uint32_t vertex_count, uint32_t instance_count);
+
+private:
+  friend class ::crystal::opengl::Context;
+  friend class ::crystal::opengl::RenderPass;
+
+#ifdef CRYSTAL_USE_SDL2
+
+  constexpr CommandBuffer(SDL_Window* window) : window_(window) {}
+
+#else  // ^^^ defined(CRYSTAL_USE_SDL2) / !defined(CRYSTAL_USE_SDL2) vvv
+
+  constexpr CommandBuffer() = default;
+
+#endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
+};
+
+}  // namespace crystal::opengl

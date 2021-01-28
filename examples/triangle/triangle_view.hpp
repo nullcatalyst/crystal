@@ -32,7 +32,7 @@ class TriangleView {
 
 public:
   static std::unique_ptr<TriangleView> create(Ctx& ctx, float angle) {
-    const auto    aspect = static_cast<float>(ctx.view_width()) / ctx.view_height();
+    const auto    aspect = static_cast<float>(ctx.screen_width()) / ctx.screen_height();
     const Uniform uniform{
         glm::rotate(glm::ortho(-aspect, aspect, -1.0f, 1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f)),
     };
@@ -46,7 +46,7 @@ public:
                                 /* .fragment          = */ Helpers<Ctx>::fragment(),
                                 /* .cull_mode         = */ crystal::CullMode::None,
                                 /* .cull_mode         = */ crystal::Winding::CounterClockwise,
-                                /* .depth_test        = */ crystal::DepthCompare::Always,
+                                /* .depth_test        = */ crystal::DepthTest::Always,
                                 /* .depth_write       = */ crystal::DepthWrite::Disable,
                                 /* .blend_src         = */ crystal::AlphaBlend::SrcAlpha,
                                 /* .blend_dst         = */ crystal::AlphaBlend::OneMinusSrcAlpha,
@@ -113,7 +113,7 @@ public:
 
     {  // Update uniform buffer.
       const auto aspect =
-          static_cast<float>(cmd.view_width()) / static_cast<float>(cmd.view_height());
+          static_cast<float>(ctx_.screen_width()) / static_cast<float>(ctx_.screen_height());
       const Uniform uniform{
           glm::rotate(Helpers<Ctx>::matrix(aspect), angle, glm::vec3(0.0f, 0.0f, 1.0f)),
       };

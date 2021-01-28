@@ -3,14 +3,40 @@
 #include "crystal/common/render_pass_desc.hpp"
 #include "crystal/opengl/gl.hpp"
 
-#define CRYSTAL_IMPL opengl
-#define CRYSTAL_IMPL_PROPERTIES \
-  Context* ctx_;                \
-  GLuint   framebuffer_;        \
-  uint32_t width_;              \
-  uint32_t height_;
-#define CRYSTAL_IMPL_CTOR   \
-  RenderPass(Context& ctx); \
+namespace crystal::opengl {
+
+class Context;
+class CommandBuffer;
+class Pipeline;
+
+class RenderPass {
+  Context* ctx_         = nullptr;
+  GLuint   framebuffer_ = 0;
+  uint32_t width_       = 0;
+  uint32_t height_      = 0;
+
+  // TODO: Add support for clear values here.
+
+public:
+  constexpr RenderPass() = default;
+
+  RenderPass(const RenderPass&) = delete;
+  RenderPass& operator=(const RenderPass&) = delete;
+
+  RenderPass(RenderPass&& other);
+  RenderPass& operator=(RenderPass&& other);
+
+  ~RenderPass();
+
+  void destroy();
+
+private:
+  friend class ::crystal::opengl::Context;
+  friend class ::crystal::opengl::CommandBuffer;
+  friend class ::crystal::opengl::Pipeline;
+
+  RenderPass(Context& ctx);
   RenderPass(Context& ctx, const RenderPassDesc& desc);
-#define CRYSTAL_IMPL_METHODS
-#include "crystal/interface/render_pass.inl"
+};
+
+}  // namespace crystal::opengl

@@ -5,6 +5,8 @@
 #include "util/fs/file.hpp"
 #include "util/fs/path.hpp"
 
+namespace crystal::opengl {
+
 namespace {
 
 GLuint compile_shader(const GLenum shader_type, const std::string& shader_source) {
@@ -75,8 +77,6 @@ GLuint compile_program(GLuint program, const std::string& vertex_source,
 
 }  // namespace
 
-namespace crystal::opengl {
-
 uint32_t Pipeline::next_id_ = 0;
 
 Pipeline::Pipeline(Pipeline&& other)
@@ -93,13 +93,15 @@ Pipeline::Pipeline(Pipeline&& other)
   other.id_          = 0;
   other.program_     = 0;
   other.cull_mode_   = CullMode::None;
-  other.depth_test_  = DepthCompare::Always;
+  other.depth_test_  = DepthTest::Never;
   other.depth_write_ = DepthWrite::Disable;
   other.blend_src_   = AlphaBlend::Zero;
   other.blend_dst_   = AlphaBlend::Zero;
 }
 
 Pipeline& Pipeline::operator=(Pipeline&& other) {
+  destroy();
+
   ctx_         = other.ctx_;
   id_          = other.id_;
   program_     = other.program_;
@@ -114,7 +116,7 @@ Pipeline& Pipeline::operator=(Pipeline&& other) {
   other.id_          = 0;
   other.program_     = 0;
   other.cull_mode_   = CullMode::None;
-  other.depth_test_  = DepthCompare::Always;
+  other.depth_test_  = DepthTest::Never;
   other.depth_write_ = DepthWrite::Disable;
   other.blend_src_   = AlphaBlend::Zero;
   other.blend_dst_   = AlphaBlend::Zero;
@@ -122,7 +124,25 @@ Pipeline& Pipeline::operator=(Pipeline&& other) {
   return *this;
 }
 
-Pipeline::~Pipeline() { glDeleteProgram(program_); }
+Pipeline::~Pipeline() { destroy(); }
+
+void Pipeline::destroy() {
+  if (ctx_ == nullptr) {
+    return;
+  }
+
+  glDeleteProgram(program_);
+
+  ctx_         = nullptr;
+  id_          = 0;
+  program_     = 0;
+  cull_mode_   = CullMode::None;
+  depth_test_  = DepthTest::Never;
+  depth_write_ = DepthWrite::Disable;
+  blend_src_   = AlphaBlend::Zero;
+  blend_dst_   = AlphaBlend::Zero;
+  bindings_.resize(0);
+}
 
 Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
     : ctx_(&ctx),

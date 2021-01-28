@@ -12,9 +12,7 @@ IndexBuffer::IndexBuffer(IndexBuffer&& other)
 }
 
 IndexBuffer& IndexBuffer::operator=(IndexBuffer&& other) {
-  if (ctx_ != nullptr) {
-    ctx_->release_buffer_(buffer_);
-  }
+  destroy();
 
   ctx_      = other.ctx_;
   buffer_   = other.buffer_;
@@ -27,12 +25,18 @@ IndexBuffer& IndexBuffer::operator=(IndexBuffer&& other) {
   return *this;
 }
 
-IndexBuffer::~IndexBuffer() {
+IndexBuffer::~IndexBuffer() { destroy(); }
+
+void IndexBuffer::destroy() {
   if (ctx_ == nullptr) {
     return;
   }
 
   ctx_->release_buffer_(buffer_);
+
+  ctx_      = nullptr;
+  buffer_   = 0;
+  capacity_ = 0;
 }
 
 IndexBuffer::IndexBuffer(Context& ctx, const size_t byte_length)

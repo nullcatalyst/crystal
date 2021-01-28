@@ -17,9 +17,7 @@ RenderPass::RenderPass(RenderPass&& other)
 }
 
 RenderPass& RenderPass::operator=(RenderPass&& other) {
-  if (ctx_ != nullptr) {
-    glDeleteFramebuffers(1, &framebuffer_);
-  }
+  destroy();
 
   ctx_         = other.ctx_;
   framebuffer_ = other.framebuffer_;
@@ -34,16 +32,23 @@ RenderPass& RenderPass::operator=(RenderPass&& other) {
   return *this;
 }
 
-RenderPass::~RenderPass() {
+RenderPass::~RenderPass() { destroy(); }
+
+void RenderPass::destroy() {
   if (ctx_ == nullptr) {
     return;
   }
 
   glDeleteFramebuffers(1, &framebuffer_);
+
+  ctx_         = nullptr;
+  framebuffer_ = 0;
+  width_       = 0;
+  height_      = 0;
 }
 
 RenderPass::RenderPass(Context& ctx)
-    : ctx_(&ctx), framebuffer_(0), width_(ctx.width_), height_(ctx.height_) {}
+    : ctx_(&ctx) {}
 
 // TODO: Implement creation of opengl framebuffers.
 // RenderPass::RenderPass(Context& ctx, const RenderPassDesc& desc)

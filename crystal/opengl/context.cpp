@@ -6,9 +6,9 @@ namespace crystal::opengl {
 
 #ifdef CRYSTAL_USE_SDL2
 
-Context::Context(const Context::Desc& desc, SDL_Window* window) : window_(window) {
-  context_ = SDL_GL_CreateContext(window);
-  SDL_GL_MakeCurrent(window, context_);
+Context::Context(const Context::Desc& desc) : window_(desc.window) {
+  context_ = SDL_GL_CreateContext(window_);
+  SDL_GL_MakeCurrent(window_, context_);
 
   // gladLoadGLES2Loader(SDL_GL_GetProcAddress);
   gladLoadGLLoader(SDL_GL_GetProcAddress);
@@ -20,12 +20,12 @@ Context::Context(const Context::Desc& desc, SDL_Window* window) : window_(window
     util::msg::fatal("window size is negative [", width, ", ", height, "]");
   }
 
-  width_  = width;
-  height_ = height;
-  screen_render_pass_.unsafe_call_ctor(*this);
+  change_resolution(width, height);
 }
 
 Context::~Context() {
+  screen_render_pass_.destroy();
+
   if (buffers_.size() != 0) {
     util::msg::fatal("not all shared buffers have been released (there are still ", buffers_.size(),
                      " remaining), leaking memory");
@@ -36,16 +36,29 @@ Context::~Context() {
 
 CommandBuffer Context::next_frame() {
   SDL_GL_MakeCurrent(window_, context_);
-  return CommandBuffer(window_, width_, height_);
+  return CommandBuffer(window_);
 }
 
-#endif  // CRYSTAL_USE_SDL2
+#else  // ^^^ defined(CRYSTAL_USE_SDL2) / !defined(CRYSTAL_USE_SDL2) vvv
+
+Context::Context(const Context::Desc& desc)
+    : window_(desc.window), width_(desc.width), height_(desc.height) {}
+
+Context::~Context() {
+  if (buffers_.size() != 0) {
+    util::msg::fatal("not all shared buffers have been released (there are still ", buffers_.size(),
+                     " remaining), leaking memory");
+  }
+}
+
+CommandBuffer Context::next_frame() { return CommandBuffer(width_, height_); }
+
+#endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
 
 void Context::change_resolution(uint32_t width, uint32_t height) {
-  width_  = width;
-  height_ = height;
   util::msg::info("resolution size changed to ", width, ", ", height);
-  glViewport(0, 0, width_, height_);
+  screen_render_pass_.width_  = width;
+  screen_render_pass_.height_ = height;
 }
 
 void Context::add_buffer_(GLuint buffer) noexcept { buffers_.emplace_back(buffer); }

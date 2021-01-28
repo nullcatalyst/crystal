@@ -1,11 +1,13 @@
 #include "crystal/opengl/mesh.hpp"
 
-#include <algorithm>
+#include <algorithm>  // transform
 
 #include "crystal/opengl/context.hpp"
 #include "crystal/opengl/vertex_buffer.hpp"
 
 namespace crystal::opengl {
+
+Mesh::Vao::~Vao() { GL_ASSERT(glDeleteVertexArrays(1, &vao), "deleting vertex array"); }
 
 Mesh::Mesh(Mesh&& other)
     : ctx_(other.ctx_),
@@ -17,6 +19,8 @@ Mesh::Mesh(Mesh&& other)
 }
 
 Mesh& Mesh::operator=(Mesh&& other) {
+  destroy();
+
   ctx_          = other.ctx_;
   vaos_         = std::move(other.vaos_);
   bindings_     = std::move(other.bindings_);
@@ -28,7 +32,13 @@ Mesh& Mesh::operator=(Mesh&& other) {
   return *this;
 }
 
-Mesh::~Mesh() {
+Mesh::~Mesh() { destroy(); }
+
+void Mesh::destroy() {
+  if (ctx_ == nullptr) {
+    return;
+  }
+
   for (uint32_t i = 0; i != bindings_.size(); ++i) {
     ctx_->release_buffer_(bindings_[i].vertex_buffer);
   }
@@ -36,6 +46,11 @@ Mesh::~Mesh() {
   if (index_buffer_ != 0) {
     ctx_->release_buffer_(index_buffer_);
   }
+
+  ctx_ = nullptr;
+  vaos_.resize(0);
+  bindings_.resize(0);
+  index_buffer_ = 0;
 }
 
 Mesh::Mesh(Context&                                                               ctx,

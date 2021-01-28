@@ -17,7 +17,7 @@ enum class Winding : uint32_t {
   Clockwise        = 1,
 };
 
-enum class DepthCompare : uint32_t {
+enum class DepthTest : uint32_t {
   Never        = 0,
   Less         = 1,
   Equal        = 2,
@@ -69,15 +69,15 @@ struct VertexBufferDesc {
 };
 
 struct PipelineDesc {
-  const char* const vertex;
-  const char* const fragment;
-  CullMode          cull_mode;
-  Winding           winding;
-  DepthCompare      depth_test;
-  DepthWrite        depth_write;
-  AlphaBlend        blend_src;
-  AlphaBlend        blend_dst;
-  std::initializer_list<UniformBinding> uniform_bindings;
+  const char* const                          vertex;
+  const char* const                          fragment;
+  CullMode                                   cull_mode;
+  Winding                                    winding;
+  DepthTest                                  depth_test;
+  DepthWrite                                 depth_write;
+  AlphaBlend                                 blend_src;
+  AlphaBlend                                 blend_dst;
+  std::initializer_list<UniformBinding>      uniform_bindings;
   std::initializer_list<VertexAttributeDesc> vertex_attributes;
   std::initializer_list<VertexBufferDesc>    vertex_buffers;
 };

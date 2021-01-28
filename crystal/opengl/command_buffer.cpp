@@ -1,17 +1,21 @@
 #include "crystal/opengl/command_buffer.hpp"
 
-#include <algorithm>  // find
-#include <cstdlib>    // abort
+#include <algorithm>  // find_if
 
-#include "SDL.h"
 #include "crystal/opengl/mesh.hpp"
 #include "crystal/opengl/pipeline.hpp"
 #include "crystal/opengl/render_pass.hpp"
 #include "crystal/opengl/uniform_buffer.hpp"
 
+#ifdef CRYSTAL_USE_SDL2
+#include "SDL.h"
+#endif  // ^^^ defined(CRYSTAL_USE_SDL2)
+
+namespace crystal::opengl {
+
 namespace {
 
-constexpr inline GLenum convert_(crystal::AlphaBlend blend) {
+constexpr inline GLenum convert_(AlphaBlend blend) {
   switch (blend) {
     case crystal::AlphaBlend::Zero:
       return GL_ZERO;
@@ -40,14 +44,22 @@ constexpr inline GLenum convert_(crystal::AlphaBlend blend) {
 
 }  // namespace
 
-namespace crystal::opengl {
+#ifdef CRYSTAL_USE_SDL2
 
 CommandBuffer::~CommandBuffer() {
   glFlush();
   SDL_GL_SwapWindow(window_);
 }
 
+#else  // ^^^ defined(CRYSTAL_USE_SDL2) / !defined(CRYSTAL_USE_SDL2) vvv
+
+CommandBuffer::~CommandBuffer() { glFlush(); }
+
+#endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
+
 void CommandBuffer::use_render_pass(RenderPass& render_pass) {
+  render_pass_ = &render_pass;
+
   // TODO: This needs to handle custom clear values.
   glBindFramebuffer(GL_FRAMEBUFFER, render_pass.framebuffer_);
   GL_ASSERT(glViewport(0, 0, render_pass.width_, render_pass.height_), "changing viewport size");
@@ -90,7 +102,7 @@ void CommandBuffer::use_pipeline(Pipeline& pipeline) {
             pipeline_->depth_write_ == DepthWrite::Enable ? "enabling depth writing"
                                                           : "disabling depth writing");
 
-  if (pipeline_->depth_test_ != DepthCompare::Always) {
+  if (pipeline_->depth_test_ != DepthTest::Always) {
     GL_ASSERT(glDepthFunc(GL_NEVER + static_cast<uint32_t>(pipeline_->depth_test_)),
               "setting depth test function");
     GL_ASSERT(glEnable(GL_DEPTH_TEST), "enabling depth testing");
