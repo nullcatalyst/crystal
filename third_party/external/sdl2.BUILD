@@ -227,7 +227,6 @@ _SDL_INCLUDES = select({
         "src/video/khronos",
     ],
     "@//:macos": [
-        "macos",
         "include",
         "src/audio/coreaudio",
         "src/filesystem/cocoa",
@@ -455,7 +454,7 @@ objc_library(
 copy_file(
     name = "sdl2_config_macos",
     src = "@//third_party/external:sdl_config.macos.h",
-    out = "macos/include/SDL_config.h",
+    out = "include/SDL_config.h",
 )
 
 _SDL_MAIN_SRCS = select({

@@ -27,7 +27,6 @@ cc_library(
         "//util/fs",
         "//util/memory",
         "//util/msg",
-        "//util/unsafe",
         "@com_google_absl//absl/container:inlined_vector",
         "@sdl2//:sdl2_hdrs",
         "@vulkan",

@@ -1,0 +1,17 @@
+load("//tools:cc.bzl", "cc_library")
+
+cc_library(
+    name = "include",
+    hdrs = [
+        "crystal.hpp",
+    ],
+    defines = select({
+        "//:opt": [
+            "CRYSTAL_RELEASE=1",
+        ],
+        "//conditions:default": [],
+    }),
+    visibility = [
+        "//visibility:public",
+    ],
+)

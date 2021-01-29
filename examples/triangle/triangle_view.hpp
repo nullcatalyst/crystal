@@ -1,5 +1,6 @@
 #pragma once
 
+#include "crystal/crystal.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -114,7 +115,7 @@ public:
   }
 };
 
-#include "crystal/opengl/context.hpp"
+#if CRYSTAL_USE_OPENGL
 
 namespace {
 
@@ -131,7 +132,9 @@ struct Helpers<crystal::opengl::Context> {
 
 }  // namespace
 
-#include "crystal/vulkan/context.hpp"
+#endif  // ^^^ CRYSTAL_USE_OPENGL
+
+#if CRYSTAL_USE_VULKAN
 
 namespace {
 
@@ -147,3 +150,5 @@ struct Helpers<crystal::vulkan::Context> {
 };
 
 }  // namespace
+
+#endif  // ^^^ CRYSTAL_USE_VULKAN

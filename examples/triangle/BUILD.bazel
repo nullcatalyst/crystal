@@ -1,17 +1,40 @@
 load("//tools:cc.bzl", "cc_binary")
 
 cc_binary(
-    name = "triangle",
+    name = "opengl",
     srcs = [
-        "triangle_view.hpp",
         "main.cpp",
+        "triangle_view.hpp",
     ],
     data = [
         "//examples/triangle/shaders:glsl",
-        "//examples/triangle/shaders:shader.spv",
+    ],
+    defines = [
+        "CRYSTAL_USE_OPENGL=1",
     ],
     deps = [
+        "//crystal:include",
         "//crystal/opengl:opengl_sdl2",
+        "@glm",
+        "@sdl2",
+        "@sdl2//:sdl2_main",
+    ],
+)
+
+cc_binary(
+    name = "vulkan",
+    srcs = [
+        "main.cpp",
+        "triangle_view.hpp",
+    ],
+    data = [
+        "//examples/triangle/shaders:shader.spv",
+    ],
+    defines = [
+        "CRYSTAL_USE_VULKAN=1",
+    ],
+    deps = [
+        "//crystal:include",
         "//crystal/vulkan:vulkan_sdl2",
         "@glm",
         "@sdl2",

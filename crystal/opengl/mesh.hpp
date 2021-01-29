@@ -26,9 +26,9 @@ class Mesh {
     GLuint   vertex_buffer;
   };
 
-  Context*                        ctx_ = nullptr;
-  absl::InlinedVector<Vao, 4>     vaos_;
-  absl::InlinedVector<Binding, 4> bindings_;
+  Context*                        ctx_          = nullptr;
+  absl::InlinedVector<Vao, 4>     vaos_         = {};
+  absl::InlinedVector<Binding, 4> bindings_     = {};
   GLuint                          index_buffer_ = 0;
 
 public:

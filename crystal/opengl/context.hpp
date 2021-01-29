@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <functional>
 #include <string_view>
+#include <vector>
 
 #include "crystal/opengl/command_buffer.hpp"
 #include "crystal/opengl/gl.hpp"

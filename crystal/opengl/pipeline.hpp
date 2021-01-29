@@ -33,10 +33,10 @@ class Pipeline {
   DepthWrite                       depth_write_ = DepthWrite::Disable;
   AlphaBlend                       blend_src_   = AlphaBlend::Zero;
   AlphaBlend                       blend_dst_   = AlphaBlend::Zero;
-  absl::InlinedVector<Binding, 16> bindings_;
+  absl::InlinedVector<Binding, 16> bindings_    = {};
 
 public:
-  constexpr Pipeline() = delete;
+  constexpr Pipeline() = default;
 
   Pipeline(const Pipeline&) = delete;
   Pipeline& operator=(const Pipeline&) = delete;

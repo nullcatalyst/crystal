@@ -53,16 +53,17 @@ int main(int argc, char* argv[]) {
 
   float angle = 0.0f;
 
-#if 1
-  auto window = create_window<crystal::opengl::Context>("triangle (opengl)", 1280, 720);
-  auto ctx    = crystal::opengl::Context(crystal::opengl::Context::Desc{window});
+#if CRYSTAL_USE_OPENGL
 
-  {  // Wrap usage of the view in an extra block so that the view destructor is called before the
-     // window is destroyed.
-    auto view = TriangleView<crystal::opengl::Context>(ctx, angle);
-#else
-  auto window = create_window<crystal::vulkan::Context>("triangle (vulkan)", 1280, 720);
-  auto ctx    = crystal::vulkan::Context(crystal::vulkan::Context::Desc{
+  using Context = crystal::opengl::Context;
+  auto window   = create_window<Context>("triangle (opengl)", 1280, 720);
+  auto ctx      = Context(Context::Desc{window});
+
+#elif CRYSTAL_USE_VULKAN  // ^^^ CRYSTAL_USE_OPENGL / CRYSTAL_USE_VULKAN vvv
+
+  using Context = crystal::vulkan::Context;
+  auto window   = create_window<Context>("triangle (vulkan)", 1280, 720);
+  auto ctx      = Context(Context::Desc{
       /* .window                   = */ window,
       /* .application_name         = */ "triangle",
       /* .max_descriptor_set_count = */ 16,
@@ -70,11 +71,16 @@ int main(int argc, char* argv[]) {
       /* .texture_descriptor_count = */ 16,
   });
 
-  {  // Wrap usage of the view in an extra block so that the view destructor is called before the
-     // window is destroyed.
-    auto view = TriangleView<crystal::vulkan::Context>(ctx, angle);
-#endif
+#else  // ^^^ CRYSTAL_USE_VULKAN / !CRYSTAL_USE_OPENGL && !CRYSTAL_USE_VULKAN vvv
 
+#error No crystal backend chosen.
+
+#endif  // ^^^ !CRYSTAL_USE_OPENGL && !CRYSTAL_USE_VULKAN
+
+  // Wrap usage of the view in an extra block so that the view destructor is called before the
+  // window is destroyed.
+  {
+    auto view = TriangleView<Context>(ctx, angle);
     // Render the first frame before showing the window so that we don't flash an unrendered window.
     view.frame(angle);
     SDL_ShowWindow(window);

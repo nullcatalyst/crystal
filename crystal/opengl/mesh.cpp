@@ -11,7 +11,7 @@ Mesh::Vao::~Vao() { GL_ASSERT(glDeleteVertexArrays(1, &vao), "deleting vertex ar
 
 Mesh::Mesh(Mesh&& other)
     : ctx_(other.ctx_),
-      vaos_(std::move(vaos_)),
+      vaos_(std::move(other.vaos_)),
       bindings_(std::move(other.bindings_)),
       index_buffer_(other.index_buffer_) {
   other.ctx_          = nullptr;

@@ -10,7 +10,7 @@ class Shader;
 class Pipeline;
 
 class Library {
-  std::string path_;
+  std::string path_ = {};
 
 public:
   constexpr Library() = default;

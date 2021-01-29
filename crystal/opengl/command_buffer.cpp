@@ -88,6 +88,10 @@ void CommandBuffer::use_pipeline(Pipeline& pipeline) {
       GL_ASSERT(glCullFace(GL_BACK), "setting cull back face");
       GL_ASSERT(glEnable(GL_CULL_FACE), "enabling cull face");
       break;
+    case CullMode::FrontAndBack:
+      GL_ASSERT(glCullFace(GL_FRONT_AND_BACK), "setting cull back face");
+      GL_ASSERT(glEnable(GL_CULL_FACE), "enabling cull face");
+      break;
   }
 
   if (pipeline_->blend_src_ != AlphaBlend::One || pipeline_->blend_dst_ != AlphaBlend::Zero) {
