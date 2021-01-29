@@ -31,15 +31,15 @@ class TriangleView {
   typename Ctx::Mesh          mesh_;
 
 public:
-  static std::unique_ptr<TriangleView> create(Ctx& ctx, float angle) {
+  TriangleView(Ctx& ctx, float angle) : ctx_(ctx) {
     const auto    aspect = static_cast<float>(ctx.screen_width()) / ctx.screen_height();
     const Uniform uniform{
         glm::rotate(glm::ortho(-aspect, aspect, -1.0f, 1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f)),
     };
-    auto uniform_buffer = ctx.create_uniform_buffer(&uniform, sizeof(Uniform));
+    uniform_buffer_ = ctx.create_uniform_buffer(&uniform, sizeof(Uniform));
 
     auto library = Helpers<Ctx>::create_library(ctx);
-    auto pipeline =
+    pipeline_ =
         ctx.create_pipeline(library, ctx.screen_render_pass(),
                             crystal::PipelineDesc{
                                 /* .vertex            = */ Helpers<Ctx>::vertex(),
@@ -88,23 +88,10 @@ public:
     };
     auto vertex_buffer =
         ctx.create_vertex_buffer(vertices.data(), sizeof(Vertex) * vertices.size());
-    auto mesh = ctx.create_mesh({
+    mesh_ = ctx.create_mesh({
         std::make_tuple(0, std::ref(vertex_buffer)),
     });
-
-    return std::make_unique<TriangleView>(
-        /* .ctx_              = */ ctx,
-        /* .uniform_buffer_   = */ std::move(uniform_buffer),
-        /* .pipeline_         = */ std::move(pipeline),
-        /* .mesh_             = */ std::move(mesh));
   }
-
-  TriangleView(Ctx& ctx, typename Ctx::UniformBuffer uniform_buffer,
-               typename Ctx::Pipeline pipeline, typename Ctx::Mesh mesh)
-      : ctx_(ctx),
-        uniform_buffer_(std::move(uniform_buffer)),
-        pipeline_(std::move(pipeline)),
-        mesh_(std::move(mesh)) {}
 
   ~TriangleView() { ctx_.wait(); }
 

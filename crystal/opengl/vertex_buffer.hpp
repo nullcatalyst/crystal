@@ -25,7 +25,9 @@ public:
 
   ~VertexBuffer();
 
-  void destroy();
+  void destroy() noexcept;
+
+  void update(const void* const data_ptr, const size_t byte_length) noexcept;
 
 private:
   friend class ::crystal::opengl::Context;
@@ -33,8 +35,6 @@ private:
 
   VertexBuffer(Context& ctx, const size_t byte_length);
   VertexBuffer(Context& ctx, const void* const data_ptr, const size_t byte_length);
-
-  void update(const void* const data_ptr, const size_t byte_length) noexcept;
 };
 
 }  // namespace crystal::opengl

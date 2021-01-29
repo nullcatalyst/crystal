@@ -61,7 +61,7 @@ Texture::Texture(Texture&& other)
 }
 
 Texture& Texture::operator=(Texture&& other) {
-  // TODO: destroy the texture.
+  destroy();
 
   device_           = other.device_;
   memory_allocator_ = other.memory_allocator_;
@@ -86,12 +86,26 @@ Texture& Texture::operator=(Texture&& other) {
   return *this;
 }
 
-Texture::~Texture() {
+Texture::~Texture() { destroy(); }
+
+void Texture::destroy() {
   if (device_ == VK_NULL_HANDLE) {
     return;
   }
 
-  // TODO: destroy the texture.
+  vkDestroySampler(device_, sampler_, nullptr);
+  vkDestroyImageView(device_, image_view_, nullptr);
+  vmaDestroyImage(memory_allocator_, image_, allocation_);
+
+  device_           = VK_NULL_HANDLE;
+  memory_allocator_ = VK_NULL_HANDLE;
+  allocation_       = VK_NULL_HANDLE;
+  image_            = VK_NULL_HANDLE;
+  image_view_       = VK_NULL_HANDLE;
+  sampler_          = VK_NULL_HANDLE;
+  format_           = VK_FORMAT_UNDEFINED;
+  layout_           = VK_IMAGE_LAYOUT_UNDEFINED;
+  extent_           = {};
 }
 
 Texture::Texture(Context& ctx, const TextureDesc& desc) {

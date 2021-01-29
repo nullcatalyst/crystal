@@ -23,14 +23,7 @@ Pipeline::Pipeline(Pipeline&& other)
 }
 
 Pipeline& Pipeline::operator=(Pipeline&& other) {
-  if (device_ != VK_NULL_HANDLE) {
-    VK_ASSERT(vkFreeDescriptorSets(device_, descriptor_pool_, descriptor_sets_.size(),
-                                   descriptor_sets_.data()),
-              "freeing descriptor sets");
-    vkDestroyDescriptorSetLayout(device_, descriptor_set_layout_, nullptr);
-    vkDestroyPipeline(device_, pipeline_, nullptr);
-    vkDestroyPipelineLayout(device_, pipeline_layout_, nullptr);
-  }
+  destroy();
 
   device_                = other.device_;
   descriptor_pool_       = other.descriptor_pool_;
@@ -50,7 +43,9 @@ Pipeline& Pipeline::operator=(Pipeline&& other) {
   return *this;
 }
 
-Pipeline::~Pipeline() {
+Pipeline::~Pipeline() { destroy(); }
+
+void Pipeline::destroy() noexcept {
   if (device_ == VK_NULL_HANDLE) {
     return;
   }
@@ -61,6 +56,13 @@ Pipeline::~Pipeline() {
   vkDestroyDescriptorSetLayout(device_, descriptor_set_layout_, nullptr);
   vkDestroyPipeline(device_, pipeline_, nullptr);
   vkDestroyPipelineLayout(device_, pipeline_layout_, nullptr);
+
+  device_                = VK_NULL_HANDLE;
+  descriptor_pool_       = VK_NULL_HANDLE;
+  render_pass_           = VK_NULL_HANDLE;
+  descriptor_set_layout_ = VK_NULL_HANDLE;
+  pipeline_layout_       = VK_NULL_HANDLE;
+  pipeline_              = VK_NULL_HANDLE;
 }
 
 Pipeline::Pipeline(Context& ctx, Library& library, RenderPass& render_pass,

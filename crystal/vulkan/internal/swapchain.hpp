@@ -11,9 +11,7 @@ class Context;
 class CommandBuffer;
 class RenderPass;
 
-}  // namespace crystal::vulkan
-
-namespace crystal::vulkan::internal {
+namespace internal {
 
 class Swapchain {
   struct Image {
@@ -46,6 +44,11 @@ public:
   Swapchain() = default;
   ~Swapchain();
 
+  [[nodiscard]] constexpr uint32_t screen_width() const { return create_info_.imageExtent.width; }
+  [[nodiscard]] constexpr uint32_t screen_height() const { return create_info_.imageExtent.height; }
+
+  void destroy();
+
   void init(Context& ctx, uint32_t graphics_queue_index, uint32_t present_queue_index);
 
   // Create should never be called directly, instead use recreate() to make sure that the old
@@ -62,4 +65,6 @@ private:
   friend class ::crystal::vulkan::RenderPass;
 };
 
-}  // namespace crystal::vulkan::internal
+}  // namespace internal
+
+}  // namespace crystal::vulkan

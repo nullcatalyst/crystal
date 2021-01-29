@@ -16,6 +16,33 @@ Swapchain::~Swapchain() {
   vkDestroySwapchainKHR(device_, swapchain_, nullptr);
 }
 
+void Swapchain::destroy() {
+  if (device_ == nullptr) {
+    return;
+  }
+
+  // Wait until we are sure that the existing swapchain images are no longer in use.
+  vkDeviceWaitIdle(device_);
+
+  for (const auto& image : images_) {
+    vkDestroyImageView(device_, image.view, nullptr);
+  }
+  images_.clear();
+
+  vkDestroySwapchainKHR(device_, swapchain_, nullptr);
+
+  surface_         = VK_NULL_HANDLE;
+  physical_device_ = VK_NULL_HANDLE;
+  device_          = VK_NULL_HANDLE;
+  swapchain_       = VK_NULL_HANDLE;
+  images_.resize(0);
+  graphics_queue_       = VK_NULL_HANDLE;
+  present_queue_        = VK_NULL_HANDLE;
+  graphics_queue_index_ = 0;
+  present_queue_index_  = 0;
+  create_info_          = {};
+}
+
 void Swapchain::init(Context& ctx, uint32_t graphics_queue_index, uint32_t present_queue_index) {
   surface_              = ctx.surface_;
   physical_device_      = ctx.physical_device_;

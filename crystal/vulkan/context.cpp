@@ -23,24 +23,24 @@ namespace crystal::vulkan {
 
 #ifdef CRYSTAL_USE_SDL2
 
-Context::Context(const Context::Desc& desc, SDL_Window* window) {
+Context::Context(const Context::Desc& desc) {
   int width  = 0;
   int height = 0;
-  SDL_GetWindowSize(window, &width, &height);
+  SDL_GetWindowSize(desc.window, &width, &height);
   if (width < 0 || height < 0) {
     util::msg::fatal("window size is negative [", width, ", ", height, "]");
   }
 
-  width_  = width;
-  height_ = height;
+  // width_  = width;
+  // height_ = height;
 
   {  // Create instance.
     uint32_t instance_extension_count = 0;
-    if (!SDL_Vulkan_GetInstanceExtensions(window, &instance_extension_count, nullptr)) {
+    if (!SDL_Vulkan_GetInstanceExtensions(desc.window, &instance_extension_count, nullptr)) {
       util::msg::fatal("getting SDL vulkan extensions: ", SDL_GetError());
     }
     std::vector<const char*> instance_extensions(instance_extension_count);
-    if (!SDL_Vulkan_GetInstanceExtensions(window, &instance_extension_count,
+    if (!SDL_Vulkan_GetInstanceExtensions(desc.window, &instance_extension_count,
                                           instance_extensions.data())) {
       util::msg::fatal("getting SDL vulkan extensions: %s", SDL_GetError());
     }
@@ -69,7 +69,7 @@ Context::Context(const Context::Desc& desc, SDL_Window* window) {
   }
 
   {  // Create surface.
-    if (!SDL_Vulkan_CreateSurface(window, instance_, &surface_)) {
+    if (!SDL_Vulkan_CreateSurface(desc.window, instance_, &surface_)) {
       util::msg::fatal("creating SDL vulkan surface: ", SDL_GetError());
     }
   }
@@ -252,9 +252,11 @@ Context::Context(const Context::Desc& desc, SDL_Window* window) {
   //     VkFormatProperties formatProperties;
   //     vkGetPhysicalDeviceFormatProperties(physical_device_, format, &formatProperties);
   //     // Format must support depth stencil attachment for optimal tiling
-  //     if (formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+  //     if (formatProperties.optimalTilingFeatures &
+  //     VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
   //       // if (checkSamplingSupport) {
-  //       //   if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)) {
+  //       //   if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
+  //       {
   //       //     continue;
   //       //   }
   //       // }
@@ -265,17 +267,17 @@ Context::Context(const Context::Desc& desc, SDL_Window* window) {
   //   // util::msg::fatal("no usable depth format");
   // }
 
-  screen_depth_texture_.unsafe_call_ctor(*this, TextureDesc{
-                                                    /* .width  = */ width_,
-                                                    /* .height = */ height_,
-                                                    /* .format = */ TextureFormat::Depth32f,
-                                                    /* .sample = */ TextureSample::None,
-                                                    /* .repeat = */ TextureRepeat::Clamp,
-                                                });
-  screen_render_pass_.unsafe_call_ctor(*this);
+  screen_depth_texture_ = Texture(*this, TextureDesc{
+                                             /* .width  = */ static_cast<uint32_t>(width),
+                                             /* .height = */ static_cast<uint32_t>(height),
+                                             /* .format = */ TextureFormat::Depth32f,
+                                             /* .sample = */ TextureSample::None,
+                                             /* .repeat = */ TextureRepeat::Clamp,
+                                         });
+  screen_render_pass_   = RenderPass(*this);
 }
 
-#endif  // CRYSTAL_USE_SDL2
+#endif  // ^^^ defined(CRYSTAL_USE_SDL2)
 
 Context::~Context() {
   if (buffers_.size() != 0) {
@@ -285,8 +287,6 @@ Context::~Context() {
 }
 
 void Context::change_resolution(uint32_t width, uint32_t height) {
-  width_  = width;
-  height_ = height;
   util::msg::info("resolution size changed to ", width, ", ", height);
 
   // swapchain_.recreate();

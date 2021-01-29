@@ -34,7 +34,7 @@ Mesh& Mesh::operator=(Mesh&& other) {
 
 Mesh::~Mesh() { destroy(); }
 
-void Mesh::destroy() {
+void Mesh::destroy() noexcept {
   if (ctx_ == nullptr) {
     return;
   }

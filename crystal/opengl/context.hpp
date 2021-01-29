@@ -84,8 +84,8 @@ public:
 
   ~Context();
 
-  [[nodiscard]] constexpr uint32_t    screen_width() const { return screen_render_pass_.width_; }
-  [[nodiscard]] constexpr uint32_t    screen_height() const { return screen_render_pass_.height_; }
+  [[nodiscard]] constexpr uint32_t    screen_width() const { return screen_render_pass_.width(); }
+  [[nodiscard]] constexpr uint32_t    screen_height() const { return screen_render_pass_.height(); }
   [[nodiscard]] constexpr RenderPass& screen_render_pass() { return screen_render_pass_; }
 
   void change_resolution(uint32_t width, uint32_t height);

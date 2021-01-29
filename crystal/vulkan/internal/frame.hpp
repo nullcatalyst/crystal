@@ -10,9 +10,7 @@ namespace crystal::vulkan {
 class Context;
 class CommandBuffer;
 
-}  // namespace crystal::vulkan
-
-namespace crystal::vulkan::internal {
+namespace internal {
 
 class Frame {
   VkDevice        device_                = VK_NULL_HANDLE;
@@ -35,4 +33,6 @@ private:
   friend class ::crystal::vulkan::CommandBuffer;
 };
 
-}  // namespace crystal::vulkan::internal
+}  // namespace internal
+
+}  // namespace crystal::vulkan

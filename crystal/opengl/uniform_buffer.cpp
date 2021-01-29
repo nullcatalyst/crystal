@@ -26,7 +26,7 @@ UniformBuffer& UniformBuffer::operator=(UniformBuffer&& other) {
 
 UniformBuffer::~UniformBuffer() { destroy(); }
 
-void UniformBuffer::destroy() {
+void UniformBuffer::destroy() noexcept {
   if (ctx_ == nullptr) {
     return;
   }

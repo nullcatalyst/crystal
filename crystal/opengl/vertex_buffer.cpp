@@ -27,7 +27,7 @@ VertexBuffer& VertexBuffer::operator=(VertexBuffer&& other) {
 
 VertexBuffer::~VertexBuffer() { destroy(); }
 
-void VertexBuffer::destroy() {
+void VertexBuffer::destroy() noexcept {
   if (ctx_ == nullptr) {
     return;
   }
@@ -37,6 +37,17 @@ void VertexBuffer::destroy() {
   ctx_      = nullptr;
   buffer_   = 0;
   capacity_ = 0;
+}
+
+void VertexBuffer::update(const void* const data_ptr, const size_t byte_length) noexcept {
+  if (byte_length > capacity_) {
+    util::msg::fatal("updating vertex buffer that has capacity [", capacity_,
+                     "] with data that exceeds that capacity at length [", byte_length, "]");
+  }
+
+  GL_ASSERT(glBindBuffer(GL_ARRAY_BUFFER, buffer_), "binding vertex buffer");
+  GL_ASSERT(glBufferData(GL_ARRAY_BUFFER, byte_length, data_ptr, GL_DYNAMIC_DRAW),
+            "updating vertex buffer data");
 }
 
 VertexBuffer::VertexBuffer(Context& ctx, const size_t byte_length)
@@ -53,17 +64,6 @@ VertexBuffer::VertexBuffer(Context& ctx, const void* const data_ptr, const size_
     : ctx_(&ctx), buffer_(0), capacity_(byte_length) {
   GL_ASSERT(glGenBuffers(1, &buffer_), "generating vertex buffer");
   ctx_->add_buffer_(buffer_);
-
-  GL_ASSERT(glBindBuffer(GL_ARRAY_BUFFER, buffer_), "binding vertex buffer");
-  GL_ASSERT(glBufferData(GL_ARRAY_BUFFER, byte_length, data_ptr, GL_DYNAMIC_DRAW),
-            "updating vertex buffer data");
-}
-
-void VertexBuffer::update(const void* const data_ptr, const size_t byte_length) noexcept {
-  if (byte_length > capacity_) {
-    util::msg::fatal("updating vertex buffer that has capacity [", capacity_,
-                     "] with data that exceeds that capacity at length [", byte_length, "]");
-  }
 
   GL_ASSERT(glBindBuffer(GL_ARRAY_BUFFER, buffer_), "binding vertex buffer");
   GL_ASSERT(glBufferData(GL_ARRAY_BUFFER, byte_length, data_ptr, GL_DYNAMIC_DRAW),

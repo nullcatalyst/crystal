@@ -19,13 +19,7 @@ Mesh::Mesh(Mesh&& other)
 }
 
 Mesh& Mesh::operator=(Mesh&& other) {
-  for (uint32_t i = 0; i != binding_count_; ++i) {
-    ctx_->release_buffer_(bindings_[i].buffer);
-  }
-
-  if (index_buffer_ != VK_NULL_HANDLE) {
-    ctx_->release_buffer_(index_buffer_);
-  }
+  destroy();
 
   ctx_           = other.ctx_;
   binding_count_ = other.binding_count_;
@@ -39,7 +33,13 @@ Mesh& Mesh::operator=(Mesh&& other) {
   return *this;
 }
 
-Mesh::~Mesh() {
+Mesh::~Mesh() { destroy(); }
+
+void Mesh::destroy() noexcept {
+  if (ctx_ == nullptr) {
+    return;
+  }
+
   for (uint32_t i = 0; i != binding_count_; ++i) {
     ctx_->release_buffer_(bindings_[i].buffer);
   }
@@ -47,6 +47,10 @@ Mesh::~Mesh() {
   if (index_buffer_ != VK_NULL_HANDLE) {
     ctx_->release_buffer_(index_buffer_);
   }
+
+  ctx_           = nullptr;
+  binding_count_ = 0;
+  index_buffer_  = VK_NULL_HANDLE;
 }
 
 Mesh::Mesh(Context&                                                               ctx,

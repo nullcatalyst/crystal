@@ -18,25 +18,28 @@ RenderPass::RenderPass(RenderPass&& other)
 }
 
 RenderPass& RenderPass::operator=(RenderPass&& other) {
-  for (auto framebuffer : framebuffers_) {
-    vkDestroyFramebuffer(device_, framebuffer, nullptr);
-  }
-  vkDestroyRenderPass(device_, render_pass_, nullptr);
+  destroy();
 
-  device_       = other.device_;
-  render_pass_  = other.render_pass_;
-  framebuffers_ = std::move(other.framebuffers_);
-  extent_       = other.extent_;
+  device_           = other.device_;
+  render_pass_      = other.render_pass_;
+  attachment_count_ = other.attachment_count_;
+  clear_values_     = other.clear_values_;
+  framebuffers_     = std::move(other.framebuffers_);
+  extent_           = other.extent_;
 
-  other.device_      = VK_NULL_HANDLE;
-  other.render_pass_ = VK_NULL_HANDLE;
-  other.extent_      = {};
+  other.device_           = VK_NULL_HANDLE;
+  other.render_pass_      = VK_NULL_HANDLE;
+  other.attachment_count_ = 0;
+  other.framebuffers_.resize(0);
+  other.extent_ = {};
 
   return *this;
 }
 
-RenderPass::~RenderPass() {
-  if (device_ == VK_NULL_HANDLE) {
+RenderPass::~RenderPass() { destroy(); }
+
+void RenderPass::destroy() {
+  if (device_ == nullptr) {
     return;
   }
 
@@ -44,6 +47,12 @@ RenderPass::~RenderPass() {
     vkDestroyFramebuffer(device_, framebuffer, nullptr);
   }
   vkDestroyRenderPass(device_, render_pass_, nullptr);
+
+  device_           = VK_NULL_HANDLE;
+  render_pass_      = VK_NULL_HANDLE;
+  attachment_count_ = 0;
+  framebuffers_.resize(0);
+  extent_ = {};
 }
 
 RenderPass::RenderPass(Context& ctx) : device_(ctx.device_) {
@@ -75,14 +84,14 @@ RenderPass::RenderPass(Context& ctx) : device_(ctx.device_) {
         },
         VkAttachmentDescription{
             /* .flags          = */ 0,
-            /* .format         = */ ctx.screen_depth_texture_->format_,
+            /* .format         = */ ctx.screen_depth_texture_.format_,
             /* .samples        = */ VK_SAMPLE_COUNT_1_BIT,
             /* .loadOp         = */ VK_ATTACHMENT_LOAD_OP_CLEAR,
             /* .storeOp        = */ VK_ATTACHMENT_STORE_OP_STORE,
             /* .stencilLoadOp  = */ VK_ATTACHMENT_LOAD_OP_DONT_CARE,
             /* .stencilStoreOp = */ VK_ATTACHMENT_STORE_OP_DONT_CARE,
             /* .initialLayout  = */ VK_IMAGE_LAYOUT_UNDEFINED,
-            /* .finalLayout    = */ ctx.screen_depth_texture_->layout_,
+            /* .finalLayout    = */ ctx.screen_depth_texture_.layout_,
         },
     };
     std::array<VkAttachmentReference, 2> attachment_references{
@@ -131,7 +140,7 @@ RenderPass::RenderPass(Context& ctx) : device_(ctx.device_) {
     std::array<VkImageView, 2> attachment_views;
     extent_ = ctx.swapchain_.create_info_.imageExtent;
 
-    attachment_views[1] = ctx.screen_depth_texture_->image_view_;
+    attachment_views[1] = ctx.screen_depth_texture_.image_view_;
 
     framebuffers_.resize(ctx.swapchain_.images_.size());
     for (uint32_t i = 0; i < ctx.swapchain_.images_.size(); ++i) {

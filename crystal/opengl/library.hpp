@@ -23,6 +23,8 @@ public:
 
   ~Library() = default;
 
+  void destroy() noexcept {}
+
 private:
   friend class ::crystal::opengl::Context;
   friend class ::crystal::opengl::Shader;

@@ -27,7 +27,7 @@ IndexBuffer& IndexBuffer::operator=(IndexBuffer&& other) {
 
 IndexBuffer::~IndexBuffer() { destroy(); }
 
-void IndexBuffer::destroy() {
+void IndexBuffer::destroy() noexcept {
   if (ctx_ == nullptr) {
     return;
   }

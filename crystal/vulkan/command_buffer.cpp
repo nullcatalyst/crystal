@@ -19,10 +19,7 @@ CommandBuffer::CommandBuffer(Context& ctx, internal::Frame& frame, uint32_t fram
       rendering_complete_semaphore_(frame.rendering_complete_semaphore_),
       fence_(frame.fence_),
       swapchain_image_index_(frame.swapchain_image_index_),
-      frame_index_(frame_index) {
-  width_  = swapchain_image_extent_.width;
-  height_ = swapchain_image_extent_.height;
-}
+      frame_index_(frame_index) {}
 
 CommandBuffer::~CommandBuffer() {
   vkCmdEndRenderPass(command_buffer_);
@@ -78,10 +75,7 @@ CommandBuffer::~CommandBuffer() {
 
 void CommandBuffer::use_render_pass(RenderPass& render_pass) {
   VkFramebuffer framebuffer = VK_NULL_HANDLE;
-  VkExtent2D    extent      = {
-      /* .width  = */ view_width(),
-      /* .height = */ view_height(),
-  };
+  VkExtent2D    extent      = render_pass.extent_;
 
   {  // Begin render pass.
     VkFramebuffer framebuffer = render_pass.framebuffer(swapchain_image_index_);
@@ -106,8 +100,8 @@ void CommandBuffer::use_render_pass(RenderPass& render_pass) {
     const VkViewport viewport = {
         /* .x        = */ 0.0f,
         /* .y        = */ 0.0f,
-        /* .width    = */ static_cast<float>(render_pass.extent_.width),
-        /* .height   = */ static_cast<float>(render_pass.extent_.height),
+        /* .width    = */ static_cast<float>(extent.width),
+        /* .height   = */ static_cast<float>(extent.height),
         /* .minDepth = */ 0.0f,
         /* .maxDepth = */ 1.0f,
     };

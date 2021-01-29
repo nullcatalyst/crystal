@@ -28,7 +28,10 @@ public:
 
   ~RenderPass();
 
-  void destroy();
+  [[nodiscard]] constexpr uint32_t width() const { return width_; }
+  [[nodiscard]] constexpr uint32_t height() const { return height_; }
+
+  void destroy() noexcept;
 
 private:
   friend class ::crystal::opengl::Context;

@@ -126,7 +126,7 @@ Pipeline& Pipeline::operator=(Pipeline&& other) {
 
 Pipeline::~Pipeline() { destroy(); }
 
-void Pipeline::destroy() {
+void Pipeline::destroy() noexcept {
   if (ctx_ == nullptr) {
     return;
   }

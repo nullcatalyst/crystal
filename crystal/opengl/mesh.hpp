@@ -42,7 +42,7 @@ public:
 
   ~Mesh();
 
-  void destroy();
+  void destroy() noexcept;
 
 private:
   friend class ::crystal::opengl::Context;

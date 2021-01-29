@@ -34,7 +34,7 @@ RenderPass& RenderPass::operator=(RenderPass&& other) {
 
 RenderPass::~RenderPass() { destroy(); }
 
-void RenderPass::destroy() {
+void RenderPass::destroy() noexcept {
   if (ctx_ == nullptr) {
     return;
   }
