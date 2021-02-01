@@ -6,10 +6,9 @@
 namespace crystal {
 
 enum class CullMode : uint32_t {
-  None         = 0,
-  Front        = 1,
-  Back         = 2,
-  FrontAndBack = 3,
+  None  = 0,
+  Front = 1,
+  Back  = 2,
 };
 
 enum class Winding : uint32_t {

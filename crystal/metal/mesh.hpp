@@ -4,9 +4,10 @@
 #include <initializer_list>
 #include <tuple>
 
-#include "crystal/vulkan/vk.hpp"
+#include "absl/container/inlined_vector.h"
+#include "crystal/metal/mtl.hpp"
 
-namespace crystal::vulkan {
+namespace crystal::metal {
 
 class Context;
 class CommandBuffer;
@@ -16,13 +17,12 @@ class VertexBuffer;
 class Mesh {
   struct Binding {
     uint32_t index;
-    VkBuffer buffer;
+    OBJC(MTLBuffer) buffer;
   };
 
-  Context*               ctx_           = nullptr;
   uint32_t               binding_count_ = 0;
   std::array<Binding, 8> bindings_      = {};
-  VkBuffer               index_buffer_  = VK_NULL_HANDLE;
+  OBJC(MTLBuffer) index_buffer_         = nullptr;
 
 public:
   constexpr Mesh() = default;
@@ -38,8 +38,8 @@ public:
   void destroy() noexcept;
 
 private:
-  friend class ::crystal::vulkan::Context;
-  friend class ::crystal::vulkan::CommandBuffer;
+  friend class ::crystal::metal::Context;
+  friend class ::crystal::metal::CommandBuffer;
 
   Mesh(Context&                                                               ctx,
        const std::initializer_list<std::tuple<uint32_t, const VertexBuffer&>> bindings);
@@ -48,4 +48,4 @@ private:
        const IndexBuffer&                                                     index_buffer);
 };
 
-}  // namespace crystal::vulkan
+}  // namespace crystal::metal

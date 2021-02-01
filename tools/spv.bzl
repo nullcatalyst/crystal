@@ -1,17 +1,13 @@
+load("@bazel_skylib//lib:paths.bzl", "paths")
+
 _PARTIAL_SPV_DIR = "_spv"
 _SPV_FILE_EXT = ".spv"
 
-def _trim_suffix(s, suffix):
-    if s.rfind(suffix) == len(s) - len(suffix):
-        s = s[:-len(suffix)]
-    return s
-
 def _spv_partial(name, stage):
-    name = _trim_suffix(name, _SPV_FILE_EXT)
-    return "{}/{}.{}.spv".format(_PARTIAL_SPV_DIR, name, stage)
+    return "{}/{}".format(_PARTIAL_SPV_DIR, paths.replace_extension(name, "{}.spv".format(stage)))
 
 def _spv_library_impl(ctx):
-    name = _trim_suffix(_trim_suffix(ctx.attr.name, "_spv"), _SPV_FILE_EXT) + _SPV_FILE_EXT
+    name = ctx.attr.name
     srcs = [] + ctx.files.srcs
     tmps = []
 
@@ -65,7 +61,7 @@ def _spv_library_impl(ctx):
         )
         tmps.append(frag_out)
 
-    out = ctx.actions.declare_file(name)
+    out = ctx.actions.declare_file(ctx.attr.out)
 
     out = ctx.outputs.out
     args = ctx.actions.args()
@@ -91,7 +87,7 @@ def _spv_library_impl(ctx):
 spv_library = rule(
     implementation = _spv_library_impl,
     attrs = {
-        "out": attr.output(mandatory = True),
+        "out": attr.string(default = "%{name}.spv"),
         "srcs": attr.label_list(allow_files = True),
         "vert": attr.label(allow_single_file = True),
         "frag": attr.label(
@@ -110,6 +106,9 @@ spv_library = rule(
             executable = True,
             cfg = "host",
         ),
+    },
+    outputs = {
+        "out": "%{out}",
     },
     provides = [DefaultInfo],
 )

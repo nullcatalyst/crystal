@@ -1,0 +1,71 @@
+load("//tools:cc.bzl", "objc_library")
+
+objc_library(
+    name = "metal",
+    srcs = glob([
+        "*.mm",
+    ]),
+    hdrs = glob([
+        "*.hpp",
+        "*.inl",
+    ]),
+    defines = select({
+        "//:opt": [
+            "CRYSTAL_RELEASE",
+        ],
+        "//conditions:default": [],
+    }),
+    sdk_frameworks = [
+        "Metal",
+        "QuartzCore",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        "//crystal/common",
+        "//crystal/interface",
+        "//util/fs",
+        "//util/memory",
+        "//util/msg",
+        "@com_google_absl//absl/container:inlined_vector",
+        "@sdl2//:sdl2_hdrs",
+    ],
+)
+
+objc_library(
+    name = "metal_sdl2",
+    srcs = glob([
+        "*.mm",
+    ]),
+    hdrs = glob([
+        "*.hpp",
+        "*.inl",
+    ]),
+    defines = select({
+        "//:opt": [
+            "CRYSTAL_USE_SDL2",
+            "CRYSTAL_RELEASE",
+        ],
+        "//conditions:default": [
+            "CRYSTAL_USE_SDL2",
+        ],
+    }),
+    sdk_frameworks = [
+        "Metal",
+        "QuartzCore",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        "//crystal/common",
+        "//crystal/interface",
+        "//third_party/glad:gl42",
+        "//util/fs",
+        "//util/memory",
+        "//util/msg",
+        "@com_google_absl//absl/container:inlined_vector",
+        "@sdl2//:sdl2_hdrs",
+    ],
+)

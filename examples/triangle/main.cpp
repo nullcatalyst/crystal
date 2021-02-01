@@ -71,7 +71,15 @@ int main(int argc, char* argv[]) {
       /* .texture_descriptor_count = */ 16,
   });
 
-#else  // ^^^ CRYSTAL_USE_VULKAN / !CRYSTAL_USE_OPENGL && !CRYSTAL_USE_VULKAN vvv
+#elif CRYSTAL_USE_METAL  // ^^^ CRYSTAL_USE_VULKAN / CRYSTAL_USE_METAL vvv
+
+  using Context = crystal::metal::Context;
+  auto window   = create_window<Context>("triangle (metal)", 1280, 720);
+  auto ctx      = Context(Context::Desc{
+      /* .window = */ window,
+  });
+
+#else
 
 #error No crystal backend chosen.
 

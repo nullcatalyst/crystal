@@ -1,0 +1,20 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(mac) triangle",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/examples/triangle/metal.runfiles/crystal/examples/triangle/metal",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/bazel-bin/examples/triangle/metal.runfiles/crystal",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        },
+    ]
+}

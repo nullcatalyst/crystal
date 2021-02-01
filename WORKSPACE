@@ -16,6 +16,17 @@ load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
 
+# Apple Support
+http_archive(
+    name = "build_bazel_apple_support",
+    sha256 = "02ac04ff0a0de1e891a1fa8839cc6a5957e3c4a80856545aa35a786d15aad108",
+    url = "https://github.com/bazelbuild/apple_support/releases/download/0.9.1/apple_support.0.9.1.tar.gz",
+)
+
+load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
+
+apple_support_dependencies()
+
 # Abseil
 # A custom abseil repo is used that has C++17 set as the default.
 http_archive(

@@ -1,4 +1,10 @@
-load("@rules_cc//cc:defs.bzl", native_cc_binary = "cc_binary", native_cc_library = "cc_library", native_cc_test = "cc_test")
+load(
+    "@rules_cc//cc:defs.bzl",
+    native_cc_binary = "cc_binary",
+    native_cc_library = "cc_library",
+    native_cc_test = "cc_test",
+    native_objc_library = "objc_library",
+)
 
 _COPTS = select({
     "//:windows_opt": [
@@ -107,3 +113,16 @@ def cc_test(**kwargs):
         kwargs["linkopts"] = _LINKOPTS
 
     return native_cc_test(**kwargs)
+
+def objc_library(**kwargs):
+    if "copts" in kwargs:
+        kwargs["copts"] = _COPTS + kwargs["copts"]
+    else:
+        kwargs["copts"] = _COPTS
+
+    if "defines" in kwargs:
+        kwargs["defines"] = _DEFINES + kwargs["defines"]
+    else:
+        kwargs["defines"] = _DEFINES
+
+    return native_objc_library(**kwargs)

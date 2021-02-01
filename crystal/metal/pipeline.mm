@@ -1,0 +1,106 @@
+#include "crystal/metal/pipeline.hpp"
+
+#include <algorithm>  // for_each
+#include "crystal/metal/context.hpp"
+#include "crystal/metal/library.hpp"
+#include "util/fs/file.hpp"
+#include "util/fs/path.hpp"
+
+namespace crystal::metal {
+
+Pipeline::Pipeline(Pipeline&& other)
+    : render_pipeline_(other.render_pipeline_), depth_stencil_state_(other.depth_stencil_state_) {
+  other.render_pipeline_     = nullptr;
+  other.depth_stencil_state_ = nullptr;
+  other.cull_mode_           = MTLCullModeNone;
+}
+
+Pipeline& Pipeline::operator=(Pipeline&& other) {
+  destroy();
+
+  render_pipeline_     = other.render_pipeline_;
+  depth_stencil_state_ = other.depth_stencil_state_;
+
+  other.render_pipeline_     = nullptr;
+  other.depth_stencil_state_ = nullptr;
+  other.cull_mode_           = MTLCullModeNone;
+
+  return *this;
+}
+
+Pipeline::~Pipeline() { destroy(); }
+
+void Pipeline::destroy() noexcept {
+  render_pipeline_     = nullptr;
+  depth_stencil_state_ = nullptr;
+  cull_mode_           = MTLCullModeNone;
+}
+
+Pipeline::Pipeline(OBJC(MTLDevice) device, Library& library, RenderPass& render_pass,
+                   const PipelineDesc& desc) {
+  MTLVertexDescriptor* vertex_descriptor = [[MTLVertexDescriptor alloc] init];
+
+  std::for_each(desc.vertex_attributes.begin(), desc.vertex_attributes.end(),
+                [vertex_descriptor](auto vertex_attribute) {
+                  vertex_descriptor.attributes[vertex_attribute.id].format = MTLVertexFormatFloat4;
+                  vertex_descriptor.attributes[vertex_attribute.id].offset =
+                      vertex_attribute.offset;
+                  vertex_descriptor.attributes[vertex_attribute.id].bufferIndex =
+                      vertex_attribute.buffer_index;
+                });
+
+  std::for_each(desc.vertex_buffers.begin(), desc.vertex_buffers.end(),
+                [vertex_descriptor](auto vertex_buffer) {
+                  vertex_descriptor.layouts[vertex_buffer.buffer_index].stride =
+                      vertex_buffer.stride;
+                  vertex_descriptor.layouts[vertex_buffer.buffer_index].stepRate = 1;
+                  vertex_descriptor.layouts[vertex_buffer.buffer_index].stepFunction =
+                      vertex_buffer.step_function == StepFunction::PerVertex
+                          ? MTLVertexStepFunctionPerVertex
+                          : MTLVertexStepFunctionPerInstance;
+                });
+
+  MTLRenderPipelineDescriptor* pipeline_state_desc = [[MTLRenderPipelineDescriptor alloc] init];
+  id<MTLFunction>              vertex_function     = [library.library_
+      newFunctionWithName:[NSString stringWithCString:desc.vertex encoding:NSUTF8StringEncoding]];
+  id<MTLFunction>              fragment_function   = [library.library_
+      newFunctionWithName:[NSString stringWithCString:desc.fragment encoding:NSUTF8StringEncoding]];
+
+  [pipeline_state_desc setVertexDescriptor:vertex_descriptor];
+  [pipeline_state_desc setVertexFunction:vertex_function];
+  [pipeline_state_desc setFragmentFunction:fragment_function];
+
+  for (int i = 0; i < render_pass.attachment_count_; ++i) {
+    pipeline_state_desc.colorAttachments[i].pixelFormat = render_pass.pixel_formats_[i];
+  }
+  // pipeline_state_desc.depthAttachmentPixelFormat = MTLDepthFormat;
+
+  MTLDepthStencilDescriptor* depth_stencil_desc = [[MTLDepthStencilDescriptor alloc] init];
+  depth_stencil_desc.depthCompareFunction       = static_cast<MTLCompareFunction>(desc.depth_test);
+  depth_stencil_desc.depthWriteEnabled          = desc.depth_write == DepthWrite::Enable;
+  depth_stencil_state_ = [device newDepthStencilStateWithDescriptor:depth_stencil_desc];
+
+  switch (desc.cull_mode) {
+    case CullMode::None:
+      cull_mode_ = MTLCullModeNone;
+      break;
+    case CullMode::Front:
+      cull_mode_ = MTLCullModeFront;
+      break;
+    case CullMode::Back:
+      cull_mode_ = MTLCullModeBack;
+      break;
+    default:
+      cull_mode_ = MTLCullModeNone;
+      break;
+  }
+
+  NSError* error   = nullptr;
+  render_pipeline_ = [device newRenderPipelineStateWithDescriptor:pipeline_state_desc error:&error];
+  if (error != nullptr) {
+    const char* error_message = [[error localizedDescription] UTF8String];
+    util::msg::fatal("creating render pipeline state: ", error_message);
+  }
+}
+
+}  // namespace crystal::metal

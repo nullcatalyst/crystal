@@ -1,4 +1,5 @@
 load("//tools:spv.bzl", "spv_library")
+load("//tools:metal.bzl", "metal_library")
 
 filegroup(
     name = "glsl",
@@ -11,10 +12,21 @@ filegroup(
 )
 
 spv_library(
-    name = "shader.spv",
+    name = "shader_spv",
     out = "shader.spv",
     frag = "shader.frag.glsl",
     vert = "shader.vert.glsl",
+    visibility = [
+        "//examples/triangle:__subpackages__",
+    ],
+)
+
+metal_library(
+    name = "shader_metal",
+    srcs = [
+        "shader.metal",
+    ],
+    out = "shader.metallib",
     visibility = [
         "//examples/triangle:__subpackages__",
     ],

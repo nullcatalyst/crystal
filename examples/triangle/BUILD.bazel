@@ -41,3 +41,24 @@ cc_binary(
         "@sdl2//:sdl2_main",
     ],
 )
+
+cc_binary(
+    name = "metal",
+    srcs = [
+        "main.cpp",
+        "triangle_view.hpp",
+    ],
+    data = [
+        "//examples/triangle/shaders:shader.metallib",
+    ],
+    defines = [
+        "CRYSTAL_USE_METAL=1",
+    ],
+    deps = [
+        "//crystal:include",
+        "//crystal/metal:metal_sdl2",
+        "@glm",
+        "@sdl2",
+        "@sdl2//:sdl2_main",
+    ],
+)

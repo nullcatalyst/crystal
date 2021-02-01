@@ -1,4 +1,7 @@
 {
+    // Required to support putting breakpoints in objc++
+    "debug.allowBreakpointsEverywhere": true,
+    "editor.formatOnSave": true,
     "editor.renderWhitespace": "boundary",
     "editor.rulers": [
         100
@@ -99,6 +102,6 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp",
+        "xutility": "cpp"
     }
 }

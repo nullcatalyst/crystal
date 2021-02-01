@@ -18,8 +18,10 @@ struct Vertex {
 template <typename Ctx>
 struct Helpers {
   static typename Ctx::Library create_library(Ctx& ctx);
-  static typename Ctx::Shader  create_shader(Ctx& ctx, typename Ctx::Library& library);
-  static uint32_t              get_uniform_location(typename Ctx::Shader& shader);
+  static const char*           vertex();
+  static const char*           fragment();
+  static const glm::mat4       matrix(float aspect);
+  static const uint32_t        uniform_binding();
 };
 
 }  // namespace
@@ -46,7 +48,7 @@ public:
                                 /* .vertex            = */ Helpers<Ctx>::vertex(),
                                 /* .fragment          = */ Helpers<Ctx>::fragment(),
                                 /* .cull_mode         = */ crystal::CullMode::None,
-                                /* .cull_mode         = */ crystal::Winding::CounterClockwise,
+                                /* .winding           = */ crystal::Winding::CounterClockwise,
                                 /* .depth_test        = */ crystal::DepthTest::Always,
                                 /* .depth_write       = */ crystal::DepthWrite::Disable,
                                 /* .blend_src         = */ crystal::AlphaBlend::SrcAlpha,
@@ -110,7 +112,7 @@ public:
 
     cmd.use_render_pass(ctx_.screen_render_pass());
     cmd.use_pipeline(pipeline_);
-    cmd.use_uniform_buffer(uniform_buffer_, 0, 0);
+    cmd.use_uniform_buffer(uniform_buffer_, 0, Helpers<Ctx>::uniform_binding());
     cmd.draw(mesh_, 3, 1);
   }
 };
@@ -128,6 +130,7 @@ struct Helpers<crystal::opengl::Context> {
   static const char*     vertex() { return "shader.vert.glsl"; }
   static const char*     fragment() { return "shader.frag.glsl"; }
   static const glm::mat4 matrix(float aspect) { return glm::ortho(-aspect, aspect, -1.0f, 1.0f); }
+  static const uint32_t  uniform_binding() { return 0; }
 };
 
 }  // namespace
@@ -147,8 +150,29 @@ struct Helpers<crystal::vulkan::Context> {
   static const char*     vertex() { return "main"; }
   static const char*     fragment() { return "main"; }
   static const glm::mat4 matrix(float aspect) { return glm::ortho(-aspect, aspect, 1.0f, -1.0f); }
+  static const uint32_t  uniform_binding() { return 0; }
 };
 
 }  // namespace
 
 #endif  // ^^^ CRYSTAL_USE_VULKAN
+
+#if CRYSTAL_USE_METAL
+
+namespace {
+
+template <>
+struct Helpers<crystal::metal::Context> {
+  static crystal::metal::Library create_library(crystal::metal::Context& ctx) {
+    return ctx.create_library("examples/triangle/shaders/shader.metallib");
+  }
+
+  static const char*     vertex() { return "triangle_vertex"; }
+  static const char*     fragment() { return "triangle_fragment"; }
+  static const glm::mat4 matrix(float aspect) { return glm::ortho(-aspect, aspect, -1.0f, 1.0f); }
+  static const uint32_t  uniform_binding() { return 1; }
+};
+
+}  // namespace
+
+#endif  // ^^^ CRYSTAL_USE_METAL
