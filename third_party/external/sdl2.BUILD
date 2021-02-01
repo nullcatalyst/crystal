@@ -7,14 +7,16 @@ load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 # cmake --build .
 # open compile_commands.json
 
-_SDL_HDRS = select({
-    "@//:windows": [],
-    "@//:macos": [
-        ":sdl2_config_macos",
+_SDL_HDRS = [
+    ":sdl2_config",
+] + glob(
+    [
+        "include/**/*.h",
     ],
-}) + glob([
-    "include/**/*.h",
-])
+    exclude = [
+        "include/SDL_config.h",
+    ],
+)
 
 _SDL_SRC_HDRS = glob([
     "src/**/*.h",
@@ -227,6 +229,7 @@ _SDL_INCLUDES = select({
         "src/video/khronos",
     ],
     "@//:macos": [
+        "include/macos",
         "include",
         "src/audio/coreaudio",
         "src/filesystem/cocoa",
@@ -452,8 +455,11 @@ objc_library(
 )
 
 copy_file(
-    name = "sdl2_config_macos",
-    src = "@//third_party/external:sdl_config.macos.h",
+    name = "sdl2_config",
+    src = select({
+        "@//:windows": "@//third_party/external:sdl_config.default.h",
+        "@//:macos": "@//third_party/external:sdl_config.macos.h",
+    }),
     out = "include/SDL_config.h",
 )
 
