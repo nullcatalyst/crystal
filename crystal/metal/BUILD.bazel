@@ -24,7 +24,6 @@ objc_library(
     ],
     deps = [
         "//crystal/common",
-        "//crystal/interface",
         "//util/fs",
         "//util/memory",
         "//util/msg",
@@ -60,7 +59,6 @@ objc_library(
     ],
     deps = [
         "//crystal/common",
-        "//crystal/interface",
         "//third_party/glad:gl42",
         "//util/fs",
         "//util/memory",

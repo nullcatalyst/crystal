@@ -22,7 +22,6 @@ cc_library(
     ],
     deps = [
         "//crystal/common",
-        "//crystal/interface",
         "//third_party/vulkan_memory_allocator",
         "//util/fs",
         "//util/memory",
@@ -58,12 +57,10 @@ cc_library(
     ],
     deps = [
         "//crystal/common",
-        "//crystal/interface",
         "//third_party/vulkan_memory_allocator",
         "//util/fs",
         "//util/memory",
         "//util/msg",
-        "//util/unsafe",
         "@com_google_absl//absl/container:inlined_vector",
         "@sdl2//:sdl2_hdrs",
         "@vulkan",
