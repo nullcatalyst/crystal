@@ -7,13 +7,15 @@ objc_library(
     ]),
     hdrs = glob([
         "*.hpp",
-        "*.inl",
     ]),
     defines = select({
         "//:opt": [
             "CRYSTAL_RELEASE",
+            "CRYSTAL_USE_METAL",
         ],
-        "//conditions:default": [],
+        "//conditions:default": [
+            "CRYSTAL_USE_METAL",
+        ],
     }),
     sdk_frameworks = [
         "Metal",
@@ -39,14 +41,15 @@ objc_library(
     ]),
     hdrs = glob([
         "*.hpp",
-        "*.inl",
     ]),
     defines = select({
         "//:opt": [
-            "CRYSTAL_USE_SDL2",
             "CRYSTAL_RELEASE",
+            "CRYSTAL_USE_METAL",
+            "CRYSTAL_USE_SDL2",
         ],
         "//conditions:default": [
+            "CRYSTAL_USE_METAL",
             "CRYSTAL_USE_SDL2",
         ],
     }),

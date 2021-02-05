@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <glad_es30/glad.h>
+#include <glad/glad_es30.h>
 
 struct gladGLversionStruct GLVersion = { 0, 0 };
 

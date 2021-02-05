@@ -2,7 +2,7 @@
 
 #include <cstdio>
 
-#include "glad_gl42/glad.h"
+#include "glad/glad_gl42.h"
 #undef APIENTRY
 
 #include "util/msg/msg.hpp"

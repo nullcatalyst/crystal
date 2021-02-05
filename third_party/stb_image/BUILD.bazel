@@ -13,7 +13,6 @@ cc_library(
         "STBI_ONLY_JPEG=1",
         "STBI_ONLY_PNG=1",
     ],
-    include_prefix = "stb_image",
     visibility = [
         "//visibility:public",
     ],

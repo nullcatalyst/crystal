@@ -8,14 +8,16 @@ cc_library(
     ]),
     hdrs = glob([
         "*.hpp",
-        "*.inl",
         "internal/*.hpp",
     ]),
     defines = select({
         "//:opt": [
             "CRYSTAL_RELEASE",
+            "CRYSTAL_USE_VULKAN",
         ],
-        "//conditions:default": [],
+        "//conditions:default": [
+            "CRYSTAL_USE_VULKAN",
+        ],
     }),
     visibility = [
         "//visibility:public",
@@ -40,15 +42,16 @@ cc_library(
     ]),
     hdrs = glob([
         "*.hpp",
-        "*.inl",
         "internal/*.hpp",
     ]),
     defines = select({
         "//:opt": [
-            "CRYSTAL_USE_SDL2",
             "CRYSTAL_RELEASE",
+            "CRYSTAL_USE_VULKAN",
+            "CRYSTAL_USE_SDL2",
         ],
         "//conditions:default": [
+            "CRYSTAL_USE_VULKAN",
             "CRYSTAL_USE_SDL2",
         ],
     }),

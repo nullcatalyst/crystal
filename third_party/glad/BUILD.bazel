@@ -3,29 +3,47 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 cc_library(
     name = "gl42",
     srcs = [
-        "gl42/src/glad.c",
+        "glad_gl42.c",
     ],
     hdrs = [
-        "gl42/include/KHR/khrplatform.h",
-        "gl42/include/glad_gl42/glad.h",
+        "glad/glad_gl42.h",
     ],
-    strip_include_prefix = "gl42/include",
+    includes = [
+        ".",
+    ],
     visibility = [
         "//visibility:public",
+    ],
+    deps = [
+        ":khr",
     ],
 )
 
 cc_library(
     name = "es30",
     srcs = [
-        "es30/src/glad.c",
+        "glad_es30.c",
     ],
     hdrs = [
-        "es30/include/KHR/khrplatform.h",
-        "es30/include/glad_es30/glad.h",
+        "glad/glad_es30.h",
     ],
-    strip_include_prefix = "es30/include",
+    includes = [
+        ".",
+    ],
     visibility = [
         "//visibility:public",
+    ],
+    deps = [
+        ":khr",
+    ],
+)
+
+cc_library(
+    name = "khr",
+    hdrs = [
+        "KHR/khrplatform.h",
+    ],
+    includes = [
+        ".",
     ],
 )
