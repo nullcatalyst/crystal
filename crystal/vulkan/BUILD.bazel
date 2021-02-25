@@ -8,6 +8,7 @@ cc_library(
     ]),
     hdrs = glob([
         "*.hpp",
+        "*.inl",
         "internal/*.hpp",
     ]),
     defines = select({
@@ -42,6 +43,7 @@ cc_library(
     ]),
     hdrs = glob([
         "*.hpp",
+        "*.inl",
         "internal/*.hpp",
     ]),
     defines = select({

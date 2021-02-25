@@ -17,7 +17,7 @@ struct TriangleInOut {
     float4 color;
 };
 
-vertex TriangleInOut triangle_vertex(Vertex in [[ stage_in ]], constant Uniform& uniform [[ buffer(1) ]]) {
+vertex TriangleInOut triangle_vert(Vertex in [[ stage_in ]], constant Uniform& uniform [[ buffer(1) ]]) {
     TriangleInOut out;
 
     out.position = uniform.matrix * in.position;
@@ -26,6 +26,6 @@ vertex TriangleInOut triangle_vertex(Vertex in [[ stage_in ]], constant Uniform&
     return out;
 }
 
-fragment float4 triangle_fragment(TriangleInOut in [[ stage_in ]], constant Uniform& uniform [[ buffer(1) ]]) {
+fragment float4 triangle_frag(TriangleInOut in [[ stage_in ]], constant Uniform& uniform [[ buffer(1) ]]) {
     return float4(in.color);
 }

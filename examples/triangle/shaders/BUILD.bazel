@@ -1,4 +1,4 @@
-load("//tools:spv.bzl", "spv_library")
+load("//tools:spv.bzl", "spv_fragment", "spv_library", "spv_vertex")
 load("//tools:metal.bzl", "metal_library")
 
 filegroup(
@@ -11,11 +11,25 @@ filegroup(
     ],
 )
 
+spv_vertex(
+    name = "shader_vert",
+    src = "shader.vert.glsl",
+    entry = "triangle_vert",
+)
+
+spv_fragment(
+    name = "shader_frag",
+    src = "shader.frag.glsl",
+    entry = "triangle_frag",
+)
+
 spv_library(
     name = "shader_spv",
+    srcs = [
+        ":shader_frag",
+        ":shader_vert",
+    ],
     out = "shader.spv",
-    frag = "shader.frag.glsl",
-    vert = "shader.vert.glsl",
     visibility = [
         "//examples/triangle:__subpackages__",
     ],

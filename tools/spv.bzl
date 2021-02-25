@@ -1,77 +1,96 @@
-load("@bazel_skylib//lib:paths.bzl", "paths")
-
-_PARTIAL_SPV_DIR = "_spv"
-_SPV_FILE_EXT = ".spv"
-
-def _spv_partial(name, stage):
-    return "{}/{}".format(_PARTIAL_SPV_DIR, paths.replace_extension(name, "{}.spv".format(stage)))
-
-def _spv_library_impl(ctx):
-    name = ctx.attr.name
-    srcs = [] + ctx.files.srcs
-    tmps = []
-
-    vert_in = ctx.file.vert
-    frag_in = ctx.file.frag
-    if vert_in not in srcs:
-        srcs.append(vert_in)
-    if frag_in not in srcs:
-        srcs.append(frag_in)
-
-    if vert_in != None:
-        vert_out = ctx.actions.declare_file(_spv_partial(name, "vert"))
-
-        args = ctx.actions.args()
-        for define in ctx.attr.defines:
-            args.add("-D{}".format(define))
-        args.add("-Os")  # Optimize for minimum size
-        args.add("-V")  # Output spir-v binary
-        args.add("-S", "vert")  # Specify the shader stage (vertex)
-        args.add("-o", vert_out.path)
-        args.add(vert_in.path)
-
-        ctx.actions.run(
-            outputs = [vert_out],
-            inputs = srcs,
-            # progress_message = 'Compiling GLSL "%s"' % vert_in.short_path,
-            executable = ctx.executable._compiler,
-            arguments = [args],
-        )
-        tmps.append(vert_out)
-
-    frag_in = ctx.file.frag
-    if frag_in != None:
-        frag_out = ctx.actions.declare_file(_spv_partial(name, "frag"))
-
-        args = ctx.actions.args()
-        for define in ctx.attr.defines:
-            args.add("-D{}".format(define))
-        args.add("-Os")  # Optimize for minimum size
-        args.add("-V")  # Output spir-v binary
-        args.add("-S", "frag")  # Specify the shader stage (fragment)
-        args.add("-o", frag_out.path)
-        args.add(frag_in.path)
-
-        ctx.actions.run(
-            outputs = [frag_out],
-            inputs = srcs,
-            # progress_message = 'Compiling GLSL "%s"' % frag_in.short_path,
-            executable = ctx.executable._compiler,
-            arguments = [args],
-        )
-        tmps.append(frag_out)
-
-    out = ctx.actions.declare_file(ctx.attr.out)
-
+def _spv_stage_impl(ctx):
+    stage = ctx.attr.stage
+    entry = ctx.attr.entry
+    defines = ctx.attr.defines
+    src = ctx.file.src
     out = ctx.outputs.out
+
     args = ctx.actions.args()
+    for define in defines:
+        # define a pre-processor macro
+        args.add("-D{}".format(define))
+
+    # optimizes SPIR-V to minimize size
+    args.add("-Os")
+
+    # create SPIR-V binary, under Vulkan semantics
+    args.add("-V")
+
+    # uses specified stage rather than parsing the file extension choices for <stage> are vert, tesc, tese, geom, frag, or comp
+    args.add("-S", stage)
+
+    # specify <name> as the entry-point function name
+    args.add("-e", entry)
+
+    # the given shader source function is renamed to be the <name> given in -e
+    args.add("--source-entrypoint", "main")
+
+    # save binary to <file>
     args.add("-o", out.path)
-    for tmp in tmps:
-        args.add(tmp)
+    args.add(src.path)
 
     ctx.actions.run(
         outputs = [out],
-        inputs = tmps,
+        inputs = [src],
+        # progress_message = 'Compiling GLSL "%s"' % vert_in.short_path,
+        executable = ctx.executable._compiler,
+        arguments = [args],
+    )
+
+    return [
+        DefaultInfo(
+            files = depset(direct = [out]),
+            runfiles = ctx.runfiles(files = [out]),
+        ),
+    ]
+
+spv_stage = rule(
+    implementation = _spv_stage_impl,
+    attrs = {
+        "out": attr.string(mandatory = True),
+        "src": attr.label(allow_single_file = True),
+        "stage": attr.string(mandatory = True),
+        "entry": attr.string(default = "main"),
+        "defines": attr.string_list(),
+        "_compiler": attr.label(
+            default = Label("@org_khronos_glslang//:glslangValidator"),
+            allow_single_file = True,
+            executable = True,
+            cfg = "host",
+        ),
+    },
+    outputs = {
+        "out": "%{out}",
+    },
+    provides = [DefaultInfo],
+)
+
+def spv_vertex(**kwargs):
+    return spv_stage(
+        out = "{}.spv".format(kwargs["name"]),
+        stage = "vert",
+        **kwargs
+    )
+
+def spv_fragment(**kwargs):
+    return spv_stage(
+        out = "{}.spv".format(kwargs["name"]),
+        stage = "frag",
+        **kwargs
+    )
+
+def _spv_library_impl(ctx):
+    srcs = ctx.files.srcs
+    out = ctx.outputs.out
+
+    args = ctx.actions.args()
+    args.add("-o", out.path)
+    for src in srcs:
+        args.add(src.path)
+
+    ctx.actions.run(
+        outputs = [out],
+        inputs = srcs,
         # progress_message = 'Linking SPV "%s"' % out.short_path,
         executable = ctx.executable._linker,
         arguments = [args],
@@ -89,17 +108,6 @@ spv_library = rule(
     attrs = {
         "out": attr.string(default = "%{name}.spv"),
         "srcs": attr.label_list(allow_files = True),
-        "vert": attr.label(allow_single_file = True),
-        "frag": attr.label(
-            allow_single_file = True,
-        ),
-        "defines": attr.string_list(),
-        "_compiler": attr.label(
-            default = Label("@org_khronos_glslang//:glslangValidator"),
-            allow_single_file = True,
-            executable = True,
-            cfg = "host",
-        ),
         "_linker": attr.label(
             default = Label("@spirv_tools//:spirv-link"),
             allow_single_file = True,
