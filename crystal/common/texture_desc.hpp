@@ -12,7 +12,6 @@ enum class TextureFormat : uint32_t {
 };
 
 enum class TextureSample : uint32_t {
-  None,
   Nearest,
   Linear,
 };

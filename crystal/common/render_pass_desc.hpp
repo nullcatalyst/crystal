@@ -4,8 +4,7 @@
 
 namespace crystal {
 
-struct AttachmentDesc {
-  bool screen;
+struct ColorAttachmentDesc {
   bool clear;
   struct {
     float red;
@@ -16,15 +15,8 @@ struct AttachmentDesc {
 };
 
 struct DepthAttachmentDesc {
-  bool  use_depth;
-  bool  screen;
   bool  clear;
   float clear_depth;
-};
-
-struct RenderPassDesc {
-  std::initializer_list<AttachmentDesc> attachments;
-  DepthAttachmentDesc                   depth_attachment;
 };
 
 }  // namespace crystal

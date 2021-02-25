@@ -13,6 +13,7 @@
 #include "crystal/opengl/mesh.hpp"
 #include "crystal/opengl/pipeline.hpp"
 #include "crystal/opengl/render_pass.hpp"
+#include "crystal/opengl/texture.hpp"
 #include "crystal/opengl/uniform_buffer.hpp"
 #include "crystal/opengl/vertex_buffer.hpp"
 #include "util/memory/ref_count.hpp"
@@ -59,6 +60,7 @@ private:
   SDL_GLContext                               context_;
   RenderPass                                  screen_render_pass_;
   std::vector<util::memory::RefCount<GLuint>> buffers_;
+  std::vector<util::memory::RefCount<GLuint>> textures_;
 
 #else  // ^^^ defined(CRYSTAL_USE_SDL2) / !defined(CRYSTAL_USE_SDL2) vvv
 
@@ -70,6 +72,7 @@ private:
 private:
   RenderPass                                  screen_render_pass_;
   std::vector<util::memory::RefCount<GLuint>> buffers_;
+  std::vector<util::memory::RefCount<GLuint>> textures_;
 
 #endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
 
@@ -95,7 +98,13 @@ public:
 
   CommandBuffer next_frame();
 
-  RenderPass create_render_pass(const RenderPassDesc& desc);
+  Texture create_texture(const TextureDesc& desc);
+
+  RenderPass create_render_pass(
+      const std::initializer_list<std::tuple<const Texture&, ColorAttachmentDesc>> color_textures);
+  RenderPass create_render_pass(
+      const std::initializer_list<std::tuple<const Texture&, ColorAttachmentDesc>> color_textures,
+      const std::tuple<const Texture&, DepthAttachmentDesc>                        depth_texture);
 
   Library  create_library(const std::string_view base_path);
   Pipeline create_pipeline(Library& library, RenderPass& render_pass, const PipelineDesc& desc);
@@ -133,16 +142,29 @@ private:
   void add_buffer_(GLuint buffer) noexcept;
   void retain_buffer_(GLuint buffer) noexcept;
   void release_buffer_(GLuint buffer) noexcept;
+
+  void add_texture_(GLuint texture) noexcept;
+  void retain_texture_(GLuint texture) noexcept;
+  void release_texture_(GLuint texture) noexcept;
 };
 
 inline void Context::wait() {}
 
-inline Library Context::create_library(const std::string_view spv_path) {
-  return Library(std::string(spv_path));
+inline Texture Context::create_texture(const TextureDesc& desc) { return Texture(*this, desc); }
+
+inline RenderPass Context::create_render_pass(
+    const std::initializer_list<std::tuple<const Texture&, ColorAttachmentDesc>> color_textures) {
+  return RenderPass(*this, color_textures);
 }
 
-inline RenderPass Context::create_render_pass(const RenderPassDesc& desc) {
-  return RenderPass(*this, desc);
+inline RenderPass Context::create_render_pass(
+    const std::initializer_list<std::tuple<const Texture&, ColorAttachmentDesc>> color_textures,
+    const std::tuple<const Texture&, DepthAttachmentDesc>                        depth_texture) {
+  return RenderPass(*this, color_textures, depth_texture);
+}
+
+inline Library Context::create_library(const std::string_view spv_path) {
+  return Library(std::string(spv_path));
 }
 
 inline Pipeline Context::create_pipeline(Library& library, RenderPass& render_pass,

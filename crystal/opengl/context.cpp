@@ -31,6 +31,11 @@ Context::~Context() {
                      " remaining), leaking memory");
   }
 
+  if (textures_.size() != 0) {
+    util::msg::fatal("not all shared textures have been released (there are still ",
+                     textures_.size(), " remaining), leaking memory");
+  }
+
   SDL_GL_DeleteContext(context_);
 }
 
@@ -83,6 +88,31 @@ void Context::release_buffer_(GLuint buffer) noexcept {
   if (it->release()) {
     GL_ASSERT(glDeleteBuffers(1, &buffer), "deleting buffer");
     buffers_.erase(it);
+  }
+}
+
+void Context::add_texture_(GLuint texture) noexcept { textures_.emplace_back(texture); }
+
+void Context::retain_texture_(GLuint texture) noexcept {
+  auto it = std::find_if(textures_.begin(), textures_.end(),
+                         [texture](auto& value) { return value == texture; });
+  if (it == textures_.end()) {
+    util::msg::fatal("retaining texture that does not exist");
+  }
+
+  it->retain();
+}
+
+void Context::release_texture_(GLuint texture) noexcept {
+  auto it = std::find_if(textures_.begin(), textures_.end(),
+                         [texture](auto& value) { return value == texture; });
+  if (it == textures_.end()) {
+    return;
+  }
+
+  if (it->release()) {
+    GL_ASSERT(glDeleteTextures(1, &texture), "deleting texture");
+    textures_.erase(it);
   }
 }
 

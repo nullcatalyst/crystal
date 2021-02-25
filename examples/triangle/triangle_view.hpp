@@ -47,7 +47,7 @@ public:
                             crystal::PipelineDesc{
                                 /* .vertex            = */ Helpers<Ctx>::vertex(),
                                 /* .fragment          = */ Helpers<Ctx>::fragment(),
-                                /* .cull_mode         = */ crystal::CullMode::None,
+                                /* .cull_mode         = */ crystal::CullMode::Back,
                                 /* .winding           = */ crystal::Winding::CounterClockwise,
                                 /* .depth_test        = */ crystal::DepthTest::Always,
                                 /* .depth_write       = */ crystal::DepthWrite::Disable,

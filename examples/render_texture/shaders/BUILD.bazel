@@ -1,0 +1,42 @@
+load("//tools:spv.bzl", "spv_fragment", "spv_library", "spv_vertex")
+
+filegroup(
+    name = "glsl",
+    srcs = glob([
+        "*.glsl",
+    ]),
+    visibility = [
+        "//examples/render_texture:__subpackages__",
+    ],
+)
+
+spv_vertex(
+    name = "depth_vert",
+    src = "depth.vert.glsl",
+    entry = "depth_vert",
+)
+
+spv_vertex(
+    name = "combine_vert",
+    src = "combine.vert.glsl",
+    entry = "combine_vert",
+)
+
+spv_fragment(
+    name = "combine_frag",
+    src = "combine.frag.glsl",
+    entry = "combine_frag",
+)
+
+spv_library(
+    name = "shader_spv",
+    srcs = [
+        ":combine_frag",
+        ":combine_vert",
+        ":depth_vert",
+    ],
+    out = "shader.spv",
+    visibility = [
+        "//examples/render_texture:__subpackages__",
+    ],
+)

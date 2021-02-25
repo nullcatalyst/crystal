@@ -49,6 +49,10 @@ struct UniformBinding {
   uint32_t id;
 };
 
+struct TextureBinding {
+  uint32_t id;
+};
+
 struct VertexAttributeDesc {
   uint32_t id;
   // VertexFormat format;
@@ -77,6 +81,7 @@ struct PipelineDesc {
   AlphaBlend                                 blend_src;
   AlphaBlend                                 blend_dst;
   std::initializer_list<UniformBinding>      uniform_bindings;
+  std::initializer_list<TextureBinding>      texture_bindings;
   std::initializer_list<VertexAttributeDesc> vertex_attributes;
   std::initializer_list<VertexBufferDesc>    vertex_buffers;
 };

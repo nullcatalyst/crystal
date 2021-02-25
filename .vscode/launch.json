@@ -27,5 +27,16 @@
             "externalConsole": false,
             "MIMode": "lldb"
         },
+        {
+            "name": "(win) render texture",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/examples/render_texture/opengl.exe.runfiles/crystal/examples/render_texture/opengl.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/bazel-bin/examples/render_texture/opengl.exe.runfiles/crystal",
+            "environment": [],
+            "externalConsole": false
+        },
     ]
 }

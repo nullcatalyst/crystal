@@ -1,0 +1,64 @@
+load("//tools:cc.bzl", "cc_binary")
+
+cc_binary(
+    name = "opengl",
+    srcs = [
+        "main.cpp",
+        "render_texture_view.hpp",
+    ],
+    data = [
+        "//examples/render_texture/shaders:glsl",
+    ],
+    defines = [
+        "CRYSTAL_USE_OPENGL=1",
+    ],
+    deps = [
+        "//crystal:include",
+        "//crystal/opengl:opengl_sdl2",
+        "@glm",
+        "@sdl2",
+        "@sdl2//:sdl2_main",
+    ],
+)
+
+cc_binary(
+    name = "vulkan",
+    srcs = [
+        "main.cpp",
+        "render_texture_view.hpp",
+    ],
+    data = [
+        "//examples/render_texture/shaders:shader.spv",
+    ],
+    defines = [
+        "CRYSTAL_USE_VULKAN=1",
+    ],
+    deps = [
+        "//crystal:include",
+        "//crystal/vulkan:vulkan_sdl2",
+        "@glm",
+        "@sdl2",
+        "@sdl2//:sdl2_main",
+    ],
+)
+
+cc_binary(
+    name = "metal",
+    srcs = [
+        "main.cpp",
+        "render_texture_view.hpp",
+    ],
+    data = [
+        "//examples/render_texture/shaders:shader.metallib",
+    ],
+    defines = [
+        "CRYSTAL_USE_METAL=1",
+    ],
+    deps = [
+        "//crystal:include",
+        "//crystal/metal:metal_sdl2",
+        "@glm",
+        "@sdl2",
+        "@sdl2//:sdl2_main",
+    ],
+)
