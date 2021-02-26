@@ -40,7 +40,7 @@ private:
   friend class ::crystal::metal::Pipeline;
 
   RenderPass(Context& ctx);
-  RenderPass(Context& ctx, const RenderPassDesc& desc);
+  // RenderPass(Context& ctx, const RenderPassDesc& desc);
 };
 
 }  // namespace crystal::metal

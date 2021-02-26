@@ -42,7 +42,6 @@ private:
   friend class ::crystal::vulkan::Pipeline;
 
   RenderPass(Context& ctx);
-  RenderPass(Context& ctx, const RenderPassDesc& desc);
 
   VkFramebuffer framebuffer(uint32_t swapchain_image_index) const noexcept {
     if (framebuffers_.size() == 0) {

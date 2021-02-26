@@ -43,7 +43,7 @@ void RenderPass::destroy() noexcept {
 
 // RenderPass::RenderPass(Context& ctx) : ctx_(&ctx) {}
 
-// TODO: Implement creation of opengl framebuffers.
+// TODO: Implement creation of metal framebuffers.
 // RenderPass::RenderPass(Context& ctx, const RenderPassDesc& desc)
 //     : ctx_(&ctx), framebuffer_(0), width_(ctx.width_), height_(ctx.height_) {}
 

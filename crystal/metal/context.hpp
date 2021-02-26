@@ -84,7 +84,8 @@ public:
 
   CommandBuffer next_frame();
 
-  RenderPass create_render_pass(const RenderPassDesc& desc);
+  // TODO:
+  // RenderPass create_render_pass(const RenderPassDesc& desc);
 
   Library  create_library(const std::string_view base_path);
   Pipeline create_pipeline(Library& library, RenderPass& render_pass, const PipelineDesc& desc);
@@ -126,9 +127,9 @@ inline Library Context::create_library(const std::string_view spv_path) {
   return Library(device_, std::string(spv_path));
 }
 
-inline RenderPass Context::create_render_pass(const RenderPassDesc& desc) {
-  return RenderPass(*this, desc);
-}
+// inline RenderPass Context::create_render_pass(const RenderPassDesc& desc) {
+//   return RenderPass(*this, desc);
+// }
 
 inline Pipeline Context::create_pipeline(Library& library, RenderPass& render_pass,
                                          const PipelineDesc& desc) {

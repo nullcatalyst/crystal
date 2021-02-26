@@ -271,7 +271,7 @@ Context::Context(const Context::Desc& desc) {
                                              /* .width  = */ static_cast<uint32_t>(width),
                                              /* .height = */ static_cast<uint32_t>(height),
                                              /* .format = */ TextureFormat::Depth32f,
-                                             /* .sample = */ TextureSample::None,
+                                             /* .sample = */ TextureSample::Nearest,
                                              /* .repeat = */ TextureRepeat::Clamp,
                                          });
   screen_render_pass_   = RenderPass(*this);

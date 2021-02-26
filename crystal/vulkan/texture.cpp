@@ -193,11 +193,10 @@ Texture::Texture(Context& ctx, const TextureDesc& desc) {
         /* .samples               = */ VK_SAMPLE_COUNT_1_BIT,
         /* .tiling                = */ VK_IMAGE_TILING_OPTIMAL,
         /* .usage                 = */
-        static_cast<VkImageUsageFlags>(
-            (layout_ == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-                 ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
-                 : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) |
-            (desc.sample != TextureSample::None ? VK_IMAGE_USAGE_SAMPLED_BIT : 0)),
+        static_cast<VkImageUsageFlags>((layout_ == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+                                            ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+                                            : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) |
+                                       VK_IMAGE_USAGE_SAMPLED_BIT),
         /* .sharingMode           = */ VK_SHARING_MODE_EXCLUSIVE,
         /* .queueFamilyIndexCount = */ 0,
         /* .pQueueFamilyIndices   = */ nullptr,
@@ -250,7 +249,7 @@ Texture::Texture(Context& ctx, const TextureDesc& desc) {
               "creating image view");
   }
 
-  if (desc.sample != TextureSample::None) {  // Create sampler.
+  if (desc.sample != TextureSample::Nearest) {  // Create sampler.
     const VkSamplerCreateInfo create_info = {
         /* .sType = */ VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
         /* .pNext                   = */ nullptr,

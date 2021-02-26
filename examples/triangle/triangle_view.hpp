@@ -59,6 +59,7 @@ public:
                                         /* .binding = */ 0,
                                     },
                                 },
+                                /* .texture_bindings  = */ {},
                                 /* .vertex_attributes = */
                                 {
                                     crystal::VertexAttributeDesc{
