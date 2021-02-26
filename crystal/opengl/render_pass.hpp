@@ -15,14 +15,15 @@ class Pipeline;
 class Texture;
 
 class RenderPass {
-  Context*              ctx_              = nullptr;
-  GLuint                framebuffer_      = 0;
-  uint32_t              width_            = 0;
-  uint32_t              height_           = 0;
-  uint32_t              attachment_count_ = 0;
-  std::array<GLuint, 8> attachments_      = {};
-
-  // TODO: Add support for clear values here.
+  Context*                           ctx_              = nullptr;
+  GLuint                             framebuffer_      = 0;
+  uint32_t                           width_            = 0;
+  uint32_t                           height_           = 0;
+  uint32_t                           attachment_count_ = 0;
+  bool                               has_depth_        = false;
+  std::array<GLuint, 5>              attachments_      = {};
+  std::array<ColorAttachmentDesc, 4> clear_colors_     = {};
+  DepthAttachmentDesc                clear_depth_      = {};
 
 public:
   constexpr RenderPass() = default;

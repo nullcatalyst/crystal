@@ -36,40 +36,48 @@ template <typename Ctx>
 class RenderTextureView {
   Ctx&                        ctx_;
   typename Ctx::UniformBuffer uniform_buffer_;
-  typename Ctx::Texture       depth_texture_;
-  typename Ctx::RenderPass    depth_render_pass_;
-  typename Ctx::Pipeline      depth_pipeline_;
+  typename Ctx::Texture       cube_texture_;
+  typename Ctx::RenderPass    cube_render_pass_;
+  typename Ctx::Pipeline      cube_pipeline_;
   typename Ctx::Mesh          cube_mesh_;
-  typename Ctx::Pipeline      combine_pipeline_;
+  typename Ctx::Pipeline      quad_pipeline_;
   typename Ctx::Mesh          quad_mesh_;
 
 public:
   RenderTextureView(Ctx& ctx, float angle) : ctx_(ctx) {
     const auto    aspect = static_cast<float>(ctx.screen_width()) / ctx.screen_height();
     const Uniform uniform{
-        glm::rotate(glm::ortho(-aspect, aspect, -1.0f, 1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f)),
+        /* .depth_matrix   = */ glm::rotate(
+            glm::rotate(glm::identity<glm::mat4>(), glm::radians(30.0f),
+                        glm::vec3(1.0f, 0.0f, 0.0f)),
+            angle, glm::vec3(0.0f, 1.0f, 0.0f)),
+        /* .combine_matrix = */ Helpers<Ctx>::matrix(aspect),
     };
     uniform_buffer_ = ctx.create_uniform_buffer(&uniform, sizeof(Uniform));
 
     auto library = Helpers<Ctx>::create_library(ctx);
 
-    depth_texture_     = ctx.create_texture(crystal::TextureDesc{
+    cube_texture_     = ctx.create_texture(crystal::TextureDesc{
         /* .width  = */ 1024,
         /* .height = */ 1024,
-        /* .format = */ crystal::TextureFormat::Depth32f,
+        /* .format = */ crystal::TextureFormat::RGBA32u,
         /* .sample = */ crystal::TextureSample::Linear,
         /* .repeat = */ crystal::TextureRepeat::RepeatXY,
     });
-    depth_render_pass_ = ctx.create_render_pass(
-        {}, std::make_tuple(std::ref(depth_texture_), crystal::DepthAttachmentDesc{
-                                                          /* .clear = */ true,
-                                                          /* .depth = */ 1.0f,
-                                                      }));
-    depth_pipeline_ =
-        ctx.create_pipeline(library, ctx.screen_render_pass(),
+    cube_render_pass_ = ctx.create_render_pass({
+        std::make_tuple(std::ref(cube_texture_), crystal::ColorAttachmentDesc{
+                                                     /* .clear = */ true,
+                                                     /* .red   = */ 0.5f,
+                                                     /* .greeb = */ 0.5f,
+                                                     /* .blue  = */ 0.5f,
+                                                     /* .alpha = */ 1.0f,
+                                                 }),
+    });
+    cube_pipeline_ =
+        ctx.create_pipeline(library, cube_render_pass_,
                             crystal::PipelineDesc{
-                                /* .vertex            = */ Helpers<Ctx>::combine_vertex(),
-                                /* .fragment          = */ Helpers<Ctx>::combine_fragment(),
+                                /* .vertex            = */ Helpers<Ctx>::cube_vertex(),
+                                /* .fragment          = */ Helpers<Ctx>::cube_fragment(),
                                 /* .cull_mode         = */ crystal::CullMode::Back,
                                 /* .winding           = */ crystal::Winding::CounterClockwise,
                                 /* .depth_test        = */ crystal::DepthTest::Less,
@@ -82,12 +90,7 @@ public:
                                         /* .binding = */ 0,
                                     },
                                 },
-                                /* .texture_bindings  = */
-                                {
-                                    crystal::TextureBinding{
-                                        /* .binding = */ 0,
-                                    },
-                                },
+                                /* .texture_bindings  = */ {},
                                 /* .vertex_attributes = */
                                 {
                                     crystal::VertexAttributeDesc{
@@ -106,6 +109,52 @@ public:
                                     crystal::VertexBufferDesc{
                                         /* .buffer_index  = */ 0,
                                         /* .stride        = */ sizeof(CubeVertex),
+                                        /*. step_function = */ crystal::StepFunction::PerVertex,
+                                    },
+                                },
+                            });
+
+    quad_pipeline_ =
+        ctx.create_pipeline(library, ctx.screen_render_pass(),
+                            crystal::PipelineDesc{
+                                /* .vertex            = */ Helpers<Ctx>::quad_vertex(),
+                                /* .fragment          = */ Helpers<Ctx>::quad_fragment(),
+                                /* .cull_mode         = */ crystal::CullMode::None,
+                                /* .winding           = */ crystal::Winding::CounterClockwise,
+                                /* .depth_test        = */ crystal::DepthTest::Always,
+                                /* .depth_write       = */ crystal::DepthWrite::Disable,
+                                /* .blend_src         = */ crystal::AlphaBlend::SrcAlpha,
+                                /* .blend_dst         = */ crystal::AlphaBlend::OneMinusSrcAlpha,
+                                /* .uniform_bindings  = */
+                                {
+                                    crystal::UniformBinding{
+                                        /* .binding = */ 0,
+                                    },
+                                },
+                                /* .texture_bindings  = */
+                                {
+                                    crystal::TextureBinding{
+                                        /* .binding = */ 0,
+                                    },
+                                },
+                                /* .vertex_attributes = */
+                                {
+                                    crystal::VertexAttributeDesc{
+                                        /* .attribute    = */ 0,
+                                        /* .offset       = */ offsetof(QuadVertex, position),
+                                        /* .buffer_index = */ 0,
+                                    },
+                                    crystal::VertexAttributeDesc{
+                                        /* .attribute    = */ 1,
+                                        /* .offset       = */ offsetof(QuadVertex, tex_coord),
+                                        /* .buffer_index = */ 0,
+                                    },
+                                },
+                                /* .vertex_buffers    = */
+                                {
+                                    crystal::VertexBufferDesc{
+                                        /* .buffer_index  = */ 0,
+                                        /* .stride        = */ sizeof(QuadVertex),
                                         /*. step_function = */ crystal::StepFunction::PerVertex,
                                     },
                                 },
@@ -164,6 +213,20 @@ public:
             std::make_tuple(0, std::ref(cube_vertex_buffer)),
         },
         cube_index_buffer);
+
+    const std::array<QuadVertex, 4> quad_vertices{
+        // clang-format off
+        QuadVertex{glm::vec4(-0.75f, -0.75f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)},
+        QuadVertex{glm::vec4( 0.75f, -0.75f, 0.0f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)},
+        QuadVertex{glm::vec4(-0.75f,  0.75f, 0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)},
+        QuadVertex{glm::vec4( 0.75f,  0.75f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)},
+        // clang-format on
+    };
+    auto quad_vertex_buffer =
+        ctx.create_vertex_buffer(quad_vertices.data(), sizeof(QuadVertex) * quad_vertices.size());
+    quad_mesh_ = ctx.create_mesh({
+        std::make_tuple(0, std::ref(quad_vertex_buffer)),
+    });
   }
 
   ~RenderTextureView() { ctx_.wait(); }
@@ -175,7 +238,11 @@ public:
       const auto aspect =
           static_cast<float>(ctx_.screen_width()) / static_cast<float>(ctx_.screen_height());
       const Uniform uniform{
-          Helpers<Ctx>::matrix(aspect) *
+          /* .depth_matrix   = */ glm::rotate(
+              glm::rotate(glm::identity<glm::mat4>(), glm::radians(30.0f),
+                          glm::vec3(1.0f, 0.0f, 0.0f)),
+              angle, glm::vec3(0.0f, 1.0f, 0.0f)),
+          /* .combine_matrix = */ Helpers<Ctx>::matrix(aspect) *
               glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(30.0f),
                                       glm::vec3(1.0f, 0.0f, 0.0f)),
                           angle, glm::vec3(0.0f, 1.0f, 0.0f)),
@@ -184,17 +251,16 @@ public:
       ctx_.update_uniform_buffer(uniform_buffer_, &uniform, sizeof(Uniform));
     }
 
-    cmd.use_render_pass(depth_render_pass_);
-    cmd.use_render_pass(ctx_.screen_render_pass());
-    cmd.use_pipeline(depth_pipeline_);
+    cmd.use_render_pass(cube_render_pass_);
+    cmd.use_pipeline(cube_pipeline_);
     cmd.use_uniform_buffer(uniform_buffer_, 0, Helpers<Ctx>::uniform_binding());
     cmd.draw(cube_mesh_, 34, 1);
 
-    // cmd.use_render_pass(ctx_.screen_render_pass());
-    // cmd.use_pipeline(combine_pipeline_);
-    // cmd.use_uniform_buffer(uniform_buffer_, 0, Helpers<Ctx>::uniform_binding());
-    // cmd.use_texture(uniform_buffer_, 0, depth_texture_);
-    // cmd.draw(quad_mesh_, 4, 1);
+    cmd.use_render_pass(ctx_.screen_render_pass());
+    cmd.use_pipeline(quad_pipeline_);
+    cmd.use_uniform_buffer(uniform_buffer_, 0, Helpers<Ctx>::uniform_binding());
+    cmd.use_texture(cube_texture_, 0, 0);
+    cmd.draw(quad_mesh_, 4, 1);
   }
 };
 
@@ -208,8 +274,10 @@ struct Helpers<crystal::opengl::Context> {
     return ctx.create_library("examples/render_texture/shaders");
   }
 
-  static const char*     combine_vertex() { return "combine.vert.glsl"; }
-  static const char*     combine_fragment() { return "combine.frag.glsl"; }
+  static const char*     cube_vertex() { return "cube.vert.glsl"; }
+  static const char*     cube_fragment() { return "cube.frag.glsl"; }
+  static const char*     quad_vertex() { return "quad.vert.glsl"; }
+  static const char*     quad_fragment() { return "quad.frag.glsl"; }
   static const glm::mat4 matrix(float aspect) {
     return glm::orthoRH_NO(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
   }
@@ -230,8 +298,10 @@ struct Helpers<crystal::vulkan::Context> {
     return ctx.create_library("examples/render_texture/shaders/shader.spv");
   }
 
-  static const char*     combine_vertex() { return "combine_vert"; }
-  static const char*     combine_fragment() { return "combine_frag"; }
+  static const char*     cube_vertex() { return "cube_vert"; }
+  static const char*     cube_fragment() { return "cube_frag"; }
+  static const char*     quad_vertex() { return "quad_vert"; }
+  static const char*     quad_fragment() { return "quad_frag"; }
   static const glm::mat4 matrix(float aspect) {
     return glm::orthoRH_ZO(-aspect, aspect, 1.0f, -1.0f, -1.0f, 1.0f);
   }
@@ -252,8 +322,10 @@ struct Helpers<crystal::metal::Context> {
     return ctx.create_library("examples/render_texture/shaders/shader.metallib");
   }
 
-  static const char*     combine_vertex() { return "combine_vert"; }
-  static const char*     combine_fragment() { return "combine_frag"; }
+  static const char*     cube_vertex() { return "cube_vert"; }
+  static const char*     cube_fragment() { return "cube_frag"; }
+  static const char*     quad_vertex() { return "quad_vert"; }
+  static const char*     quad_fragment() { return "quad_frag"; }
   static const glm::mat4 matrix(float aspect) {
     return glm::orthoRH_ZO(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
   }

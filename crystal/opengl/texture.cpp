@@ -101,6 +101,8 @@ Texture::Texture(Context& ctx, const TextureDesc& desc)
 
   GL_ASSERT(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE), "setting wrap s");
   GL_ASSERT(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE), "setting wrap t");
+
+  ctx_->add_texture_(texture_);
 }
 
 }  // namespace crystal::opengl

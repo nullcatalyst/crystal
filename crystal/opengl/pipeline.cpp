@@ -36,6 +36,40 @@ GLuint compile_shader(const GLenum shader_type, const std::string& shader_source
   return shader;
 }
 
+GLuint compile_program(GLuint program, const std::string& vertex_source) {
+  GLuint vertex_shader = compile_shader(GL_VERTEX_SHADER, vertex_source);
+
+  // Attach the shaders to our program.
+  GL_ASSERT(glAttachShader(program, vertex_shader), "attaching vertex shader to shader program");
+
+  // Delete the shaders since they are now attached to the program, which will retain a reference
+  // to them.
+  GL_ASSERT(glDeleteShader(vertex_shader), "deleting vertex shader");
+
+  GL_ASSERT(glLinkProgram(program), "linking shader program");
+
+  // Assert that the program was successfully linked.
+  GLint log_length = 0;
+  GL_ASSERT(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length),
+            "getting shader program info log length");
+  if (log_length > 0) {
+    std::vector<GLchar> log(log_length);
+    GL_ASSERT(glGetProgramInfoLog(program, log_length, &log_length, log.data()),
+              "getting shader info log");
+    std::cerr << "[OpenGL] Program link log:\n" << log.data() << "\n";
+  }
+
+  GLint status = 0;
+  GL_ASSERT(glGetProgramiv(program, GL_LINK_STATUS, &status), "getting shader program link status");
+  if (status == 0) {
+    std::cerr << "[OpenGL] Failed to link shader\n";
+    GL_ASSERT(glDeleteProgram(program), "deleting shader program");
+    return 0;
+  }
+
+  return program;
+}
+
 GLuint compile_program(GLuint program, const std::string& vertex_source,
                        const std::string& fragment_source) {
   GLuint vertex_shader   = compile_shader(GL_VERTEX_SHADER, vertex_source);
@@ -152,14 +186,24 @@ Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
       depth_write_(desc.depth_write),
       blend_src_(desc.blend_src),
       blend_dst_(desc.blend_dst) {
-  std::string vertex_source =
-      util::fs::read_file_string(util::fs::path_join(library.path_, desc.vertex));
-  std::string fragment_source =
-      util::fs::read_file_string(util::fs::path_join(library.path_, desc.fragment));
+  if (desc.fragment != nullptr) {
+    std::string vertex_source =
+        util::fs::read_file_string(util::fs::path_join(library.path_, desc.vertex));
+    std::string fragment_source =
+        util::fs::read_file_string(util::fs::path_join(library.path_, desc.fragment));
 
-  GLuint program = 0;
-  GL_ASSERT(program = glCreateProgram(), "creating shader program");
-  program_ = compile_program(program, vertex_source, fragment_source);
+    GLuint program = 0;
+    GL_ASSERT(program = glCreateProgram(), "creating shader program");
+    program_ = compile_program(program, vertex_source, fragment_source);
+  } else {
+    // Vertex-only shader.
+    std::string vertex_source =
+        util::fs::read_file_string(util::fs::path_join(library.path_, desc.vertex));
+
+    GLuint program = 0;
+    GL_ASSERT(program = glCreateProgram(), "creating shader program");
+    program_ = compile_program(program, vertex_source);
+  }
 
   bindings_.resize(desc.vertex_attributes.size());
   std::transform(

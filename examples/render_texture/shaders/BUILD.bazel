@@ -11,29 +11,36 @@ filegroup(
 )
 
 spv_vertex(
-    name = "depth_vert",
-    src = "depth.vert.glsl",
-    entry = "depth_vert",
-)
-
-spv_vertex(
-    name = "combine_vert",
-    src = "combine.vert.glsl",
-    entry = "combine_vert",
+    name = "cube_vert",
+    src = "cube.vert.glsl",
+    entry = "cube_vert",
 )
 
 spv_fragment(
-    name = "combine_frag",
-    src = "combine.frag.glsl",
-    entry = "combine_frag",
+    name = "cube_frag",
+    src = "cube.frag.glsl",
+    entry = "cube_frag",
+)
+
+spv_vertex(
+    name = "quad_vert",
+    src = "quad.vert.glsl",
+    entry = "quad_vert",
+)
+
+spv_fragment(
+    name = "quad_frag",
+    src = "quad.frag.glsl",
+    entry = "quad_frag",
 )
 
 spv_library(
     name = "shader_spv",
     srcs = [
-        ":combine_frag",
-        ":combine_vert",
-        ":depth_vert",
+        ":cube_frag",
+        ":cube_vert",
+        ":quad_frag",
+        ":quad_vert",
     ],
     out = "shader.spv",
     visibility = [

@@ -20,6 +20,11 @@ Context::Context(const Context::Desc& desc) : window_(desc.window) {
     util::msg::fatal("window size is negative [", width, ", ", height, "]");
   }
 
+  screen_render_pass_.attachment_count_      = 1;
+  screen_render_pass_.clear_colors_[0].clear = true;
+  screen_render_pass_.clear_colors_[0].color = {0.0f, 0.0f, 0.0f, 0.0f};
+  screen_render_pass_.clear_depth_.clear     = true;
+  screen_render_pass_.clear_depth_.depth     = 1.0f;
   change_resolution(width, height);
 }
 

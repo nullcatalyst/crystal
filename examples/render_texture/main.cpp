@@ -57,7 +57,9 @@ int main(int argc, char* argv[]) {
 
   using Context = crystal::opengl::Context;
   auto window   = create_window<Context>("render texture (opengl)", 1280, 720);
-  auto ctx      = Context(Context::Desc{window});
+  auto ctx      = Context(Context::Desc{
+      /* .window = */ window,
+  });
 
 #elif CRYSTAL_USE_VULKAN  // ^^^ CRYSTAL_USE_OPENGL / CRYSTAL_USE_VULKAN vvv
 

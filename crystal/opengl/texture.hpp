@@ -8,6 +8,7 @@
 namespace crystal::opengl {
 
 class Context;
+class CommandBuffer;
 class RenderPass;
 
 class Texture {
@@ -31,6 +32,7 @@ public:
 
 private:
   friend class ::crystal::opengl::Context;
+  friend class ::crystal::opengl::CommandBuffer;
   friend class ::crystal::opengl::RenderPass;
 
   Texture(Context& ctx, const TextureDesc& desc);

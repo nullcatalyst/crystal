@@ -5,6 +5,7 @@
 #include "crystal/opengl/mesh.hpp"
 #include "crystal/opengl/pipeline.hpp"
 #include "crystal/opengl/render_pass.hpp"
+#include "crystal/opengl/texture.hpp"
 #include "crystal/opengl/uniform_buffer.hpp"
 
 #ifdef CRYSTAL_USE_SDL2
@@ -60,15 +61,19 @@ CommandBuffer::~CommandBuffer() { glFlush(); }
 void CommandBuffer::use_render_pass(RenderPass& render_pass) {
   render_pass_ = &render_pass;
 
-  // TODO: This needs to handle custom clear values.
-  glBindFramebuffer(GL_FRAMEBUFFER, render_pass.framebuffer_);
+  GL_ASSERT(glBindFramebuffer(GL_FRAMEBUFFER, render_pass.framebuffer_), "binding framebuffer");
   GL_ASSERT(glViewport(0, 0, render_pass.width_, render_pass.height_), "changing viewport size");
 
-  GL_ASSERT(glDepthMask(GL_TRUE), "enabling depth writing before clearing the depth");
+  for (uint32_t i = 0; i < render_pass.attachment_count_; ++i) {
+    GL_ASSERT(glClearBufferfv(GL_COLOR, i, render_pass.clear_colors_[i].array),
+              "setting clear color");
+  }
 
-  GL_ASSERT(glClearColor(0.0f, 0.0f, 0.0f, 0.0f), "setting clear color");
-  GL_ASSERT(glClearDepthf(1.0f), "setting clear depth");
-  GL_ASSERT(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT), "clearing frame buffer");
+  if (render_pass.clear_depth_.clear) {
+    GL_ASSERT(glDepthMask(GL_TRUE), "enabling depth writing before clearing the depth");
+    GL_ASSERT(glClearDepthf(render_pass.clear_depth_.depth), "setting clear depth");
+    GL_ASSERT(glClear(GL_DEPTH_BUFFER_BIT), "clearing frame buffer depth");
+  }
 }
 
 void CommandBuffer::use_pipeline(Pipeline& pipeline) {
@@ -120,6 +125,12 @@ void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t l
             "setting uniform buffer base");
   GL_ASSERT(glUniformBlockBinding(pipeline_->program_, location, binding),
             "binding uniform buffer block");
+}
+
+void CommandBuffer::use_texture(Texture& texture, uint32_t location, uint32_t binding) {
+  glUniform1i(location, binding);
+  glActiveTexture(GL_TEXTURE0 + binding);
+  glBindTexture(GL_TEXTURE_2D, texture.texture_);
 }
 
 void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_count, uint32_t instance_count) {
