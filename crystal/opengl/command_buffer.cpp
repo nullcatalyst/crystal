@@ -128,9 +128,9 @@ void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t l
 }
 
 void CommandBuffer::use_texture(Texture& texture, uint32_t location, uint32_t binding) {
-  glUniform1i(location, binding);
-  glActiveTexture(GL_TEXTURE0 + binding);
-  glBindTexture(GL_TEXTURE_2D, texture.texture_);
+  GL_ASSERT(glUniform1i(location, binding), "setting texture uniform");
+  GL_ASSERT(glActiveTexture(GL_TEXTURE0 + binding), "setting active texture");
+  GL_ASSERT(glBindTexture(GL_TEXTURE_2D, texture.texture_), "binding texture");
 }
 
 void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_count, uint32_t instance_count) {
