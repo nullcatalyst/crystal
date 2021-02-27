@@ -14,6 +14,7 @@ RenderPass::RenderPass(RenderPass&& other)
       width_(other.width_),
       height_(other.height_),
       attachment_count_(other.attachment_count_),
+      has_depth_(other.has_depth_),
       attachments_(std::move(other.attachments_)),
       clear_colors_(std::move(other.clear_colors_)),
       clear_depth_(other.clear_depth_) {
@@ -22,6 +23,7 @@ RenderPass::RenderPass(RenderPass&& other)
   other.width_            = 0;
   other.height_           = 0;
   other.attachment_count_ = 0;
+  other.has_depth_        = false;
   other.clear_depth_      = {};
 }
 
@@ -33,6 +35,7 @@ RenderPass& RenderPass::operator=(RenderPass&& other) {
   width_            = other.width_;
   height_           = other.height_;
   attachment_count_ = other.attachment_count_;
+  has_depth_        = other.has_depth_;
   attachments_      = std::move(other.attachments_);
   clear_colors_     = std::move(other.clear_colors_);
   clear_depth_      = other.clear_depth_;
@@ -42,6 +45,7 @@ RenderPass& RenderPass::operator=(RenderPass&& other) {
   other.width_            = 0;
   other.height_           = 0;
   other.attachment_count_ = 0;
+  other.has_depth_        = false;
   other.clear_depth_      = {};
 
   return *this;
@@ -65,13 +69,14 @@ void RenderPass::destroy() noexcept {
   width_            = 0;
   height_           = 0;
   attachment_count_ = 0;
+  has_depth_        = false;
   attachments_      = {};
   clear_colors_     = {};
   clear_depth_      = {};
 }
 
-RenderPass::RenderPass(Context& ctx) : ctx_(&ctx) {
-  attachment_count_      = 1;
+RenderPass::RenderPass(Context& ctx)
+    : ctx_(&ctx), framebuffer_(0), attachment_count_(1), has_depth_(true) {
   clear_colors_[0].clear = true;
   clear_colors_[0].color = {0.0f, 0.0f, 0.0f, 0.0f};
   clear_depth_.clear     = true;
