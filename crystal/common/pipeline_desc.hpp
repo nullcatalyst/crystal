@@ -72,8 +72,8 @@ struct VertexBufferDesc {
 };
 
 struct PipelineDesc {
-  const char* const                          vertex;
-  const char* const                          fragment;
+  const char*                                vertex;
+  const char*                                fragment;
   CullMode                                   cull_mode;
   Winding                                    winding;
   DepthTest                                  depth_test;

@@ -68,7 +68,7 @@ public:
         std::make_tuple(std::ref(cube_texture_), crystal::ColorAttachmentDesc{
                                                      /* .clear = */ true,
                                                      /* .red   = */ 0.5f,
-                                                     /* .greeb = */ 0.5f,
+                                                     /* .green = */ 0.5f,
                                                      /* .blue  = */ 0.5f,
                                                      /* .alpha = */ 1.0f,
                                                  }),
