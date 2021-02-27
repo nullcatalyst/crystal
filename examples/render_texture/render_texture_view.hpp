@@ -7,8 +7,8 @@
 namespace {
 
 struct Uniform {
-  glm::mat4 projection;
-  glm::mat4 modelview;
+  glm::mat4 cube_matrix;
+  glm::mat4 quad_matrix;
 };
 
 struct CubeVertex {
@@ -47,11 +47,11 @@ public:
   RenderTextureView(Ctx& ctx, float angle) : ctx_(ctx) {
     const auto    aspect = static_cast<float>(ctx.screen_width()) / ctx.screen_height();
     const Uniform uniform{
-        /* .depth_matrix   = */ glm::rotate(
+        /* .cube_matrix = */ glm::rotate(
             glm::rotate(glm::identity<glm::mat4>(), glm::radians(30.0f),
                         glm::vec3(1.0f, 0.0f, 0.0f)),
             angle, glm::vec3(0.0f, 1.0f, 0.0f)),
-        /* .combine_matrix = */ Helpers<Ctx>::matrix(aspect),
+        /* .quad_matrix = */ Helpers<Ctx>::matrix(aspect),
     };
     uniform_buffer_ = ctx.create_uniform_buffer(&uniform, sizeof(Uniform));
 
@@ -238,11 +238,11 @@ public:
       const auto aspect =
           static_cast<float>(ctx_.screen_width()) / static_cast<float>(ctx_.screen_height());
       const Uniform uniform{
-          /* .depth_matrix   = */ glm::rotate(
+          /* .cube_matrix = */ glm::rotate(
               glm::rotate(glm::identity<glm::mat4>(), glm::radians(30.0f),
                           glm::vec3(1.0f, 0.0f, 0.0f)),
               angle, glm::vec3(0.0f, 1.0f, 0.0f)),
-          /* .combine_matrix = */ Helpers<Ctx>::matrix(aspect) *
+          /* .quad_matrix = */ Helpers<Ctx>::matrix(aspect) *
               glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(30.0f),
                                       glm::vec3(1.0f, 0.0f, 0.0f)),
                           angle, glm::vec3(0.0f, 1.0f, 0.0f)),
