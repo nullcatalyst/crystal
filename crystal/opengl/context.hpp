@@ -101,25 +101,25 @@ public:
   Texture create_texture(const TextureDesc& desc);
 
   RenderPass create_render_pass(
-      const std::initializer_list<std::tuple<const Texture&, ColorAttachmentDesc>> color_textures);
+      const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures);
   RenderPass create_render_pass(
-      const std::initializer_list<std::tuple<const Texture&, ColorAttachmentDesc>> color_textures,
-      const std::tuple<const Texture&, DepthAttachmentDesc>                        depth_texture);
+      const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
+      const std::tuple<const Texture&, AttachmentDesc>                        depth_texture);
 
   Library  create_library(const std::string_view base_path);
   Pipeline create_pipeline(Library& library, RenderPass& render_pass, const PipelineDesc& desc);
 
-  UniformBuffer create_uniform_buffer(size_t byte_length);
+  UniformBuffer create_uniform_buffer(const size_t byte_length);
   UniformBuffer create_uniform_buffer(const void* const data_ptr, const size_t byte_length);
   void          update_uniform_buffer(UniformBuffer& uniform_buffer, const void* const data_ptr,
                                       const size_t byte_length);
 
-  VertexBuffer create_vertex_buffer(size_t byte_length);
+  VertexBuffer create_vertex_buffer(const size_t byte_length);
   VertexBuffer create_vertex_buffer(const void* const data_ptr, const size_t byte_length);
   void         update_vertex_buffer(VertexBuffer& vertex_buffer, const void* const data_ptr,
                                     const size_t byte_length);
 
-  IndexBuffer create_index_buffer(size_t byte_length);
+  IndexBuffer create_index_buffer(const size_t byte_length);
   IndexBuffer create_index_buffer(const uint16_t* const data_ptr, const size_t byte_length);
   void        update_index_buffer(IndexBuffer& vertex_buffer, const uint16_t* const data_ptr,
                                   const size_t byte_length);
@@ -153,13 +153,13 @@ inline void Context::wait() {}
 inline Texture Context::create_texture(const TextureDesc& desc) { return Texture(*this, desc); }
 
 inline RenderPass Context::create_render_pass(
-    const std::initializer_list<std::tuple<const Texture&, ColorAttachmentDesc>> color_textures) {
+    const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures) {
   return RenderPass(*this, color_textures);
 }
 
 inline RenderPass Context::create_render_pass(
-    const std::initializer_list<std::tuple<const Texture&, ColorAttachmentDesc>> color_textures,
-    const std::tuple<const Texture&, DepthAttachmentDesc>                        depth_texture) {
+    const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
+    const std::tuple<const Texture&, AttachmentDesc>                        depth_texture) {
   return RenderPass(*this, color_textures, depth_texture);
 }
 
@@ -172,7 +172,7 @@ inline Pipeline Context::create_pipeline(Library& library, RenderPass& render_pa
   return Pipeline(*this, library, desc);
 }
 
-inline UniformBuffer Context::create_uniform_buffer(size_t byte_length) {
+inline UniformBuffer Context::create_uniform_buffer(const size_t byte_length) {
   return UniformBuffer(*this, byte_length);
 }
 
@@ -186,7 +186,7 @@ inline void Context::update_uniform_buffer(UniformBuffer&    uniform_buffer,
   uniform_buffer.update(data_ptr, byte_length);
 }
 
-inline VertexBuffer Context::create_vertex_buffer(size_t byte_length) {
+inline VertexBuffer Context::create_vertex_buffer(const size_t byte_length) {
   return VertexBuffer(*this, byte_length);
 }
 
@@ -200,7 +200,7 @@ inline void Context::update_vertex_buffer(VertexBuffer& vertex_buffer, const voi
   vertex_buffer.update(data_ptr, byte_length);
 }
 
-inline IndexBuffer Context::create_index_buffer(size_t byte_length) {
+inline IndexBuffer Context::create_index_buffer(const size_t byte_length) {
   return IndexBuffer(*this, byte_length);
 }
 

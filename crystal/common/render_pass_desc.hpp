@@ -4,7 +4,7 @@
 
 namespace crystal {
 
-struct ColorAttachmentDesc {
+struct AttachmentDesc {
   bool clear;
   union {
     float array[4];
@@ -14,12 +14,8 @@ struct ColorAttachmentDesc {
       float blue;
       float alpha;
     } color;
+    float depth;
   };
-};
-
-struct DepthAttachmentDesc {
-  bool  clear;
-  float depth;
 };
 
 }  // namespace crystal

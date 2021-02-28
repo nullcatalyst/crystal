@@ -1,5 +1,9 @@
 #pragma once
 
+#if __cpp_concepts >= 201907
+#include "crystal/concepts/context.hpp"
+#endif  // ^^^ __cpp_concepts >= 201907
+
 namespace crystal {
 
 namespace opengl {

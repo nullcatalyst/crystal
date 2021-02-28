@@ -84,8 +84,8 @@ RenderPass::RenderPass(Context& ctx)
 }
 
 RenderPass::RenderPass(
-    Context&                                                                     ctx,
-    const std::initializer_list<std::tuple<const Texture&, ColorAttachmentDesc>> color_textures)
+    Context&                                                                ctx,
+    const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures)
     : ctx_(&ctx), framebuffer_(0), has_depth_(false) {
   if (color_textures.size() == 0) {
     util::msg::fatal("framebuffer must render to at least one texture");
@@ -132,9 +132,9 @@ RenderPass::RenderPass(
 }
 
 RenderPass::RenderPass(
-    Context&                                                                     ctx,
-    const std::initializer_list<std::tuple<const Texture&, ColorAttachmentDesc>> color_textures,
-    const std::tuple<const Texture&, DepthAttachmentDesc>                        depth_texture)
+    Context&                                                                ctx,
+    const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
+    const std::tuple<const Texture&, AttachmentDesc>                        depth_texture)
     : ctx_(&ctx), framebuffer_(0), has_depth_(true) {
   if (color_textures.size() > 4) {
     util::msg::fatal("framebuffer can have at most 4 color textures");

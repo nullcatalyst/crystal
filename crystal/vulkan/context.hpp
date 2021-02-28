@@ -122,17 +122,17 @@ public:
   Library  create_library(const std::string_view base_path);
   Pipeline create_pipeline(Library& library, RenderPass& render_pass, const PipelineDesc& desc);
 
-  UniformBuffer create_uniform_buffer(size_t byte_length);
+  UniformBuffer create_uniform_buffer(const size_t byte_length);
   UniformBuffer create_uniform_buffer(const void* const data_ptr, const size_t byte_length);
   void          update_uniform_buffer(UniformBuffer& uniform_buffer, const void* const data_ptr,
                                       const size_t byte_length);
 
-  VertexBuffer create_vertex_buffer(size_t byte_length);
+  VertexBuffer create_vertex_buffer(const size_t byte_length);
   VertexBuffer create_vertex_buffer(const void* const data_ptr, const size_t byte_length);
   void         update_vertex_buffer(VertexBuffer& vertex_buffer, const void* const data_ptr,
                                     const size_t byte_length);
 
-  IndexBuffer create_index_buffer(size_t byte_length);
+  IndexBuffer create_index_buffer(const size_t byte_length);
   IndexBuffer create_index_buffer(const uint16_t* const data_ptr, const size_t byte_length);
   void        update_index_buffer(IndexBuffer& vertex_buffer, const uint16_t* const data_ptr,
                                   const size_t byte_length);
@@ -175,7 +175,7 @@ inline Pipeline Context::create_pipeline(Library& library, RenderPass& render_pa
   return Pipeline(*this, library, render_pass, desc);
 }
 
-inline UniformBuffer Context::create_uniform_buffer(size_t byte_length) {
+inline UniformBuffer Context::create_uniform_buffer(const size_t byte_length) {
   return UniformBuffer(*this, byte_length);
 }
 
@@ -189,7 +189,7 @@ inline void Context::update_uniform_buffer(UniformBuffer&    uniform_buffer,
   uniform_buffer.update(data_ptr, byte_length);
 }
 
-inline VertexBuffer Context::create_vertex_buffer(size_t byte_length) {
+inline VertexBuffer Context::create_vertex_buffer(const size_t byte_length) {
   return VertexBuffer(*this, byte_length);
 }
 
@@ -203,7 +203,7 @@ inline void Context::update_vertex_buffer(VertexBuffer& vertex_buffer, const voi
   vertex_buffer.update(data_ptr, byte_length);
 }
 
-inline IndexBuffer Context::create_index_buffer(size_t byte_length) {
+inline IndexBuffer Context::create_index_buffer(const size_t byte_length) {
   return IndexBuffer(*this, byte_length);
 }
 

@@ -32,7 +32,11 @@ struct Helpers {
 
 }  // namespace
 
+#if __cpp_concepts >= 201907
+template <crystal::common::Context Ctx>
+#else   // ^^^ __cpp_concepts >= 201907 / __cpp_concepts < 201907 vvv
 template <typename Ctx>
+#endif  // ^^^ __cpp_concepts < 201907
 class RenderTextureView {
   Ctx&                        ctx_;
   typename Ctx::UniformBuffer uniform_buffer_;
