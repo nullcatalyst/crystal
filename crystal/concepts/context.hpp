@@ -1,7 +1,5 @@
 #pragma once
 
-#if __cpp_concepts >= 201907
-
 #include <concepts>
 #include <cstdint>
 #include <string_view>
@@ -123,5 +121,3 @@ concept Context = requires(T& t, const T& ct) {
 };
 
 }  // namespace crystal::concepts
-
-#endif  // ^^^ __cpp_concepts >= 201907

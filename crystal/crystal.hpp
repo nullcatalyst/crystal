@@ -1,6 +1,7 @@
 #pragma once
 
 #if __cpp_concepts >= 201907
+#define CRYSTAL_HAS_CONCEPTS 1
 #include "crystal/concepts/context.hpp"
 #endif  // ^^^ __cpp_concepts >= 201907
 

@@ -26,11 +26,11 @@ struct Helpers {
 
 }  // namespace
 
-#if __cpp_concepts >= 201907
-template <crystal::common::Context Ctx>
-#else   // ^^^ __cpp_concepts >= 201907 / __cpp_concepts < 201907 vvv
+#if CRYSTAL_HAS_CONCEPTS
+template <crystal::concepts::Context Ctx>
+#else   // ^^^ CRYSTAL_HAS_CONCEPTS / !CRYSTAL_HAS_CONCEPTS vvv
 template <typename Ctx>
-#endif  // ^^^ __cpp_concepts < 201907
+#endif  // ^^^ !CRYSTAL_HAS_CONCEPTS
 class TriangleView {
   Ctx&                        ctx_;
   typename Ctx::UniformBuffer uniform_buffer_;
