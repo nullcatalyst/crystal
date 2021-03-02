@@ -6,8 +6,14 @@ namespace crystal {
 
 enum class TextureFormat : uint32_t {
   Undefined,
-  RGBA32u,
-  RGBA32s,
+  R8u,
+  R8G8u,
+  R8G8B8u,
+  R8G8B8A8u,
+  R8s,
+  R8G8s,
+  R8G8B8s,
+  R8G8B8A8s,
   Depth32f,
 };
 

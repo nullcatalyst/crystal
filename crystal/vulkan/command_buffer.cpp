@@ -152,7 +152,7 @@ void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t l
   update_descriptor_set_ = true;
 }
 
-void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_count, uint32_t instance_count) {
+void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count) {
   if (update_descriptor_set_) {
     vkCmdBindDescriptorSets(command_buffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout_, 0,
                             1, &descriptor_set_, 0, nullptr);
@@ -166,9 +166,9 @@ void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_count, uint32_t instance_co
 
   if (mesh.index_buffer_ != VK_NULL_HANDLE) {
     vkCmdBindIndexBuffer(command_buffer_, mesh.index_buffer_, 0, VK_INDEX_TYPE_UINT16);
-    vkCmdDrawIndexed(command_buffer_, vertex_count, instance_count, 0, 0, 0);
+    vkCmdDrawIndexed(command_buffer_, vertex_or_index_count, instance_count, 0, 0, 0);
   } else {
-    vkCmdDraw(command_buffer_, vertex_count, instance_count, 0, 0);
+    vkCmdDraw(command_buffer_, vertex_or_index_count, instance_count, 0, 0);
   }
 }
 

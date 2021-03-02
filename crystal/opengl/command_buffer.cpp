@@ -133,7 +133,7 @@ void CommandBuffer::use_texture(Texture& texture, uint32_t location, uint32_t bi
   GL_ASSERT(glBindTexture(GL_TEXTURE_2D, texture.texture_), "binding texture");
 }
 
-void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_count, uint32_t instance_count) {
+void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count) {
   const auto it = std::find_if(
       mesh.vaos_.begin(), mesh.vaos_.end(),
       [pipeline_id = pipeline_->id_](auto vao) { return vao.pipeline_id == pipeline_id; });
@@ -177,11 +177,11 @@ void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_count, uint32_t instance_co
 
   if (mesh.index_buffer_ != 0) {
     GL_ASSERT(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.index_buffer_), "setting index buffer");
-    GL_ASSERT(glDrawElementsInstanced(GL_TRIANGLE_STRIP, vertex_count, GL_UNSIGNED_SHORT, nullptr,
-                                      instance_count),
+    GL_ASSERT(glDrawElementsInstanced(GL_TRIANGLE_STRIP, vertex_or_index_count, GL_UNSIGNED_SHORT,
+                                      nullptr, instance_count),
               "drawing instanced elements");
   } else {
-    GL_ASSERT(glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, vertex_count, instance_count),
+    GL_ASSERT(glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, vertex_or_index_count, instance_count),
               "drawing instanced arrays");
   }
 }

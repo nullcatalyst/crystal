@@ -31,7 +31,7 @@ public:
   void use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t binding);
   void use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t location, uint32_t binding);
 
-  void draw(Mesh& mesh, uint32_t vertex_count, uint32_t instance_count);
+  void draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count);
 
 private:
   friend class ::crystal::metal::Context;

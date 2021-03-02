@@ -52,13 +52,49 @@ Texture::Texture(Context& ctx, const TextureDesc& desc)
   GLenum format          = 0;
   GLenum type            = 0;
   switch (desc.format) {
-    case TextureFormat::RGBA32u:
+    case TextureFormat::R8u:
+      internal_format = GL_R8;
+      format          = GL_RED;
+      type            = GL_UNSIGNED_BYTE;
+      break;
+
+    case TextureFormat::R8G8u:
+      internal_format = GL_RG8;
+      format          = GL_RG;
+      type            = GL_UNSIGNED_BYTE;
+      break;
+
+    case TextureFormat::R8G8B8u:
+      internal_format = GL_RGB8;
+      format          = GL_RGB;
+      type            = GL_UNSIGNED_BYTE;
+      break;
+
+    case TextureFormat::R8G8B8A8u:
       internal_format = GL_RGBA8;
       format          = GL_RGBA;
       type            = GL_UNSIGNED_BYTE;
       break;
 
-    case TextureFormat::RGBA32s:
+    case TextureFormat::R8s:
+      internal_format = GL_R8;
+      format          = GL_RED;
+      type            = GL_BYTE;
+      break;
+
+    case TextureFormat::R8G8s:
+      internal_format = GL_RG8;
+      format          = GL_RG;
+      type            = GL_BYTE;
+      break;
+
+    case TextureFormat::R8G8B8s:
+      internal_format = GL_RGB8;
+      format          = GL_RGB;
+      type            = GL_BYTE;
+      break;
+
+    case TextureFormat::R8G8B8A8s:
       internal_format = GL_RGBA8_SNORM;
       format          = GL_RGBA;
       type            = GL_BYTE;

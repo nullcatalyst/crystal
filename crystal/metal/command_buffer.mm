@@ -53,14 +53,14 @@ void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t l
   [render_encoder_ setFragmentBuffer:uniform_buffer.buffer_ offset:0 atIndex:binding];
 }
 
-void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_count, uint32_t instance_count) {
+void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count) {
   for (int i = 0; i < mesh.binding_count_; ++i) {
     [render_encoder_ setVertexBuffer:mesh.bindings_[i].buffer
                               offset:0
                              atIndex:mesh.bindings_[i].index];
   }
 
-  [render_encoder_ drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:vertex_count];
+  [render_encoder_ drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:vertex_or_index_count];
 }
 
 CommandBuffer::CommandBuffer(OBJC(CAMetalDrawable) metal_drawable,
