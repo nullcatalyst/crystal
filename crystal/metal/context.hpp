@@ -139,11 +139,11 @@ inline RenderPass Context::create_render_pass(
   return RenderPass(color_textures);
 }
 
-// inline RenderPass Context::create_render_pass(
-//     const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
-//     const std::tuple<const Texture&, AttachmentDesc>                        depth_texture) {
-//   return RenderPass(color_textures, depth_texture);
-// }
+inline RenderPass Context::create_render_pass(
+    const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
+    const std::tuple<const Texture&, AttachmentDesc>                        depth_texture) {
+  return RenderPass(color_textures, depth_texture);
+}
 
 inline Pipeline Context::create_pipeline(Library& library, RenderPass& render_pass,
                                          const PipelineDesc& desc) {

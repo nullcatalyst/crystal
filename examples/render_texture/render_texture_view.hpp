@@ -330,7 +330,7 @@ struct Helpers<crystal::metal::Context> {
   static const char*     quad_vertex() { return "quad_vert"; }
   static const char*     quad_fragment() { return "quad_frag"; }
   static const glm::mat4 matrix(float aspect) {
-    return glm::orthoRH_ZO(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
+    return glm::orthoRH_ZO(-aspect, aspect, 1.0f, -1.0f, -1.0f, 1.0f);
   }
   static const uint32_t uniform_binding() { return 1; }
 };

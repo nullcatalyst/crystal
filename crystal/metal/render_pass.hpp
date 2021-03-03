@@ -45,9 +45,8 @@ private:
   RenderPass(Context& ctx, MTLPixelFormat pixel_format);
   RenderPass(
       const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures);
-  // RenderPass(const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>>
-  // color_textures,
-  //            const std::tuple<const Texture&, AttachmentDesc> depth_texture);
+  RenderPass(const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
+             const std::tuple<const Texture&, AttachmentDesc>                        depth_texture);
 };
 
 }  // namespace crystal::metal

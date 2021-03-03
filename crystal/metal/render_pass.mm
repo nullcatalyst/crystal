@@ -103,10 +103,56 @@ RenderPass::RenderPass(
   render_pass_desc_ = render_pass_desc;
 }
 
-// RenderPass(
-//       const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures);
-//   RenderPass(const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>>
-//   color_textures,
-//              const std::tuple<const Texture&, AttachmentDesc> depth_texture);
+RenderPass::RenderPass(
+    const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
+    const std::tuple<const Texture&, AttachmentDesc>                        depth_texture)
+    : color_count_(static_cast<uint32_t>(color_textures.size())), has_depth_(true) {
+  if (color_textures.size() > 4) {
+    util::msg::fatal("framebuffer can have at most 4 color textures");
+  }
+
+  {  // Save the dimensions of the framebuffer.
+    const auto& [texture, desc] = depth_texture;
+    width_                      = static_cast<uint32_t>([texture.texture_ width]);
+    height_                     = static_cast<uint32_t>([texture.texture_ height]);
+  }
+
+  MTLRenderPassDescriptor* render_pass_desc = [MTLRenderPassDescriptor renderPassDescriptor];
+
+  for (int i = 0; i < color_textures.size(); ++i) {
+    const auto& [texture, desc] = color_textures.begin()[i];
+
+    color_pixel_formats_[i] = texture.pixel_format_;
+
+    render_pass_desc.colorAttachments[i].texture = texture.texture_;
+    render_pass_desc.colorAttachments[i].loadAction =
+        desc.clear ? MTLLoadActionClear : MTLLoadActionDontCare;
+    render_pass_desc.colorAttachments[i].storeAction = MTLStoreActionStore;
+    render_pass_desc.colorAttachments[i].clearColor =
+        MTLClearColorMake(desc.clear_value.color.red, desc.clear_value.color.green,
+                          desc.clear_value.color.blue, desc.clear_value.color.alpha);
+
+    const auto width  = [texture.texture_ width];
+    const auto height = [texture.texture_ height];
+    if (width_ != width || height_ != height) {
+      util::msg::fatal("all textures in a framebuffer must be of the same size: framebuffer width=",
+                       width_, " height=", height_, ", texture width=", width, " height=", height);
+    }
+  }
+
+  {  // Save the depth settings.
+    const auto& [texture, desc] = depth_texture;
+
+    depth_pixel_format_ = texture.pixel_format_;
+
+    render_pass_desc.depthAttachment.texture = texture.texture_;
+    render_pass_desc.depthAttachment.loadAction =
+        desc.clear ? MTLLoadActionClear : MTLLoadActionDontCare;
+    render_pass_desc.depthAttachment.storeAction = MTLStoreActionStore;
+    render_pass_desc.depthAttachment.clearDepth  = desc.clear_value.depth;
+  }
+
+  render_pass_desc_ = render_pass_desc;
+}
 
 }  // namespace crystal::metal
