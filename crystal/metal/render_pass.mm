@@ -2,31 +2,45 @@
 
 #include "crystal/metal/command_buffer.hpp"
 #include "crystal/metal/context.hpp"
+#include "util/msg/msg.hpp"
 
 namespace crystal::metal {
 
-RenderPass::RenderPass(RenderPass&& other) : width_(other.width_), height_(other.height_) {
-  other.render_pass_desc_ = nullptr;
-  other.attachment_count_ = 0;
-  other.pixel_formats_    = {};
-  other.width_            = 0;
-  other.height_           = 0;
+RenderPass::RenderPass(RenderPass&& other)
+    : render_pass_desc_(other.render_pass_desc_),
+      width_(other.width_),
+      height_(other.height_),
+      color_count_(other.color_count_),
+      color_pixel_formats_(other.color_pixel_formats_),
+      has_depth_(other.has_depth_),
+      depth_pixel_format_(other.depth_pixel_format_) {
+  other.render_pass_desc_    = nullptr;
+  other.width_               = 0;
+  other.height_              = 0;
+  other.color_count_         = 0;
+  other.color_pixel_formats_ = {};
+  other.has_depth_           = false;
+  other.depth_pixel_format_  = {};
 }
 
 RenderPass& RenderPass::operator=(RenderPass&& other) {
   destroy();
 
-  render_pass_desc_ = other.render_pass_desc_;
-  attachment_count_ = other.attachment_count_;
-  pixel_formats_    = other.pixel_formats_;
-  width_            = other.width_;
-  height_           = other.height_;
+  render_pass_desc_    = other.render_pass_desc_;
+  width_               = other.width_;
+  height_              = other.height_;
+  color_count_         = other.color_count_;
+  color_pixel_formats_ = other.color_pixel_formats_;
+  has_depth_           = other.has_depth_;
+  depth_pixel_format_  = other.depth_pixel_format_;
 
-  other.render_pass_desc_ = nullptr;
-  other.attachment_count_ = 0;
-  other.pixel_formats_    = {};
-  other.width_            = 0;
-  other.height_           = 0;
+  other.render_pass_desc_    = nullptr;
+  other.width_               = 0;
+  other.height_              = 0;
+  other.color_count_         = 0;
+  other.color_pixel_formats_ = {};
+  other.has_depth_           = false;
+  other.depth_pixel_format_  = {};
 
   return *this;
 }
@@ -34,17 +48,65 @@ RenderPass& RenderPass::operator=(RenderPass&& other) {
 RenderPass::~RenderPass() { destroy(); }
 
 void RenderPass::destroy() noexcept {
-  render_pass_desc_ = nullptr;
-  attachment_count_ = 0;
-  pixel_formats_    = {};
-  width_            = 0;
-  height_           = 0;
+  render_pass_desc_    = nullptr;
+  width_               = 0;
+  height_              = 0;
+  color_count_         = 0;
+  color_pixel_formats_ = {};
+  has_depth_           = false;
+  depth_pixel_format_  = {};
 }
 
-// RenderPass::RenderPass(Context& ctx) : ctx_(&ctx) {}
+RenderPass::RenderPass(Context& ctx, MTLPixelFormat pixel_format) : color_count_(1) {
+  color_pixel_formats_[0] = pixel_format;
+}
 
-// TODO: Implement creation of metal framebuffers.
-// RenderPass::RenderPass(Context& ctx, const RenderPassDesc& desc)
-//     : ctx_(&ctx), framebuffer_(0), width_(ctx.width_), height_(ctx.height_) {}
+RenderPass::RenderPass(
+    const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures)
+    : color_count_(static_cast<uint32_t>(color_textures.size())), has_depth_(false) {
+  if (color_textures.size() == 0) {
+    util::msg::fatal("framebuffer must render to at least one texture");
+  }
+  if (color_textures.size() > 4) {
+    util::msg::fatal("framebuffer can have at most 4 color textures");
+  }
+
+  {  // Save the dimensions of the framebuffer.
+    const auto& [texture, desc] = color_textures.begin()[0];
+    width_                      = static_cast<uint32_t>([texture.texture_ width]);
+    height_                     = static_cast<uint32_t>([texture.texture_ height]);
+  }
+
+  MTLRenderPassDescriptor* render_pass_desc = [MTLRenderPassDescriptor renderPassDescriptor];
+
+  for (int i = 0; i < color_textures.size(); ++i) {
+    const auto& [texture, desc] = color_textures.begin()[i];
+
+    color_pixel_formats_[i] = texture.pixel_format_;
+
+    render_pass_desc.colorAttachments[i].texture = texture.texture_;
+    render_pass_desc.colorAttachments[i].loadAction =
+        desc.clear ? MTLLoadActionClear : MTLLoadActionDontCare;
+    render_pass_desc.colorAttachments[i].storeAction = MTLStoreActionStore;
+    render_pass_desc.colorAttachments[i].clearColor =
+        MTLClearColorMake(desc.clear_value.color.red, desc.clear_value.color.green,
+                          desc.clear_value.color.blue, desc.clear_value.color.alpha);
+
+    const auto width  = [texture.texture_ width];
+    const auto height = [texture.texture_ height];
+    if (width_ != width || height_ != height) {
+      util::msg::fatal("all textures in a framebuffer must be of the same size: framebuffer width=",
+                       width_, " height=", height_, ", texture width=", width, " height=", height);
+    }
+  }
+
+  render_pass_desc_ = render_pass_desc;
+}
+
+// RenderPass(
+//       const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures);
+//   RenderPass(const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>>
+//   color_textures,
+//              const std::tuple<const Texture&, AttachmentDesc> depth_texture);
 
 }  // namespace crystal::metal

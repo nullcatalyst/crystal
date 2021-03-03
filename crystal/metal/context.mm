@@ -44,10 +44,8 @@ Context::Context(const Context::Desc& desc) : window_(desc.window) {
     util::msg::fatal("window size is negative [", width, ", ", height, "]");
   }
 
+  screen_render_pass_ = RenderPass(*this, PIXEL_FORMAT);
   change_resolution(width, height);
-
-  screen_render_pass_.attachment_count_ = 1;
-  screen_render_pass_.pixel_formats_[0] = PIXEL_FORMAT;
 }
 
 Context::~Context() {}
@@ -60,9 +58,12 @@ CommandBuffer Context::next_frame() {
   render_pass_desc.colorAttachments[0].loadAction  = MTLLoadActionClear;
   render_pass_desc.colorAttachments[0].storeAction = MTLStoreActionStore;
   // TODO: Add support for changing clear values.
-  render_pass_desc.colorAttachments[0].clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
+  render_pass_desc.colorAttachments[0].clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 0.0);
 
   screen_render_pass_.render_pass_desc_ = render_pass_desc;
+  const auto size                       = [metal_layer_ drawableSize];
+  screen_render_pass_.width_            = size.width;
+  screen_render_pass_.height_           = size.height;
 
   return CommandBuffer(metal_drawable, [command_queue_ commandBuffer]);
 }

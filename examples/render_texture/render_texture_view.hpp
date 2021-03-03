@@ -30,6 +30,23 @@ struct Helpers {
   static const uint32_t        uniform_binding();
 };
 
+template <typename Ctx>
+constexpr Uniform create_uniform(Ctx& ctx, float angle) {
+  const auto aspect =
+      static_cast<float>(ctx.screen_width()) / static_cast<float>(ctx.screen_height());
+
+  return Uniform{
+      /* .cube_matrix = */ Helpers<Ctx>::matrix(1.0f) *
+          glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(30.0f),
+                                  glm::vec3(1.0f, 0.0f, 0.0f)),
+                      angle, glm::vec3(0.0f, 1.0f, 0.0f)),
+      /* .quad_matrix = */ Helpers<Ctx>::matrix(aspect) *
+          glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(30.0f),
+                                  glm::vec3(1.0f, 0.0f, 0.0f)),
+                      angle, glm::vec3(0.0f, 1.0f, 0.0f)),
+  };
+}
+
 }  // namespace
 
 #if CRYSTAL_HAS_CONCEPTS
@@ -49,50 +66,48 @@ class RenderTextureView {
 
 public:
   RenderTextureView(Ctx& ctx, float angle) : ctx_(ctx) {
-    const auto    aspect = static_cast<float>(ctx.screen_width()) / ctx.screen_height();
-    const Uniform uniform{
-        /* .cube_matrix = */ glm::rotate(
-            glm::rotate(glm::identity<glm::mat4>(), glm::radians(30.0f),
-                        glm::vec3(1.0f, 0.0f, 0.0f)),
-            angle, glm::vec3(0.0f, 1.0f, 0.0f)),
-        /* .quad_matrix = */ Helpers<Ctx>::matrix(aspect),
-    };
-    uniform_buffer_ = ctx.create_uniform_buffer(&uniform, sizeof(Uniform));
+    const Uniform uniform = create_uniform(ctx, angle);
+    uniform_buffer_       = ctx.create_uniform_buffer(&uniform, sizeof(Uniform));
 
     auto library = Helpers<Ctx>::create_library(ctx);
 
     cube_texture_     = ctx.create_texture(crystal::TextureDesc{
         /* .width  = */ 1024,
         /* .height = */ 1024,
-        /* .format = */ crystal::TextureFormat::RGBA32u,
+        /* .format = */ crystal::TextureFormat::RGBA8u,
         /* .sample = */ crystal::TextureSample::Linear,
         /* .repeat = */ crystal::TextureRepeat::RepeatXY,
     });
     cube_render_pass_ = ctx.create_render_pass({
-        std::make_tuple(std::ref(cube_texture_), crystal::ColorAttachmentDesc{
-                                                     /* .clear = */ true,
-                                                     /* .red   = */ 0.5f,
-                                                     /* .green = */ 0.5f,
-                                                     /* .blue  = */ 0.5f,
-                                                     /* .alpha = */ 1.0f,
-                                                 }),
+        std::make_tuple(std::ref(cube_texture_),
+                        crystal::AttachmentDesc{
+                            .clear = true,
+                            .clear_value =
+                                {
+                                    .color = {
+                                        /* .red   = */ 0.5f,
+                                        /* .green = */ 0.5f,
+                                        /* .blue  = */ 0.5f,
+                                        /* .alpha = */ 1.0f,
+                                    },
+                                },
+                        }),
     });
     cube_pipeline_ =
+        // ctx.create_pipeline(library, ctx.screen_render_pass(),
         ctx.create_pipeline(library, cube_render_pass_,
                             crystal::PipelineDesc{
                                 /* .vertex            = */ Helpers<Ctx>::cube_vertex(),
                                 /* .fragment          = */ Helpers<Ctx>::cube_fragment(),
                                 /* .cull_mode         = */ crystal::CullMode::Back,
                                 /* .winding           = */ crystal::Winding::CounterClockwise,
-                                /* .depth_test        = */ crystal::DepthTest::Less,
-                                /* .depth_write       = */ crystal::DepthWrite::Enable,
-                                /* .blend_src         = */ crystal::AlphaBlend::SrcAlpha,
-                                /* .blend_dst         = */ crystal::AlphaBlend::OneMinusSrcAlpha,
+                                /* .depth_test        = */ crystal::DepthTest::Always,
+                                /* .depth_write       = */ crystal::DepthWrite::Disable,
+                                /* .blend_src         = */ crystal::AlphaBlend::One,
+                                /* .blend_dst         = */ crystal::AlphaBlend::Zero,
                                 /* .uniform_bindings  = */
                                 {
-                                    crystal::UniformBinding{
-                                        /* .binding = */ 0,
-                                    },
+                                    crystal::UniformBinding{/* .binding = */ 0},
                                 },
                                 /* .texture_bindings  = */ {},
                                 /* .vertex_attributes = */
@@ -127,19 +142,15 @@ public:
                                 /* .winding           = */ crystal::Winding::CounterClockwise,
                                 /* .depth_test        = */ crystal::DepthTest::Always,
                                 /* .depth_write       = */ crystal::DepthWrite::Disable,
-                                /* .blend_src         = */ crystal::AlphaBlend::SrcAlpha,
-                                /* .blend_dst         = */ crystal::AlphaBlend::OneMinusSrcAlpha,
+                                /* .blend_src         = */ crystal::AlphaBlend::One,
+                                /* .blend_dst         = */ crystal::AlphaBlend::Zero,
                                 /* .uniform_bindings  = */
                                 {
-                                    crystal::UniformBinding{
-                                        /* .binding = */ 0,
-                                    },
+                                    crystal::UniformBinding{/* .binding = */ 0},
                                 },
                                 /* .texture_bindings  = */
                                 {
-                                    crystal::TextureBinding{
-                                        /* .binding = */ 0,
-                                    },
+                                    crystal::TextureBinding{/* .binding = */ 0},
                                 },
                                 /* .vertex_attributes = */
                                 {
@@ -220,10 +231,10 @@ public:
 
     const std::array<QuadVertex, 4> quad_vertices{
         // clang-format off
-        QuadVertex{glm::vec4(-0.75f, -0.75f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)},
-        QuadVertex{glm::vec4( 0.75f, -0.75f, 0.0f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)},
-        QuadVertex{glm::vec4(-0.75f,  0.75f, 0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)},
-        QuadVertex{glm::vec4( 0.75f,  0.75f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)},
+        QuadVertex{glm::vec4(-0.75f, -0.75f, 0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)},
+        QuadVertex{glm::vec4( 0.75f, -0.75f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)},
+        QuadVertex{glm::vec4(-0.75f,  0.75f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)},
+        QuadVertex{glm::vec4( 0.75f,  0.75f, 0.0f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)},
         // clang-format on
     };
     auto quad_vertex_buffer =
@@ -239,19 +250,7 @@ public:
     auto cmd = ctx_.next_frame();
 
     {  // Update uniform buffer.
-      const auto aspect =
-          static_cast<float>(ctx_.screen_width()) / static_cast<float>(ctx_.screen_height());
-      const Uniform uniform{
-          /* .cube_matrix = */ glm::rotate(
-              glm::rotate(glm::identity<glm::mat4>(), glm::radians(30.0f),
-                          glm::vec3(1.0f, 0.0f, 0.0f)),
-              angle, glm::vec3(0.0f, 1.0f, 0.0f)),
-          /* .quad_matrix = */ Helpers<Ctx>::matrix(aspect) *
-              glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(30.0f),
-                                      glm::vec3(1.0f, 0.0f, 0.0f)),
-                          angle, glm::vec3(0.0f, 1.0f, 0.0f)),
-
-      };
+      const Uniform uniform = create_uniform(ctx_, angle);
       ctx_.update_uniform_buffer(uniform_buffer_, &uniform, sizeof(Uniform));
     }
 
