@@ -1,0 +1,55 @@
+load("//tools:cc.bzl", "cc_binary")
+
+cc_binary(
+    name = "opengl",
+    srcs = [
+        "depth_test_view.hpp",
+        "main.cpp",
+    ],
+    data = [
+        "//examples/depth_test_view/shaders:glsl",
+    ],
+    deps = [
+        "//crystal:include",
+        "//crystal/opengl:opengl_sdl2",
+        "@glm",
+        "@sdl2",
+        "@sdl2//:sdl2_main",
+    ],
+)
+
+cc_binary(
+    name = "vulkan",
+    srcs = [
+        "depth_test_view.hpp",
+        "main.cpp",
+    ],
+    data = [
+        "//examples/depth_test/shaders:shader.spv",
+    ],
+    deps = [
+        "//crystal:include",
+        "//crystal/vulkan:vulkan_sdl2",
+        "@glm",
+        "@sdl2",
+        "@sdl2//:sdl2_main",
+    ],
+)
+
+cc_binary(
+    name = "metal",
+    srcs = [
+        "depth_test_view.hpp",
+        "main.cpp",
+    ],
+    data = [
+        "//examples/depth_test/shaders:shader.metallib",
+    ],
+    deps = [
+        "//crystal:include",
+        "//crystal/metal:metal_sdl2",
+        "@glm",
+        "@sdl2",
+        "@sdl2//:sdl2_main",
+    ],
+)

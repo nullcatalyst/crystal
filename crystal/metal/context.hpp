@@ -54,10 +54,11 @@ public:
   };
 
 private:
-  SDL_Window* window_                  = nullptr;
-  OBJC(CAMetalLayer) metal_layer_      = nullptr;
-  OBJC(MTLDevice) device_              = nullptr;
-  OBJC(MTLCommandQueue) command_queue_ = nullptr;
+  SDL_Window* window_                    = nullptr;
+  OBJC(CAMetalLayer) metal_layer_        = nullptr;
+  OBJC(MTLDevice) device_                = nullptr;
+  OBJC(MTLCommandQueue) command_queue_   = nullptr;
+  OBJC(MTLTexture) screen_depth_texture_ = nullptr;
   RenderPass screen_render_pass_;
 
 #endif  // ^^^ defined(CRYSTAL_USE_SDL2)

@@ -44,7 +44,16 @@ Context::Context(const Context::Desc& desc) : window_(desc.window) {
     util::msg::fatal("window size is negative [", width, ", ", height, "]");
   }
 
-  screen_render_pass_ = RenderPass(*this, PIXEL_FORMAT);
+  MTLTextureDescriptor* texture_desc = [[MTLTextureDescriptor alloc] init];
+  texture_desc.width                 = width;
+  texture_desc.height                = height;
+  texture_desc.storageMode           = MTLStorageModePrivate;
+  texture_desc.textureType           = MTLTextureType2D;
+  texture_desc.sampleCount           = 1;
+  texture_desc.pixelFormat           = MTLPixelFormatDepth32Float;
+  screen_depth_texture_              = [device_ newTextureWithDescriptor:texture_desc];
+
+  screen_render_pass_ = RenderPass(*this, PIXEL_FORMAT, screen_depth_texture_);
   change_resolution(width, height);
 }
 
@@ -53,17 +62,11 @@ Context::~Context() {}
 CommandBuffer Context::next_frame() {
   id<CAMetalDrawable> metal_drawable = [metal_layer_ nextDrawable];
 
-  MTLRenderPassDescriptor* render_pass_desc        = [MTLRenderPassDescriptor renderPassDescriptor];
-  render_pass_desc.colorAttachments[0].texture     = metal_drawable.texture;
-  render_pass_desc.colorAttachments[0].loadAction  = MTLLoadActionClear;
-  render_pass_desc.colorAttachments[0].storeAction = MTLStoreActionStore;
-  // TODO: Add support for changing clear values.
-  render_pass_desc.colorAttachments[0].clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 0.0);
+  [screen_render_pass_.render_pass_desc_ colorAttachments][0].texture = metal_drawable.texture;
 
-  screen_render_pass_.render_pass_desc_ = render_pass_desc;
-  const auto size                       = [metal_layer_ drawableSize];
-  screen_render_pass_.width_            = size.width;
-  screen_render_pass_.height_           = size.height;
+  const auto size             = [metal_layer_ drawableSize];
+  screen_render_pass_.width_  = size.width;
+  screen_render_pass_.height_ = size.height;
 
   return CommandBuffer(metal_drawable, [command_queue_ commandBuffer]);
 }
@@ -72,6 +75,8 @@ CommandBuffer Context::next_frame() {
 
 void Context::change_resolution(uint32_t width, uint32_t height) {
   util::msg::info("resolution size changed to ", width, ", ", height);
+
+  // TODO: Change the depth texture size.
 
   [metal_layer_ setDrawableSize:CGSize{
                                     static_cast<CGFloat>(width),

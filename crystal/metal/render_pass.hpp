@@ -42,7 +42,7 @@ private:
   friend class ::crystal::metal::CommandBuffer;
   friend class ::crystal::metal::Pipeline;
 
-  RenderPass(Context& ctx, MTLPixelFormat pixel_format);
+  RenderPass(Context& ctx, MTLPixelFormat pixel_format, OBJC(MTLTexture) depth_texture);
   RenderPass(
       const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures);
   RenderPass(const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,

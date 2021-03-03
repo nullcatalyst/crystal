@@ -57,8 +57,21 @@ void RenderPass::destroy() noexcept {
   depth_pixel_format_  = {};
 }
 
-RenderPass::RenderPass(Context& ctx, MTLPixelFormat pixel_format) : color_count_(1) {
+RenderPass::RenderPass(Context& ctx, MTLPixelFormat pixel_format, OBJC(MTLTexture) depth_texture)
+    : color_count_(1) {
+  MTLRenderPassDescriptor* render_pass_desc        = [MTLRenderPassDescriptor renderPassDescriptor];
+  render_pass_desc.colorAttachments[0].loadAction  = MTLLoadActionClear;
+  render_pass_desc.colorAttachments[0].storeAction = MTLStoreActionStore;
+  render_pass_desc.colorAttachments[0].clearColor  = MTLClearColorMake(0.0f, 0.0f, 0.0f, 0.0f);
+
+  render_pass_desc.depthAttachment.texture     = depth_texture;
+  render_pass_desc.depthAttachment.loadAction  = MTLLoadActionClear;
+  render_pass_desc.depthAttachment.storeAction = MTLStoreActionDontCare;
+  render_pass_desc.depthAttachment.clearDepth  = 1.0f;
+
+  render_pass_desc_       = render_pass_desc;
   color_pixel_formats_[0] = pixel_format;
+  // depth_pixel_format_     = [depth_texture pixelFormat];
 }
 
 RenderPass::RenderPass(
