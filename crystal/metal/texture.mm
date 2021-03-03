@@ -74,7 +74,7 @@ Texture::Texture(OBJC(MTLDevice) device, const TextureDesc& desc) {
       break;
 
     case TextureFormat::Depth32f:
-      pixel_format_ = MTLPixelFormatR32Float;
+      pixel_format_ = MTLPixelFormatDepth32Float;
       break;
 
     default:
