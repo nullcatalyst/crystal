@@ -66,8 +66,13 @@ Pipeline::Pipeline(OBJC(MTLDevice) device, Library& library, RenderPass& render_
   MTLRenderPipelineDescriptor* pipeline_state_desc = [[MTLRenderPipelineDescriptor alloc] init];
   id<MTLFunction>              vertex_function     = [library.library_
       newFunctionWithName:[NSString stringWithCString:desc.vertex encoding:NSUTF8StringEncoding]];
-  id<MTLFunction>              fragment_function   = [library.library_
-      newFunctionWithName:[NSString stringWithCString:desc.fragment encoding:NSUTF8StringEncoding]];
+  id<MTLFunction>              fragment_function   = nullptr;
+
+  if (desc.fragment != nullptr) {
+    fragment_function =
+        [library.library_ newFunctionWithName:[NSString stringWithCString:desc.fragment
+                                                                 encoding:NSUTF8StringEncoding]];
+  }
 
   [pipeline_state_desc setVertexDescriptor:vertex_descriptor];
   [pipeline_state_desc setVertexFunction:vertex_function];
