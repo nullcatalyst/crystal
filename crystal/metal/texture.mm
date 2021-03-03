@@ -33,6 +33,7 @@ Texture::Texture(OBJC(MTLDevice) device, const TextureDesc& desc) {
   MTLTextureDescriptor* texture_desc = [[MTLTextureDescriptor alloc] init];
   texture_desc.width                 = desc.width;
   texture_desc.height                = desc.height;
+  texture_desc.storageMode           = MTLStorageModePrivate;
   texture_desc.textureType           = MTLTextureType2D;
   texture_desc.sampleCount           = 1;
 
