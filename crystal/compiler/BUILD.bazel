@@ -1,0 +1,18 @@
+load("//tools:cc.bzl", "cc_binary")
+
+cc_binary(
+    name = "compiler",
+    srcs = [
+        "main.cpp",
+    ],
+    data = [
+        "test.crystal",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        "//crystal/compiler/ast",
+        "//crystal/compiler/parser",
+    ],
+)

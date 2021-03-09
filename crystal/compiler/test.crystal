@@ -1,0 +1,45 @@
+namespace examples::test;
+
+struct Uniform {
+    mat4 matrix : 0;
+}
+
+struct Vertex {
+    vec4 position : 0;
+    vec4 color    : 1;
+}
+
+struct Varyings {
+    vec4 position : 0;
+    vec4 color    : 1;
+}
+
+struct Output {
+    vec4 color;
+}
+
+vertex Varyings triangle_vert(
+    Uniform u : uniform 0,
+    Vertex in : 0,
+) {
+    Varyings out;
+    out.position = u.matrix * in.position;
+    out.color    = in.color;
+    return out;
+}
+
+// vertex Varyings triangle_vert(
+//     Uniform u : uniform 0,
+//     Vertex in : 0,
+// ) {
+//     Varying out;
+//     out.position = u.matrix * v.position;
+//     out.color    = v.color;
+//     return out;
+// }
+// 
+// fragment Output triangle_vert(Varyings in) {
+//     Output out;
+//     out.color = in.color;
+//     return out;
+// }

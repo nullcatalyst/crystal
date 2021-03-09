@@ -38,5 +38,16 @@
             "environment": [],
             "externalConsole": false
         },
+        {
+            "name": "(win) compiler",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/crystal/compiler/compiler.exe.runfiles/crystal/crystal/compiler/compiler.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/bazel-bin/crystal/compiler/compiler.exe.runfiles/crystal",
+            "environment": [],
+            "externalConsole": false
+        },
     ]
 }

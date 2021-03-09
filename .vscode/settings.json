@@ -1,4 +1,10 @@
 {
+    "[lemon]": {
+        "editor.rulers": [
+            20,
+            80
+        ],
+    },
     // Required to support putting breakpoints in objc++
     "debug.allowBreakpointsEverywhere": true,
     "editor.formatOnSave": true,

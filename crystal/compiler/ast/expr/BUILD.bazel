@@ -1,0 +1,14 @@
+load("//tools:cc.bzl", "cc_library")
+
+cc_library(
+    name = "expr",
+    srcs = glob([
+        "*.cpp",
+    ]),
+    hdrs = glob([
+        "*.hpp",
+    ]),
+    visibility = [
+        "//crystal/compiler:__subpackages__",
+    ],
+)

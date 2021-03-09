@@ -46,8 +46,9 @@ CommandBuffer Context::next_frame() {
 
 #else  // ^^^ defined(CRYSTAL_USE_SDL2) / !defined(CRYSTAL_USE_SDL2) vvv
 
-Context::Context(const Context::Desc& desc)
-    : window_(desc.window), width_(desc.width), height_(desc.height) {}
+Context::Context(const Context::Desc& desc) : screen_render_pass_(*this) {
+  change_resolution(desc.width, desc.height);
+}
 
 Context::~Context() {
   if (buffers_.size() != 0) {
@@ -56,7 +57,7 @@ Context::~Context() {
   }
 }
 
-CommandBuffer Context::next_frame() { return CommandBuffer(width_, height_); }
+CommandBuffer Context::next_frame() { return CommandBuffer(); }
 
 #endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
 

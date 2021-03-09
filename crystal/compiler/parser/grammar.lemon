@@ -1,0 +1,135 @@
+%include {
+
+#include <string>
+#include <vector>
+
+#include "crystal/compiler/ast/module.hpp"
+#include "crystal/compiler/ast/decl/all.hpp"
+#include "crystal/compiler/ast/expr/all.hpp"
+#include "crystal/compiler/ast/stmt/all.hpp"
+#include "crystal/compiler/ast/type/all.hpp"
+#include "crystal/compiler/parser/token.hpp"
+#include "util/memory/ref_count.hpp"
+#include "util/msg/msg.hpp"
+
+using namespace crystal::compiler;
+using namespace crystal::compiler::ast;
+
+template <typename T>
+using Ref = util::memory::Ref<T>;
+
+}  // %include
+
+%token_type         { parser::Token }
+%token_prefix       TOK_
+%extra_argument     { crystal::compiler::ast::Module* mod }
+%default_type       { Ref<expr::Expression> }
+%type namespace     { std::vector<std::string> }
+%type decl          { Ref<decl::Declaration> }
+%type struct_prop_list  { std::vector<type::StructProperty> }
+%type vert_arg_list { std::vector<decl::VertexInputBuffer> }
+%type stmt          { Ref<stmt::Statement> }
+%type stmt_list     { std::vector<Ref<stmt::Statement>> }
+%type type          { Ref<type::Type> }
+// %type type_struct   { Type* }
+%syntax_error       { util::msg::fatal("invalid syntax"); }
+
+main                ::= decl_list.
+
+decl_list           ::= decl_list(list) decl(decl).                             { (void)list; (void)decl; }
+decl_list           ::= KW_NAMESPACE namespace(ns) OP_SEMICOLON.                { mod->set_namespace(ns); }
+decl_list           ::= .                                                       {  }
+
+namespace(ret)      ::= namespace(prefix) OP_COLONCOLON LIT_IDEN(name).         { ret = std::move(prefix); ret.emplace_back(name.string_value); }
+namespace(ret)      ::= LIT_IDEN(name).                                         { ret = std::vector<std::string>{std::string{name.string_value}}; }
+
+decl(ret)           ::= KW_STRUCT LIT_IDEN(name)
+                        OP_LCRLBRACKET struct_prop_list(props) OP_RCRLBRACKET
+                        .                                                       {
+                            const auto type = Ref<type::StructType>::make(name.string_value, false, std::move(props));
+                            ret = Ref<decl::StructDeclaration>::make(type);
+                            mod->add_type(type);
+                        }
+decl(ret)           ::= KW_VERTEX type(ret_type) LIT_IDEN(name)
+                        OP_LRNDBRACKET vert_arg_list(args) OP_RRNDBRACKET
+                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
+                        .                                                       {
+                            const auto vertex_function = Ref<decl::VertexDeclaration>::make(name.string_value, ret_type, std::move(args), std::move(impl));
+                            mod->add_vertex_function(vertex_function);
+                            ret = vertex_function;
+                        }
+decl(ret)           ::= KW_VERTEX type(ret_type) LIT_IDEN(name)
+                        OP_LRNDBRACKET vert_arg_list(args) OP_COMMA OP_RRNDBRACKET
+                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
+                        .                                                       {
+                            const auto vertex_function = Ref<decl::VertexDeclaration>::make(name.string_value, ret_type, std::move(args), std::move(impl));
+                            mod->add_vertex_function(vertex_function);
+                            ret = vertex_function;
+                        }
+decl(ret)           ::= KW_FRAGMENT type(ret_type) LIT_IDEN(name)
+                        OP_LRNDBRACKET OP_RRNDBRACKET
+                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
+                        .                                                       { (void)ret; (void)ret_type; (void)name; (void)impl; }
+
+struct_prop_list(ret)  ::= struct_prop_list(list)
+                        type(type) LIT_IDEN(name) OP_COLON LIT_INT(index) OP_SEMICOLON
+                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, static_cast<int32_t>(index.int_value)); }
+struct_prop_list(ret)  ::= struct_prop_list(list)
+                        type(type) LIT_IDEN(name) OP_SEMICOLON
+                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type); }
+struct_prop_list(ret)  ::= .                                                    { ret = std::vector<type::StructProperty>(); }
+
+vert_arg_list(ret)  ::= vert_arg_list(list) OP_COMMA
+                        type(type) LIT_IDEN(name) OP_COLON KW_UNIFORM LIT_INT(index)
+                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputBufferType::Uniform, static_cast<int32_t>(index.int_value)); }
+vert_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON KW_UNIFORM LIT_INT(index)
+                        .                                                       { ret = std::vector<decl::VertexInputBuffer>{decl::VertexInputBuffer{name.string_value, type, decl::VertexInputBufferType::Uniform, static_cast<int32_t>(index.int_value)}}; }
+vert_arg_list(ret)  ::= vert_arg_list(list) OP_COMMA
+                        type(type) LIT_IDEN(name) OP_COLON LIT_INT(index)
+                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputBufferType::Vertex, static_cast<int32_t>(index.int_value)); }
+vert_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON LIT_INT(index).      { ret = std::vector<decl::VertexInputBuffer>{decl::VertexInputBuffer{name.string_value, type, decl::VertexInputBufferType::Vertex, static_cast<int32_t>(index.int_value)}}; }
+
+type(ret)           ::= LIT_IDEN(name).                                         {
+                            const auto type = mod->find_type(name.string_value);
+                            if (type == std::nullopt) {
+                                util::msg::fatal("type [", name.string_value, "] does not exist");
+                            }
+                            ret = type.value();
+                        }
+
+stmt_list(ret)      ::= stmt_list(list) stmt(stmt).                             { ret = std::move(list); ret.emplace_back(stmt); }
+stmt_list(ret)      ::= .                                                       { ret = std::vector<Ref<stmt::Statement>>{}; }
+
+stmt(ret)           ::= type(type) LIT_IDEN(name) OP_SEMICOLON.                 { ret = Ref<stmt::VariableStatement>::make(name.string_value, type); }
+stmt(ret)           ::= expr(expr) OP_SEMICOLON.                                { ret = Ref<stmt::ExpressionStatement>::make(std::move(expr)); }
+stmt(ret)           ::= KW_RETURN expr(expr) OP_SEMICOLON.                      { ret = Ref<stmt::ReturnStatement>::make(std::move(expr)); }
+stmt(ret)           ::= expr_var(var) OP_EQUAL expr(expr) OP_SEMICOLON.         { ret = Ref<stmt::AssignmentStatement>::make(std::move(var), std::move(expr), stmt::AssignmentOp::Set); }
+stmt(ret)           ::= expr_var(var) OP_PLUSEQUAL expr(expr) OP_SEMICOLON.     { ret = Ref<stmt::AssignmentStatement>::make(std::move(var), std::move(expr), stmt::AssignmentOp::Add); }
+stmt(ret)           ::= expr_var(var) OP_MINUSEQUAL expr(expr) OP_SEMICOLON.    { ret = Ref<stmt::AssignmentStatement>::make(std::move(var), std::move(expr), stmt::AssignmentOp::Sub); }
+stmt(ret)           ::= expr_var(var) OP_STAREQUAL expr(expr) OP_SEMICOLON.     { ret = Ref<stmt::AssignmentStatement>::make(std::move(var), std::move(expr), stmt::AssignmentOp::Mul); }
+stmt(ret)           ::= expr_var(var) OP_SLASHEQUAL expr(expr) OP_SEMICOLON.    { ret = Ref<stmt::AssignmentStatement>::make(std::move(var), std::move(expr), stmt::AssignmentOp::Div); }
+
+expr(ret)           ::= expr_add(expr).                                         { ret = expr; }
+
+expr_add(ret)       ::= expr_add(lhs) OP_PLUS expr_mul(rhs).                    { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Add); }
+expr_add(ret)       ::= expr_add(lhs) OP_MINUS expr_mul(rhs).                   { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Sub); }
+expr_add            ::= expr_mul.
+
+expr_mul(ret)       ::= expr_mul(lhs) OP_STAR expr_prefix(rhs).                 { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Mul); }
+expr_mul(ret)       ::= expr_mul(lhs) OP_SLASH expr_prefix(rhs).                { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Div); }
+expr_mul            ::= expr_prefix.
+
+expr_prefix(ret)    ::= OP_PLUS expr_atom(rhs).                                 { ret = Ref<expr::UnOpExpression>::make(rhs, expr::UnOp::Pos); }
+expr_prefix(ret)    ::= OP_MINUS expr_atom(rhs).                                { ret = Ref<expr::UnOpExpression>::make(rhs, expr::UnOp::Neg); }
+expr_prefix(ret)    ::= expr_atom(expr).                                        { ret = expr; }
+
+expr_atom(ret)      ::= LIT_INT(val).                                           { ret = Ref<expr::IntegerExpression>::make(val.int_value); }
+expr_atom(ret)      ::= LIT_FLOAT(val).                                         { ret = Ref<expr::FloatExpression>::make(val.float_value); }
+expr_atom(ret)      ::= expr_var(expr).                                         { ret = expr; }
+expr_atom(ret)      ::= expr_paren(expr).                                       { ret = expr; }
+
+expr_var(ret)       ::= expr_var(expr_) OP_PERIOD LIT_IDEN(name).               { ret = Ref<expr::PropertyExpression>::make(expr_, name.string_value); }
+expr_var(ret)       ::= expr_paren(expr_) OP_PERIOD LIT_IDEN(name).             { ret = Ref<expr::PropertyExpression>::make(expr_, name.string_value); }
+expr_var(ret)       ::= LIT_IDEN(name).                                         { ret = Ref<expr::IdentifierExpression>::make(name.string_value); }
+
+expr_paren(ret)     ::= OP_LRNDBRACKET expr(expr_) OP_RRNDBRACKET.              { ret = Ref<expr::ParenthesisExpression>::make(expr_); }

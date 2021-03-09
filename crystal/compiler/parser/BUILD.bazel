@@ -1,0 +1,29 @@
+load("//tools:cc.bzl", "cc_library")
+load("//tools:lemon.bzl", "lemon_cpp_library")
+
+cc_library(
+    name = "parser",
+    srcs = glob([
+        "*.cpp",
+    ]) + [
+        ":grammar.hpp",
+        ":grammar.cpp",
+    ],
+    hdrs = glob([
+        "*.hpp",
+    ]),
+    visibility = [
+        "//crystal/compiler:__subpackages__",
+    ],
+    deps = [
+        "//crystal/compiler/ast",
+        "//util/fs",
+        "//util/memory",
+        "@com_google_absl//absl/container:flat_hash_map",
+    ],
+)
+
+lemon_cpp_library(
+    name = "grammar",
+    src = "grammar.lemon",
+)
