@@ -1,6 +1,8 @@
 #pragma once
 
 #include "crystal/compiler/ast/expr/expression.hpp"
+#include "crystal/compiler/ast/output/glsl.hpp"
+#include "crystal/compiler/ast/output/print.hpp"
 #include "crystal/compiler/ast/stmt/statement.hpp"
 #include "util/memory/ref_count.hpp"
 
@@ -12,10 +14,10 @@ class ExpressionStatement : public Statement {
 public:
   ExpressionStatement(util::memory::Ref<expr::Expression> expr) : expr_(expr) {}
 
-  virtual void to_glsl(std::ostream& out, decl::VertexDeclaration& vertex, int indent) override {
-    indent_glsl(out, indent);
-    expr_->to_glsl(out);
-    out << ";\n";
+  virtual output::PrintLambda to_glsl(decl::VertexDeclaration& vertex, uint32_t indent) const {
+    return output::PrintLambda{[=](std::ostream& out) {
+      out << output::glsl_indent{indent} << expr_->to_glsl() << ";\n";
+    }};
   }
 };
 

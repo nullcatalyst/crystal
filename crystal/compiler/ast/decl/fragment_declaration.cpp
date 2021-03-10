@@ -1,4 +1,4 @@
-#include "crystal/compiler/ast/decl/vertex_declaration.hpp"
+#include "crystal/compiler/ast/decl/fragment_declaration.hpp"
 
 #include "crystal/compiler/ast/module.hpp"
 #include "crystal/compiler/ast/output/glsl.hpp"
@@ -7,7 +7,7 @@
 
 namespace crystal::compiler::ast::decl {
 
-void VertexDeclaration::to_glsl(std::ostream& out, Module& mod) {
+void FragmentDeclaration::to_glsl(std::ostream& out, Module& mod) {
   // Output the version header. This must come first.
   out << "#version 420 core\n\n";
 
@@ -23,12 +23,12 @@ void VertexDeclaration::to_glsl(std::ostream& out, Module& mod) {
     for (auto& prop : struct_type->properties()) {
       out << "    " << prop.type->name() << " " << prop.name << ";\n";
     }
-    out << "};\n\n";
+    out << "};\n";
   }
 
   // Output the uniform blocks.
   for (auto& input : inputs_) {
-    if (input.input_type != decl::VertexInputType::Uniform) {
+    if (input.input_type != decl::FragmentInputType::Uniform) {
       continue;
     }
 
@@ -37,49 +37,43 @@ void VertexDeclaration::to_glsl(std::ostream& out, Module& mod) {
     for (auto& prop : struct_type->properties()) {
       out << "    " << prop.type->name() << " " << prop.name << ";\n";
     }
-    out << "} _" << input.name << ";\n";
+    out << "} " << output::glsl_mangle_name{input.name} << ";\n";
   }
 
   out << "\n";
 
   // Output the input variables (vertex buffers).
   for (auto& input : inputs_) {
-    if (input.input_type != decl::VertexInputType::Vertex &&
-        input.input_type != decl::VertexInputType::Instanced) {
+    if (input.input_type != decl::FragmentInputType::Varying) {
       continue;
     }
 
     const util::memory::Ref<type::StructType> struct_type = input.type;
     for (auto& prop : struct_type->properties()) {
       out << "layout(location=" << prop.index << ") in " << prop.type->name() << " i" << prop.index
-          << "_" << prop.name << ";\n";
+          << output::glsl_mangle_name{prop.name} << ";\n";
     }
   }
 
   out << "\n";
 
-  // Output the varyings.
-  // This is the decomposed form of the return struct type from the vertex function.
+  // Output the outputs.
+  // This is the decomposed form of the return struct type from the fragment function.
   const util::memory::Ref<type::StructType> return_struct_type = return_type_;
   for (auto& prop : return_struct_type->properties()) {
-    if (prop.index <= 0) {
+    if (prop.index < 0) {
       // Skip properties that don't have an output index.
-      // The zero output for the vertex function must be the vertex position.
       continue;
     }
 
-    out << "layout(location=" << (prop.index - 1) << ") out " << prop.type->name() << " o_"
-        << prop.name << ";\n";
+    out << "layout(location=" << prop.index << ") out " << prop.type->name() << " o_" << prop.name
+        << ";\n";
   }
 
-  // Output the fixed line denoting the name of the vertex position variable. (Optional)
-  out << "\nout gl_PerVertex { vec4 gl_Position; };\n\n";
-
   // Finally output the function implementation.
-  out << "void main() {\n";
+  out << "\nvoid main() {\n";
   for (auto& input : inputs_) {
-    if (input.input_type != decl::VertexInputType::Vertex &&
-        input.input_type != decl::VertexInputType::Instanced) {
+    if (input.input_type != decl::FragmentInputType::Varying) {
       continue;
     }
 
@@ -87,7 +81,7 @@ void VertexDeclaration::to_glsl(std::ostream& out, Module& mod) {
     out << "    " << input.type->name() << " " << output::glsl_mangle_name{input.name} << ";\n";
     for (auto& prop : struct_type->properties()) {
       out << "    " << output::glsl_mangle_name{input.name} << "." << prop.name << " = i"
-          << prop.index << "_" << prop.name << ";\n";
+          << prop.index << output::glsl_mangle_name{prop.name} << ";\n";
     }
   }
   out << "\n";

@@ -27,7 +27,8 @@ using Ref = util::memory::Ref<T>;
 %type namespace     { std::vector<std::string> }
 %type decl          { Ref<decl::Declaration> }
 %type struct_prop_list  { std::vector<type::StructProperty> }
-%type vert_arg_list { std::vector<decl::VertexInputBuffer> }
+%type vert_arg_list { std::vector<decl::VertexInput> }
+%type frag_arg_list { std::vector<decl::FragmentInput> }
 %type stmt          { Ref<stmt::Statement> }
 %type stmt_list     { std::vector<Ref<stmt::Statement>> }
 %type type          { Ref<type::Type> }
@@ -67,9 +68,21 @@ decl(ret)           ::= KW_VERTEX type(ret_type) LIT_IDEN(name)
                             ret = vertex_function;
                         }
 decl(ret)           ::= KW_FRAGMENT type(ret_type) LIT_IDEN(name)
-                        OP_LRNDBRACKET OP_RRNDBRACKET
+                        OP_LRNDBRACKET frag_arg_list(args) OP_RRNDBRACKET
                         OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
-                        .                                                       { (void)ret; (void)ret_type; (void)name; (void)impl; }
+                        .                                                       {
+                            const auto fragment_function = Ref<decl::FragmentDeclaration>::make(name.string_value, ret_type, std::move(args), std::move(impl));
+                            mod->add_fragment_function(fragment_function);
+                            ret = fragment_function;
+                        }
+decl(ret)           ::= KW_FRAGMENT type(ret_type) LIT_IDEN(name)
+                        OP_LRNDBRACKET frag_arg_list(args) OP_COMMA OP_RRNDBRACKET
+                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
+                        .                                                       {
+                            const auto fragment_function = Ref<decl::FragmentDeclaration>::make(name.string_value, ret_type, std::move(args), std::move(impl));
+                            mod->add_fragment_function(fragment_function);
+                            ret = fragment_function;
+                        }
 
 struct_prop_list(ret)  ::= struct_prop_list(list)
                         type(type) LIT_IDEN(name) OP_COLON LIT_INT(index) OP_SEMICOLON
@@ -81,13 +94,22 @@ struct_prop_list(ret)  ::= .                                                    
 
 vert_arg_list(ret)  ::= vert_arg_list(list) OP_COMMA
                         type(type) LIT_IDEN(name) OP_COLON KW_UNIFORM LIT_INT(index)
-                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputBufferType::Uniform, static_cast<int32_t>(index.int_value)); }
+                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputType::Uniform, static_cast<int32_t>(index.int_value)); }
 vert_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON KW_UNIFORM LIT_INT(index)
-                        .                                                       { ret = std::vector<decl::VertexInputBuffer>{decl::VertexInputBuffer{name.string_value, type, decl::VertexInputBufferType::Uniform, static_cast<int32_t>(index.int_value)}}; }
+                        .                                                       { ret = std::vector<decl::VertexInput>{decl::VertexInput{name.string_value, type, decl::VertexInputType::Uniform, static_cast<int32_t>(index.int_value)}}; }
 vert_arg_list(ret)  ::= vert_arg_list(list) OP_COMMA
                         type(type) LIT_IDEN(name) OP_COLON LIT_INT(index)
-                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputBufferType::Vertex, static_cast<int32_t>(index.int_value)); }
-vert_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON LIT_INT(index).      { ret = std::vector<decl::VertexInputBuffer>{decl::VertexInputBuffer{name.string_value, type, decl::VertexInputBufferType::Vertex, static_cast<int32_t>(index.int_value)}}; }
+                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputType::Vertex, static_cast<int32_t>(index.int_value)); }
+vert_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON LIT_INT(index).      { ret = std::vector<decl::VertexInput>{decl::VertexInput{name.string_value, type, decl::VertexInputType::Vertex, static_cast<int32_t>(index.int_value)}}; }
+
+frag_arg_list(ret)  ::= frag_arg_list(list) OP_COMMA
+                        type(type) LIT_IDEN(name) OP_COLON KW_UNIFORM LIT_INT(index)
+                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::FragmentInputType::Uniform, static_cast<int32_t>(index.int_value)); }
+frag_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON KW_UNIFORM LIT_INT(index)
+                        .                                                       { ret = std::vector<decl::FragmentInput>{decl::FragmentInput{name.string_value, type, decl::FragmentInputType::Uniform, static_cast<int32_t>(index.int_value)}}; }
+frag_arg_list(ret)  ::= frag_arg_list(list) OP_COMMA
+                        type(type) LIT_IDEN(name).                              { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::FragmentInputType::Varying, -1); }
+frag_arg_list(ret)  ::= type(type) LIT_IDEN(name).                              { ret = std::vector<decl::FragmentInput>{decl::FragmentInput{name.string_value, type, decl::FragmentInputType::Varying, -1}}; }
 
 type(ret)           ::= LIT_IDEN(name).                                         {
                             const auto type = mod->find_type(name.string_value);

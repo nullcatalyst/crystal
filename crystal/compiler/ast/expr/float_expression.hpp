@@ -1,6 +1,7 @@
 #pragma once
 
 #include "crystal/compiler/ast/expr/expression.hpp"
+#include "crystal/compiler/ast/output/print.hpp"
 
 namespace crystal::compiler::ast::expr {
 
@@ -12,7 +13,9 @@ public:
 
   virtual ~FloatExpression() = default;
 
-  virtual void to_glsl(std::ostream& out) { out << value_; }
+  virtual output::PrintLambda to_glsl() const override {
+    return output::PrintLambda{[value = value_](std::ostream& out) { out << value; }};
+  }
 };
 
 }  // namespace crystal::compiler::ast::expr

@@ -3,6 +3,8 @@
 #include <string>
 #include <string_view>
 
+#include "crystal/compiler/ast/output/glsl.hpp"
+#include "crystal/compiler/ast/output/print.hpp"
 #include "crystal/compiler/ast/stmt/statement.hpp"
 #include "crystal/compiler/ast/type/type.hpp"
 #include "util/memory/ref_count.hpp"
@@ -17,9 +19,20 @@ public:
   VariableStatement(std::string_view name, util::memory::Ref<type::Type> type)
       : name_(name), type_(type) {}
 
-  virtual void to_glsl(std::ostream& out, decl::VertexDeclaration& vertex, int indent) override {
-    indent_glsl(out, indent);
-    out << type_->name() << " _" << name_ << ";\n";
+  virtual output::PrintLambda to_glsl(decl::VertexDeclaration& vertex,
+                                      uint32_t                 indent) const override {
+    return output::PrintLambda{[=](std::ostream& out) {
+      out << output::glsl_indent{indent} << type_->name() << " " << output::glsl_mangle_name{name_}
+          << ";\n";
+    }};
+  }
+
+  virtual output::PrintLambda to_glsl(decl::FragmentDeclaration& fragment,
+                                      uint32_t                   indent) const override {
+    return output::PrintLambda{[=](std::ostream& out) {
+      out << output::glsl_indent{indent} << type_->name() << " " << output::glsl_mangle_name{name_}
+          << ";\n";
+    }};
   }
 };
 

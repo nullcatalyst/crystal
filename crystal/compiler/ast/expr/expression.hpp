@@ -1,6 +1,6 @@
 #pragma once
 
-#include <iostream>
+#include "crystal/compiler/ast/output/print.hpp"
 
 namespace crystal::compiler::ast::expr {
 
@@ -8,7 +8,7 @@ class Expression {
 public:
   virtual ~Expression() = default;
 
-  virtual void to_glsl(std::ostream& out) {}
+  virtual output::PrintLambda to_glsl() const { return output::PrintLambda{}; }
 };
 
 }  // namespace crystal::compiler::ast::expr

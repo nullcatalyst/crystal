@@ -1,20 +1,10 @@
 load("//tools:cc.bzl", "cc_library")
 
 cc_library(
-    name = "type",
+    name = "output",
     srcs = glob([
         "*.cpp",
     ]),
-    hdrs = glob([
-        "*.hpp",
-    ]),
-    visibility = [
-        "//crystal/compiler:__subpackages__",
-    ],
-)
-
-cc_library(
-    name = "hdrs",
     hdrs = glob([
         "*.hpp",
     ]),

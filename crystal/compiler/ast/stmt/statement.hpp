@@ -1,8 +1,11 @@
 #pragma once
 
+#include "crystal/compiler/ast/output/print.hpp"
+
 namespace crystal::compiler::ast::decl {
 
 class VertexDeclaration;
+class FragmentDeclaration;
 
 }  // namespace crystal::compiler::ast::decl
 
@@ -12,13 +15,13 @@ class Statement {
 public:
   virtual ~Statement() = default;
 
-  void indent_glsl(std::ostream& out, int indent) {
-    for (int i = 0; i < indent; ++i) {
-      out << "    ";
-    }
+  virtual output::PrintLambda to_glsl(decl::VertexDeclaration& vertex, uint32_t indent) const {
+    return output::PrintLambda{};
   }
 
-  virtual void to_glsl(std::ostream& out, decl::VertexDeclaration& vertex, int indent) = 0;
+  virtual output::PrintLambda to_glsl(decl::FragmentDeclaration& fragment, uint32_t indent) const {
+    return output::PrintLambda{};
+  }
 };
 
 }  // namespace crystal::compiler::ast::stmt

@@ -18,40 +18,40 @@ class Module;
 
 namespace crystal::compiler::ast::decl {
 
-enum class VertexInputType {
+enum class FragmentInputType {
   Undefined = 0,
-  Vertex,
-  Instanced,
+  Varying,
   Uniform,
+  Texture,
 };
 
-struct VertexInput {
+struct FragmentInput {
   std::string                   name;
   util::memory::Ref<type::Type> type;
-  VertexInputType               input_type;
+  FragmentInputType             input_type;
   int32_t                       index;
 
-  VertexInput(std::string_view name, util::memory::Ref<type::Type> type, VertexInputType input_type,
-              int32_t index)
+  FragmentInput(std::string_view name, util::memory::Ref<type::Type> type,
+                FragmentInputType input_type, int32_t index)
       : name(name), type(type), input_type(input_type), index(index) {}
 };
 
-class VertexDeclaration : public Declaration {
+class FragmentDeclaration : public Declaration {
   std::string                                     name_;
   util::memory::Ref<type::Type>                   return_type_;
-  std::vector<VertexInput>                        inputs_;
+  std::vector<FragmentInput>                      inputs_;
   std::vector<util::memory::Ref<stmt::Statement>> implementation_;
 
 public:
-  VertexDeclaration(std::string_view name, util::memory::Ref<type::Type> return_type,
-                    std::vector<decl::VertexInput>&&                  inputs,
-                    std::vector<util::memory::Ref<stmt::Statement>>&& implementation)
+  FragmentDeclaration(std::string_view name, util::memory::Ref<type::Type> return_type,
+                      std::vector<decl::FragmentInput>&&                inputs,
+                      std::vector<util::memory::Ref<stmt::Statement>>&& implementation)
       : name_(name),
         return_type_(return_type),
         inputs_(std::move(inputs)),
         implementation_(std::move(implementation)) {}
 
-  virtual ~VertexDeclaration() = default;
+  virtual ~FragmentDeclaration() = default;
 
   [[nodiscard]] virtual const std::string&    name() const override { return name_; }
   [[nodiscard]] util::memory::Ref<type::Type> return_type() const { return return_type_; }

@@ -3,7 +3,6 @@
 #include "crystal/compiler/ast/expr/expression.hpp"
 #include "crystal/compiler/ast/stmt/statement.hpp"
 #include "util/memory/ref_count.hpp"
-#include "util/msg/msg.hpp"
 
 namespace crystal::compiler::ast::stmt {
 
@@ -26,33 +25,18 @@ public:
                       util::memory::Ref<expr::Expression> value, AssignmentOp op)
       : var_(var), value_(value), op_(op) {}
 
-  virtual void to_glsl(std::ostream& out, decl::VertexDeclaration& vertex, int indent) override {
-    indent_glsl(out, indent);
-    var_->to_glsl(out);
-
-    switch (op_) {
-      case AssignmentOp::Set:
-        out << " = ";
-        break;
-      case AssignmentOp::Add:
-        out << " += ";
-        break;
-      case AssignmentOp::Sub:
-        out << " -= ";
-        break;
-      case AssignmentOp::Mul:
-        out << " *= ";
-        break;
-      case AssignmentOp::Div:
-        out << " /= ";
-        break;
-      default:
-        util::msg::fatal("unhandled assignment operator [", static_cast<uint32_t>(op_), "]");
-    }
-
-    value_->to_glsl(out);
-    out << ";\n";
+  virtual output::PrintLambda to_glsl(decl::VertexDeclaration& vertex,
+                                      uint32_t                 indent) const override {
+    return to_glsl(indent);
   }
+
+  virtual output::PrintLambda to_glsl(decl::FragmentDeclaration& fragment,
+                                      uint32_t                   indent) const override {
+    return to_glsl(indent);
+  }
+
+private:
+  output::PrintLambda to_glsl(uint32_t indent) const;
 };
 
 }  // namespace crystal::compiler::ast::stmt

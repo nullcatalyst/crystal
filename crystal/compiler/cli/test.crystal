@@ -15,7 +15,7 @@ struct Varyings {
 }
 
 struct Output {
-    vec4 color;
+    vec4 color : 0;
 }
 
 vertex Varyings triangle_vert(
@@ -28,18 +28,8 @@ vertex Varyings triangle_vert(
     return out;
 }
 
-// vertex Varyings triangle_vert(
-//     Uniform u : uniform 0,
-//     Vertex in : 0,
-// ) {
-//     Varying out;
-//     out.position = u.matrix * v.position;
-//     out.color    = v.color;
-//     return out;
-// }
-// 
-// fragment Output triangle_vert(Varyings in) {
-//     Output out;
-//     out.color = in.color;
-//     return out;
-// }
+fragment Output triangle_frag(Varyings in) {
+    Output out;
+    out.color = in.color;
+    return out;
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "crystal/compiler/ast/expr/expression.hpp"
+#include "crystal/compiler/ast/output/print.hpp"
 #include "util/memory/ref_count.hpp"
 
 namespace crystal::compiler::ast::expr {
@@ -20,19 +21,18 @@ public:
 
   virtual ~UnOpExpression() = default;
 
-  virtual void to_glsl(std::ostream& out) {
+  virtual output::PrintLambda to_glsl() const override {
     switch (op_) {
       case UnOp::Pos:
-        out << "+";
-        rhs_->to_glsl(out);
-        break;
+        return output::PrintLambda{
+            [rhs = rhs_](std::ostream& out) { out << "+" << rhs->to_glsl(); }};
 
       case UnOp::Neg:
-        out << "-";
-        rhs_->to_glsl(out);
-        break;
+        return output::PrintLambda{
+            [rhs = rhs_](std::ostream& out) { out << "-" << rhs->to_glsl(); }};
 
       default:
+        util::msg::fatal("unhandled unary operator [", static_cast<uint32_t>(op_), "]");
         break;
     }
   }

@@ -54,4 +54,14 @@ std::optional<util::memory::Ref<decl::VertexDeclaration>> Module::find_vertex_fu
   return std::nullopt;
 }
 
+std::optional<util::memory::Ref<decl::FragmentDeclaration>> Module::find_fragment_function(
+    std::string_view name) {
+  const auto it = fragment_functions_.find(name);
+  if (it != fragment_functions_.cend()) {
+    return it->second;
+  }
+
+  return std::nullopt;
+}
+
 }  // namespace crystal::compiler::ast

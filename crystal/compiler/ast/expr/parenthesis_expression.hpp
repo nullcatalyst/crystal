@@ -1,6 +1,7 @@
 #pragma once
 
 #include "crystal/compiler/ast/expr/expression.hpp"
+#include "crystal/compiler/ast/output/print.hpp"
 #include "util/memory/ref_count.hpp"
 
 namespace crystal::compiler::ast::expr {
@@ -13,10 +14,9 @@ public:
 
   virtual ~ParenthesisExpression() = default;
 
-  virtual void to_glsl(std::ostream& out) {
-    out << "(";
-    expr_->to_glsl(out);
-    out << ")";
+  virtual output::PrintLambda to_glsl() const override {
+    return output::PrintLambda{
+        [expr = expr_](std::ostream& out) { out << "(" << expr->to_glsl() << ")"; }};
   }
 };
 

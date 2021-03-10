@@ -11,4 +11,22 @@ cc_library(
     visibility = [
         "//crystal/compiler:__subpackages__",
     ],
+    deps = [
+        "//crystal/compiler/ast/decl:hdrs",
+        "//crystal/compiler/ast/expr:hdrs",
+        "//crystal/compiler/ast/output",
+        "//crystal/compiler/ast/type:hdrs",
+        "//util/memory",
+        "//util/msg",
+    ],
+)
+
+cc_library(
+    name = "hdrs",
+    hdrs = glob([
+        "*.hpp",
+    ]),
+    visibility = [
+        "//crystal/compiler:__subpackages__",
+    ],
 )

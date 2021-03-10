@@ -1,7 +1,9 @@
 #pragma once
 
 #include "crystal/compiler/ast/expr/expression.hpp"
+#include "crystal/compiler/ast/output/print.hpp"
 #include "util/memory/ref_count.hpp"
+#include "util/msg/msg.hpp"
 
 namespace crystal::compiler::ast::expr {
 
@@ -25,33 +27,30 @@ public:
 
   virtual ~BinOpExpression() = default;
 
-  virtual void to_glsl(std::ostream& out) {
+  virtual output::PrintLambda to_glsl() const override {
     switch (op_) {
       case BinOp::Add:
-        lhs_->to_glsl(out);
-        out << "+";
-        rhs_->to_glsl(out);
-        break;
+        return output::PrintLambda{[lhs = lhs_, rhs = rhs_](std::ostream& out) {
+          out << lhs->to_glsl() << "+" << rhs->to_glsl();
+        }};
 
       case BinOp::Sub:
-        lhs_->to_glsl(out);
-        out << "-";
-        rhs_->to_glsl(out);
-        break;
+        return output::PrintLambda{[lhs = lhs_, rhs = rhs_](std::ostream& out) {
+          out << lhs->to_glsl() << "-" << rhs->to_glsl();
+        }};
 
       case BinOp::Mul:
-        lhs_->to_glsl(out);
-        out << "*";
-        rhs_->to_glsl(out);
-        break;
+        return output::PrintLambda{[lhs = lhs_, rhs = rhs_](std::ostream& out) {
+          out << lhs->to_glsl() << "*" << rhs->to_glsl();
+        }};
 
       case BinOp::Div:
-        lhs_->to_glsl(out);
-        out << "/";
-        rhs_->to_glsl(out);
-        break;
+        return output::PrintLambda{[lhs = lhs_, rhs = rhs_](std::ostream& out) {
+          out << lhs->to_glsl() << "/" << rhs->to_glsl();
+        }};
 
       default:
+        util::msg::fatal("unhandled binary operator [", static_cast<uint32_t>(op_), "]");
         break;
     }
   }
