@@ -10,26 +10,31 @@ struct Vertex {
 }
 
 struct Varyings {
-    vec4 position : position;
-    vec4 color;
+    vec4 position : 0;
+    vec4 color    : 1;
 }
 
 struct Output {
-    vec4 color;
+    vec4 color : 0;
 }
 
 vertex Varyings triangle_vert(
     Uniform u : uniform 0,
     Vertex in : 0,
 ) {
-    Varying out;
-    out.position = u.matrix * v.position;
-    out.color    = v.color;
+    Varyings out;
+    out.position = u.matrix * in.position;
+    out.color    = in.color;
     return out;
 }
 
-fragment Output triangle_vert(Varyings in) {
+fragment Output triangle_frag(Varyings in) {
     Output out;
     out.color = in.color;
     return out;
+}
+
+pipeline triangle {
+    vertex triangle_vert;
+    fragment triangle_frag;
 }

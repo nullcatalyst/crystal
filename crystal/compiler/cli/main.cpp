@@ -50,6 +50,24 @@ int main(const int argc, const char* const argv[]) {
     });
   }
 
+  {  // Convert to cpp.
+    const auto cpp_cmd = app.add_subcommand("cpp");
+
+    std::string input_file_name;
+    cpp_cmd->add_option("-i,--input", input_file_name, "Input file name")->required();
+    std::string output_file_name = "";
+    cpp_cmd->add_option("-o,--output", output_file_name, "Output file")->required();
+
+    cpp_cmd->final_callback([&]() {
+      parser::Lexer lex = parser::Lexer::from_file(input_file_name);
+      ast::Module   mod = parser::parse(lex);
+
+      std::ofstream output_file(output_file_name);
+      util::msg::debug("outputting cpphdr file [", output_file_name, "]");
+      mod.to_cpphdr(output_file);
+    });
+  }
+
   CLI11_PARSE(app, argc, argv);
   return 0;
 }

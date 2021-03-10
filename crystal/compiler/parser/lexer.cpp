@@ -11,10 +11,11 @@ namespace crystal::compiler::parser {
 namespace {
 
 static const absl::flat_hash_map<std::string, int> KEYWORDS{
+    {"namespace", TOK_KW_NAMESPACE}, {"struct", TOK_KW_STRUCT},     {"vertex", TOK_KW_VERTEX},
+    {"fragment", TOK_KW_FRAGMENT},   {"pipeline", TOK_KW_PIPELINE}, {"uniform", TOK_KW_UNIFORM},
+    {"instanced", TOK_KW_INSTANCED}, {"return", TOK_KW_RETURN},
     // {"if", TOK_KW_IF},
     // {"else", TOK_KW_ELSE},
-    {"vertex", TOK_KW_VERTEX},       {"fragment", TOK_KW_FRAGMENT}, {"uniform", TOK_KW_UNIFORM},
-    {"namespace", TOK_KW_NAMESPACE}, {"struct", TOK_KW_STRUCT},     {"return", TOK_KW_RETURN},
 };
 
 inline std::tuple<unsigned long long /* value */, int /* digits */,

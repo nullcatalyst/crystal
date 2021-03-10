@@ -159,6 +159,9 @@ public:
 
   ~Ref() { release(); }
 
+  [[nodiscard]] constexpr bool operator == (std::nullptr_t) const { return ref_ == nullptr; }
+  [[nodiscard]] constexpr bool operator != (std::nullptr_t) const { return ref_ != nullptr; }
+
   [[nodiscard]] constexpr    operator T&() { return *ref_->ptr(); }
   [[nodiscard]] constexpr T* operator->() { return ref_->ptr(); }
 

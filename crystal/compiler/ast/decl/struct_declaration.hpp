@@ -12,11 +12,9 @@ class StructDeclaration : public Declaration {
   util::memory::Ref<type::Type> type_;
 
 public:
-  StructDeclaration(util::memory::Ref<type::Type> type) : type_(type) {}
+  StructDeclaration(util::memory::Ref<type::Type> type) : Declaration(type->name()), type_(type) {}
 
   virtual ~StructDeclaration() = default;
-
-  [[nodiscard]] virtual const std::string& name() const { return type_->name(); }
 };
 
 }  // namespace crystal::compiler::ast::decl

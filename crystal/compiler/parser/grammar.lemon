@@ -29,6 +29,7 @@ using Ref = util::memory::Ref<T>;
 %type struct_prop_list  { std::vector<type::StructProperty> }
 %type vert_arg_list { std::vector<decl::VertexInput> }
 %type frag_arg_list { std::vector<decl::FragmentInput> }
+%type pipe_prop_list  { decl::PipelineSettings }
 %type stmt          { Ref<stmt::Statement> }
 %type stmt_list     { std::vector<Ref<stmt::Statement>> }
 %type type          { Ref<type::Type> }
@@ -83,6 +84,13 @@ decl(ret)           ::= KW_FRAGMENT type(ret_type) LIT_IDEN(name)
                             mod->add_fragment_function(fragment_function);
                             ret = fragment_function;
                         }
+decl(ret)           ::= KW_PIPELINE LIT_IDEN(name)
+                        OP_LCRLBRACKET pipe_prop_list(settings) OP_RCRLBRACKET
+                        .                                                       {
+                            const auto pipeline = Ref<decl::PipelineDeclaration>::make(name.string_value, *mod, settings);
+                            mod->add_pipeline(pipeline);
+                            ret = pipeline;
+                        }
 
 struct_prop_list(ret)  ::= struct_prop_list(list)
                         type(type) LIT_IDEN(name) OP_COLON LIT_INT(index) OP_SEMICOLON
@@ -98,6 +106,11 @@ vert_arg_list(ret)  ::= vert_arg_list(list) OP_COMMA
 vert_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON KW_UNIFORM LIT_INT(index)
                         .                                                       { ret = std::vector<decl::VertexInput>{decl::VertexInput{name.string_value, type, decl::VertexInputType::Uniform, static_cast<int32_t>(index.int_value)}}; }
 vert_arg_list(ret)  ::= vert_arg_list(list) OP_COMMA
+                        type(type) LIT_IDEN(name) OP_COLON KW_INSTANCED LIT_INT(index)
+                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputType::Instanced, static_cast<int32_t>(index.int_value)); }
+vert_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON KW_INSTANCED LIT_INT(index)
+                        .                                                       { ret = std::vector<decl::VertexInput>{decl::VertexInput{name.string_value, type, decl::VertexInputType::Instanced, static_cast<int32_t>(index.int_value)}}; }
+vert_arg_list(ret)  ::= vert_arg_list(list) OP_COMMA
                         type(type) LIT_IDEN(name) OP_COLON LIT_INT(index)
                         .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputType::Vertex, static_cast<int32_t>(index.int_value)); }
 vert_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON LIT_INT(index).      { ret = std::vector<decl::VertexInput>{decl::VertexInput{name.string_value, type, decl::VertexInputType::Vertex, static_cast<int32_t>(index.int_value)}}; }
@@ -110,6 +123,10 @@ frag_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON KW_UNIFORM LIT_INT(in
 frag_arg_list(ret)  ::= frag_arg_list(list) OP_COMMA
                         type(type) LIT_IDEN(name).                              { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::FragmentInputType::Varying, -1); }
 frag_arg_list(ret)  ::= type(type) LIT_IDEN(name).                              { ret = std::vector<decl::FragmentInput>{decl::FragmentInput{name.string_value, type, decl::FragmentInputType::Varying, -1}}; }
+
+pipe_prop_list(ret)  ::= pipe_prop_list(list) KW_VERTEX LIT_IDEN(name) OP_SEMICOLON.  { ret = list; ret.vertex_name = name.string_value; }
+pipe_prop_list(ret)  ::= pipe_prop_list(list) KW_FRAGMENT LIT_IDEN(name) OP_SEMICOLON.  { ret = list; ret.fragment_name = name.string_value; }
+pipe_prop_list(ret)  ::= .                                                      { ret = decl::PipelineSettings{}; }
 
 type(ret)           ::= LIT_IDEN(name).                                         {
                             const auto type = mod->find_type(name.string_value);
