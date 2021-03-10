@@ -14,7 +14,7 @@ public:
   virtual ~IntegerExpression() = default;
 
   virtual output::PrintLambda to_glsl() const override {
-    return output::PrintLambda{[value = value_](std::ostream& out) { out << value; }};
+    return output::PrintLambda{[=](std::ostream& out) { out << value_; }};
   }
 };
 

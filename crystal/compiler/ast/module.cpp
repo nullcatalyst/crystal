@@ -36,8 +36,8 @@ void Module::add_base_types() {
 }
 
 std::optional<util::memory::Ref<type::Type>> Module::find_type(std::string_view name) {
-  const auto it = types_.find(name);
-  if (it != types_.cend()) {
+  const auto it = type_dict_.find(name);
+  if (it != type_dict_.cend()) {
     return it->second;
   }
 
@@ -46,8 +46,8 @@ std::optional<util::memory::Ref<type::Type>> Module::find_type(std::string_view 
 
 std::optional<util::memory::Ref<decl::VertexDeclaration>> Module::find_vertex_function(
     std::string_view name) {
-  const auto it = vertex_functions_.find(name);
-  if (it != vertex_functions_.cend()) {
+  const auto it = vertex_function_dict_.find(name);
+  if (it != vertex_function_dict_.cend()) {
     return it->second;
   }
 
@@ -56,8 +56,8 @@ std::optional<util::memory::Ref<decl::VertexDeclaration>> Module::find_vertex_fu
 
 std::optional<util::memory::Ref<decl::FragmentDeclaration>> Module::find_fragment_function(
     std::string_view name) {
-  const auto it = fragment_functions_.find(name);
-  if (it != fragment_functions_.cend()) {
+  const auto it = fragment_function_dict_.find(name);
+  if (it != fragment_function_dict_.cend()) {
     return it->second;
   }
 

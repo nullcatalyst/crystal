@@ -6,11 +6,24 @@
 
 namespace crystal::compiler::ast::stmt {
 
-output::PrintLambda AssignmentStatement::to_glsl(uint32_t indent) const {
+output::PrintLambda AssignmentStatement::to_glsl() const {
   switch (op_) {
     case AssignmentOp::Set:
-      return output::PrintLambda{[indent, var = var_, value = value_](std::ostream& out) {
-        out << output::glsl_indent{indent} << var->to_glsl() << " = " << value->to_glsl() << ";\n";
+      return output::PrintLambda{
+          [=](std::ostream& out) { out << var_->to_glsl() << "=" << value_->to_glsl() << ";"; }};
+
+    default:
+      util::msg::fatal("unhandled assignment operator [", static_cast<uint32_t>(op_), "]");
+      break;
+  }
+}
+
+output::PrintLambda AssignmentStatement::to_pretty_glsl(uint32_t indent) const {
+  switch (op_) {
+    case AssignmentOp::Set:
+      return output::PrintLambda{[=](std::ostream& out) {
+        out << output::glsl_indent{indent} << var_->to_glsl() << " = " << value_->to_glsl()
+            << ";\n";
       }};
 
     default:

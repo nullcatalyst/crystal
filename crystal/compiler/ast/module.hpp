@@ -13,18 +13,32 @@
 namespace crystal::compiler::ast {
 
 class Module {
-  std::vector<std::string>                                                     namespace_;
-  absl::flat_hash_map<std::string, util::memory::Ref<type::Type>>              types_;
-  absl::flat_hash_map<std::string, util::memory::Ref<decl::VertexDeclaration>> vertex_functions_;
+  std::vector<std::string> namespace_;
+
+  std::vector<util::memory::Ref<type::Type>>                      type_list_;
+  absl::flat_hash_map<std::string, util::memory::Ref<type::Type>> type_dict_;
+
+  std::vector<util::memory::Ref<decl::VertexDeclaration>> vertex_function_list_;
+  absl::flat_hash_map<std::string, util::memory::Ref<decl::VertexDeclaration>>
+      vertex_function_dict_;
+
+  std::vector<util::memory::Ref<decl::FragmentDeclaration>> fragment_function_list_;
   absl::flat_hash_map<std::string, util::memory::Ref<decl::FragmentDeclaration>>
-      fragment_functions_;
+      fragment_function_dict_;
 
 public:
   Module() = default;
 
-  [[nodiscard]] const absl::flat_hash_map<std::string, util::memory::Ref<type::Type>>& types()
+  [[nodiscard]] const std::vector<util::memory::Ref<type::Type>>& types() const {
+    return type_list_;
+  }
+  [[nodiscard]] const std::vector<util::memory::Ref<decl::VertexDeclaration>>& vertex_functions()
       const {
-    return types_;
+    return vertex_function_list_;
+  }
+  [[nodiscard]] const std::vector<util::memory::Ref<decl::FragmentDeclaration>>&
+  fragment_functions() const {
+    return fragment_function_list_;
   }
 
   void add_base_types();
@@ -32,15 +46,18 @@ public:
   void set_namespace(std::vector<std::string>& ns) { namespace_ = namespace_; }
 
   void add_type(util::memory::Ref<type::Type> type) {
-    types_.emplace(std::make_pair(type->name(), type));
+    type_list_.emplace_back(type);
+    type_dict_.emplace(std::make_pair(type->name(), type));
   }
 
   void add_vertex_function(util::memory::Ref<decl::VertexDeclaration> decl) {
-    vertex_functions_.emplace(std::make_pair(decl->name(), decl));
+    vertex_function_list_.emplace_back(decl);
+    vertex_function_dict_.emplace(std::make_pair(decl->name(), decl));
   }
 
   void add_fragment_function(util::memory::Ref<decl::FragmentDeclaration> decl) {
-    fragment_functions_.emplace(std::make_pair(decl->name(), decl));
+    fragment_function_list_.emplace_back(decl);
+    fragment_function_dict_.emplace(std::make_pair(decl->name(), decl));
   }
 
   [[nodiscard]] std::optional<util::memory::Ref<type::Type>> find_type(std::string_view name);

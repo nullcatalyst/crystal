@@ -16,7 +16,7 @@ public:
 
   virtual output::PrintLambda to_glsl() const override {
     return output::PrintLambda{
-        [expr = expr_](std::ostream& out) { out << "(" << expr->to_glsl() << ")"; }};
+        [=](std::ostream& out) { out << "(" << expr_->to_glsl() << ")"; }};
   }
 };
 

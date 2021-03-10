@@ -30,24 +30,20 @@ public:
   virtual output::PrintLambda to_glsl() const override {
     switch (op_) {
       case BinOp::Add:
-        return output::PrintLambda{[lhs = lhs_, rhs = rhs_](std::ostream& out) {
-          out << lhs->to_glsl() << "+" << rhs->to_glsl();
-        }};
+        return output::PrintLambda{
+            [=](std::ostream& out) { out << lhs_->to_glsl() << "+" << rhs_->to_glsl(); }};
 
       case BinOp::Sub:
-        return output::PrintLambda{[lhs = lhs_, rhs = rhs_](std::ostream& out) {
-          out << lhs->to_glsl() << "-" << rhs->to_glsl();
-        }};
+        return output::PrintLambda{
+            [=](std::ostream& out) { out << lhs_->to_glsl() << "-" << rhs_->to_glsl(); }};
 
       case BinOp::Mul:
-        return output::PrintLambda{[lhs = lhs_, rhs = rhs_](std::ostream& out) {
-          out << lhs->to_glsl() << "*" << rhs->to_glsl();
-        }};
+        return output::PrintLambda{
+            [=](std::ostream& out) { out << lhs_->to_glsl() << "*" << rhs_->to_glsl(); }};
 
       case BinOp::Div:
-        return output::PrintLambda{[lhs = lhs_, rhs = rhs_](std::ostream& out) {
-          out << lhs->to_glsl() << "/" << rhs->to_glsl();
-        }};
+        return output::PrintLambda{
+            [=](std::ostream& out) { out << lhs_->to_glsl() << "/" << rhs_->to_glsl(); }};
 
       default:
         util::msg::fatal("unhandled binary operator [", static_cast<uint32_t>(op_), "]");

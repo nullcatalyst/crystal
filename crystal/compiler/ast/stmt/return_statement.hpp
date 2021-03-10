@@ -12,10 +12,13 @@ class ReturnStatement : public Statement {
 public:
   ReturnStatement(util::memory::Ref<expr::Expression> expr) : expr_(expr) {}
 
-  virtual output::PrintLambda to_glsl(decl::VertexDeclaration& vertex,
-                                      uint32_t                 indent) const override;
-  virtual output::PrintLambda to_glsl(decl::FragmentDeclaration& fragment,
-                                      uint32_t                   indent) const override;
+  virtual output::PrintLambda to_glsl(const decl::VertexDeclaration& vertex) const override;
+  virtual output::PrintLambda to_glsl(const decl::FragmentDeclaration& fragment) const override;
+
+  virtual output::PrintLambda to_pretty_glsl(const decl::VertexDeclaration& vertex,
+                                             uint32_t                       indent) const override;
+  virtual output::PrintLambda to_pretty_glsl(const decl::FragmentDeclaration& fragment,
+                                             uint32_t indent) const override;
 };
 
 }  // namespace crystal::compiler::ast::stmt

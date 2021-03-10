@@ -5,6 +5,9 @@ cc_binary(
     srcs = [
         "main.cpp",
     ],
+    copts = [
+        "/EHsc",
+    ],
     data = [
         "test.crystal",
     ],

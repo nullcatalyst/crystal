@@ -11,8 +11,50 @@
 
 namespace crystal::compiler::ast::stmt {
 
-output::PrintLambda ReturnStatement::to_glsl(decl::VertexDeclaration& vertex,
-                                             uint32_t                 indent) const {
+output::PrintLambda ReturnStatement::to_glsl(const decl::VertexDeclaration& vertex) const {
+  return output::PrintLambda{[=](std::ostream& out) {
+    out << "const " << vertex.return_type()->name() << " _=" << expr_->to_glsl() << ";";
+
+    const util::memory::Ref<type::StructType> return_struct_type = vertex.return_type();
+    for (auto& prop : return_struct_type->properties()) {
+      if (prop.index < 0) {
+        // Skip properties that don't have an output index.
+        continue;
+      }
+
+      if (prop.index == 0) {
+        // The zero output for the vertex function must be the vertex position.
+        out << "gl_Position=_." << prop.name << ";";
+        continue;
+      }
+
+      out << "o_" << prop.name << "=_." << prop.name << ";";
+    }
+
+    out << "return;";
+  }};
+}
+
+output::PrintLambda ReturnStatement::to_glsl(const decl::FragmentDeclaration& fragment) const {
+  return output::PrintLambda{[=](std::ostream& out) {
+    out << "const " << fragment.return_type()->name() << " _=" << expr_->to_glsl() << ";";
+
+    const util::memory::Ref<type::StructType> return_struct_type = fragment.return_type();
+    for (auto& prop : return_struct_type->properties()) {
+      if (prop.index < 0) {
+        // Skip properties that don't have an output index.
+        continue;
+      }
+
+      out << "o_" << prop.name << "=_." << prop.name << ";";
+    }
+
+    out << "return;";
+  }};
+}
+
+output::PrintLambda ReturnStatement::to_pretty_glsl(const decl::VertexDeclaration& vertex,
+                                                    uint32_t                       indent) const {
   return output::PrintLambda{[=](std::ostream& out) {
     out << output::glsl_indent{indent} << "const " << vertex.return_type()->name()
         << " _ = " << expr_->to_glsl() << ";\n";
@@ -37,8 +79,8 @@ output::PrintLambda ReturnStatement::to_glsl(decl::VertexDeclaration& vertex,
   }};
 }
 
-output::PrintLambda ReturnStatement::to_glsl(decl::FragmentDeclaration& fragment,
-                                             uint32_t                   indent) const {
+output::PrintLambda ReturnStatement::to_pretty_glsl(const decl::FragmentDeclaration& fragment,
+                                                    uint32_t                         indent) const {
   return output::PrintLambda{[=](std::ostream& out) {
     out << output::glsl_indent{indent} << "const " << fragment.return_type()->name()
         << " _ = " << expr_->to_glsl() << ";\n";

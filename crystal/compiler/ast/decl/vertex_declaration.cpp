@@ -7,13 +7,98 @@
 
 namespace crystal::compiler::ast::decl {
 
-void VertexDeclaration::to_glsl(std::ostream& out, Module& mod) {
+void VertexDeclaration::to_glsl(std::ostream& out, Module& mod) const {
+  // Output the version header. This must come first.
+  out << "#version 420 core\n";
+
+  // TODO: Output only the used types.
+  // Output the struct types.
+  for (auto& type : mod.types()) {
+    if (type->builtin()) {
+      continue;
+    }
+
+    out << "struct " << type->name() << "{";
+    const util::memory::Ref<type::StructType> struct_type = type;
+    for (auto& prop : struct_type->properties()) {
+      out << prop.type->name() << " " << prop.name << ";";
+    }
+    out << "};";
+  }
+
+  // Output the uniform blocks.
+  for (auto& input : inputs_) {
+    if (input.input_type != decl::VertexInputType::Uniform) {
+      continue;
+    }
+
+    out << "layout(set=0, binding=" << input.index << ")uniform U" << input.index << "{";
+    const util::memory::Ref<type::StructType> struct_type = input.type;
+    for (auto& prop : struct_type->properties()) {
+      out << prop.type->name() << " " << prop.name << ";";
+    }
+    out << "}" << output::glsl_mangle_name{input.name} << ";";
+  }
+
+  // Output the input variables (vertex buffers).
+  for (auto& input : inputs_) {
+    if (input.input_type != decl::VertexInputType::Vertex &&
+        input.input_type != decl::VertexInputType::Instanced) {
+      continue;
+    }
+
+    const util::memory::Ref<type::StructType> struct_type = input.type;
+    for (auto& prop : struct_type->properties()) {
+      out << "layout(location=" << prop.index << ")in " << prop.type->name() << " i" << prop.index
+          << output::glsl_mangle_name{prop.name} << ";";
+    }
+  }
+
+  // Output the varyings.
+  // This is the decomposed form of the return struct type from the vertex function.
+  const util::memory::Ref<type::StructType> return_struct_type = return_type_;
+  for (auto& prop : return_struct_type->properties()) {
+    if (prop.index <= 0) {
+      // Skip properties that don't have an output index.
+      // The zero output for the vertex function must be the vertex position.
+      continue;
+    }
+
+    out << "layout(location=" << (prop.index - 1) << ")out " << prop.type->name() << " o_"
+        << prop.name << ";";
+  }
+
+  // Output the fixed line denoting the name of the vertex position variable. (Optional)
+  // out << "out gl_PerVertex{vec4 gl_Position;};";
+
+  // Finally output the function implementation.
+  out << "void main(){";
+  for (auto& input : inputs_) {
+    if (input.input_type != decl::VertexInputType::Vertex &&
+        input.input_type != decl::VertexInputType::Instanced) {
+      continue;
+    }
+
+    const util::memory::Ref<type::StructType> struct_type = input.type;
+    out << input.type->name() << " " << output::glsl_mangle_name{input.name} << ";";
+    for (auto& prop : struct_type->properties()) {
+      out << output::glsl_mangle_name{input.name} << "." << prop.name << "=i" << prop.index << "_"
+          << prop.name << ";";
+    }
+  }
+  for (auto stmt : implementation_) {
+    out << stmt->to_glsl(*this);
+  }
+  out << "}";
+}
+
+void VertexDeclaration::to_pretty_glsl(std::ostream& out, Module& mod) const {
   // Output the version header. This must come first.
   out << "#version 420 core\n\n";
 
   // TODO: Output only the used types.
   // Output the struct types.
-  for (auto& [type_name, type] : mod.types()) {
+  for (auto& type : mod.types()) {
     if (type->builtin()) {
       continue;
     }
@@ -92,7 +177,7 @@ void VertexDeclaration::to_glsl(std::ostream& out, Module& mod) {
   }
   out << "\n";
   for (auto stmt : implementation_) {
-    out << stmt->to_glsl(*this, 1);
+    out << stmt->to_pretty_glsl(*this, 1);
   }
   out << "}\n";
 }

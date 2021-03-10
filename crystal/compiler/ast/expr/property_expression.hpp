@@ -17,8 +17,7 @@ public:
   virtual ~PropertyExpression() = default;
 
   virtual output::PrintLambda to_glsl() const override {
-    return output::PrintLambda{
-        [expr = expr_, name = name_](std::ostream& out) { out << expr->to_glsl() << "." << name; }};
+    return output::PrintLambda{[=](std::ostream& out) { out << expr_->to_glsl() << "." << name_; }};
   }
 };
 

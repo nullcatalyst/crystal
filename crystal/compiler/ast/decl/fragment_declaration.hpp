@@ -56,7 +56,8 @@ public:
   [[nodiscard]] virtual const std::string&    name() const override { return name_; }
   [[nodiscard]] util::memory::Ref<type::Type> return_type() const { return return_type_; }
 
-  void to_glsl(std::ostream& out, Module& mod);
+  void to_glsl(std::ostream& out, Module& mod) const;
+  void to_pretty_glsl(std::ostream& out, Module& mod) const;
 };
 
 }  // namespace crystal::compiler::ast::decl

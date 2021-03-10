@@ -42,10 +42,10 @@
             "name": "(win) compiler",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bazel-bin/crystal/compiler/compiler.exe.runfiles/crystal/crystal/compiler/compiler.exe",
+            "program": "${workspaceFolder}/bazel-bin/crystal/compiler/cli/cli.exe.runfiles/crystal/crystal/compiler/cli/cli.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/bazel-bin/crystal/compiler/compiler.exe.runfiles/crystal",
+            "cwd": "${workspaceFolder}/bazel-bin/crystal/compiler/cli/cli.exe.runfiles/crystal",
             "environment": [],
             "externalConsole": false
         },

@@ -15,8 +15,7 @@ public:
   virtual ~IdentifierExpression() = default;
 
   virtual output::PrintLambda to_glsl() const override {
-    return output::PrintLambda{
-        [name = name_](std::ostream& out) { out << output::glsl_mangle_name{name}; }};
+    return output::PrintLambda{[=](std::ostream& out) { out << output::glsl_mangle_name{name_}; }};
   }
 };
 
