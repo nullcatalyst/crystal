@@ -13,9 +13,9 @@
 #include "crystal/metal/mtl.hpp"
 #include "crystal/metal/pipeline.hpp"
 #include "crystal/metal/render_pass.hpp"
+#include "crystal/metal/texture.hpp"
 #include "crystal/metal/uniform_buffer.hpp"
 #include "crystal/metal/vertex_buffer.hpp"
-#include "util/memory/ref_count.hpp"
 
 #ifdef CRYSTAL_USE_SDL2
 
@@ -54,10 +54,11 @@ public:
   };
 
 private:
-  SDL_Window* window_                  = nullptr;
-  OBJC(CAMetalLayer) metal_layer_      = nullptr;
-  OBJC(MTLDevice) device_              = nullptr;
-  OBJC(MTLCommandQueue) command_queue_ = nullptr;
+  SDL_Window* window_                    = nullptr;
+  OBJC(CAMetalLayer) metal_layer_        = nullptr;
+  OBJC(MTLDevice) device_                = nullptr;
+  OBJC(MTLCommandQueue) command_queue_   = nullptr;
+  OBJC(MTLTexture) screen_depth_texture_ = nullptr;
   RenderPass screen_render_pass_;
 
 #endif  // ^^^ defined(CRYSTAL_USE_SDL2)
@@ -84,8 +85,13 @@ public:
 
   CommandBuffer next_frame();
 
-  // TODO:
-  // RenderPass create_render_pass(const RenderPassDesc& desc);
+  Texture create_texture(const TextureDesc& desc);
+
+  RenderPass create_render_pass(
+      const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures);
+  RenderPass create_render_pass(
+      const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
+      const std::tuple<const Texture&, AttachmentDesc>                        depth_texture);
 
   Library  create_library(const std::string_view base_path);
   Pipeline create_pipeline(Library& library, RenderPass& render_pass, const PipelineDesc& desc);
@@ -127,9 +133,18 @@ inline Library Context::create_library(const std::string_view spv_path) {
   return Library(device_, std::string(spv_path));
 }
 
-// inline RenderPass Context::create_render_pass(const RenderPassDesc& desc) {
-//   return RenderPass(*this, desc);
-// }
+inline Texture Context::create_texture(const TextureDesc& desc) { return Texture(device_, desc); }
+
+inline RenderPass Context::create_render_pass(
+    const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures) {
+  return RenderPass(color_textures);
+}
+
+inline RenderPass Context::create_render_pass(
+    const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
+    const std::tuple<const Texture&, AttachmentDesc>                        depth_texture) {
+  return RenderPass(color_textures, depth_texture);
+}
 
 inline Pipeline Context::create_pipeline(Library& library, RenderPass& render_pass,
                                          const PipelineDesc& desc) {

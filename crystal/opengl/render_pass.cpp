@@ -77,10 +77,10 @@ void RenderPass::destroy() noexcept {
 
 RenderPass::RenderPass(Context& ctx)
     : ctx_(&ctx), framebuffer_(0), attachment_count_(1), has_depth_(true) {
-  clear_colors_[0].clear = true;
-  clear_colors_[0].color = {0.0f, 0.0f, 0.0f, 0.0f};
-  clear_depth_.clear     = true;
-  clear_depth_.depth     = 1.0f;
+  clear_colors_[0].clear             = true;
+  clear_colors_[0].clear_value.color = {0.0f, 0.0f, 0.0f, 0.0f};
+  clear_depth_.clear                 = true;
+  clear_depth_.clear_value.depth     = 1.0f;
 }
 
 RenderPass::RenderPass(

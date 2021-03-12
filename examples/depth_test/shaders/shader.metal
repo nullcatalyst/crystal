@@ -12,18 +12,18 @@ struct Vertex {
   float4 color    [[ attribute(1) ]];
 };
 
-struct TriangleInOut {
+struct InOut {
   float4 position [[ position ]];
   float4 color;
 };
 
-vertex TriangleInOut triangle_vert(Vertex in [[ stage_in ]], constant Uniform& uniform [[ buffer(1) ]]) {
-  TriangleInOut out;
-  out.position = uniform.matrix * in.position;
+vertex InOut depth_test_vert(Vertex in [[ stage_in ]], constant Uniform& u [[ buffer(1) ]]) {
+  InOut out;
+  out.position = u.matrix * in.position;
   out.color    = in.color;
   return out;
 }
 
-fragment float4 triangle_frag(TriangleInOut in [[ stage_in ]], constant Uniform& uniform [[ buffer(1) ]]) {
+fragment float4 depth_test_frag(InOut in [[ stage_in ]], constant Uniform& u [[ buffer(1) ]]) {
   return float4(in.color);
 }

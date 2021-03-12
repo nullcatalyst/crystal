@@ -9,7 +9,9 @@
 namespace crystal::metal {
 
 Pipeline::Pipeline(Pipeline&& other)
-    : render_pipeline_(other.render_pipeline_), depth_stencil_state_(other.depth_stencil_state_) {
+    : render_pipeline_(other.render_pipeline_),
+      depth_stencil_state_(other.depth_stencil_state_),
+      cull_mode_(other.cull_mode_) {
   other.render_pipeline_     = nullptr;
   other.depth_stencil_state_ = nullptr;
   other.cull_mode_           = MTLCullModeNone;
@@ -20,6 +22,7 @@ Pipeline& Pipeline::operator=(Pipeline&& other) {
 
   render_pipeline_     = other.render_pipeline_;
   depth_stencil_state_ = other.depth_stencil_state_;
+  cull_mode_           = other.cull_mode_;
 
   other.render_pipeline_     = nullptr;
   other.depth_stencil_state_ = nullptr;
@@ -63,17 +66,24 @@ Pipeline::Pipeline(OBJC(MTLDevice) device, Library& library, RenderPass& render_
   MTLRenderPipelineDescriptor* pipeline_state_desc = [[MTLRenderPipelineDescriptor alloc] init];
   id<MTLFunction>              vertex_function     = [library.library_
       newFunctionWithName:[NSString stringWithCString:desc.vertex encoding:NSUTF8StringEncoding]];
-  id<MTLFunction>              fragment_function   = [library.library_
-      newFunctionWithName:[NSString stringWithCString:desc.fragment encoding:NSUTF8StringEncoding]];
+  id<MTLFunction>              fragment_function   = nullptr;
+
+  if (desc.fragment != nullptr) {
+    fragment_function =
+        [library.library_ newFunctionWithName:[NSString stringWithCString:desc.fragment
+                                                                 encoding:NSUTF8StringEncoding]];
+  }
 
   [pipeline_state_desc setVertexDescriptor:vertex_descriptor];
   [pipeline_state_desc setVertexFunction:vertex_function];
   [pipeline_state_desc setFragmentFunction:fragment_function];
 
-  for (int i = 0; i < render_pass.attachment_count_; ++i) {
-    pipeline_state_desc.colorAttachments[i].pixelFormat = render_pass.pixel_formats_[i];
+  for (int i = 0; i < render_pass.color_count_; ++i) {
+    pipeline_state_desc.colorAttachments[i].pixelFormat = render_pass.color_pixel_formats_[i];
   }
-  // pipeline_state_desc.depthAttachmentPixelFormat = MTLDepthFormat;
+  if (render_pass.has_depth_) {
+    pipeline_state_desc.depthAttachmentPixelFormat = render_pass.depth_pixel_format_;
+  }
 
   MTLDepthStencilDescriptor* depth_stencil_desc = [[MTLDepthStencilDescriptor alloc] init];
   depth_stencil_desc.depthCompareFunction       = static_cast<MTLCompareFunction>(desc.depth_test);

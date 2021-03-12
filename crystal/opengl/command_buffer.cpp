@@ -65,13 +65,13 @@ void CommandBuffer::use_render_pass(RenderPass& render_pass) {
   GL_ASSERT(glViewport(0, 0, render_pass.width_, render_pass.height_), "changing viewport size");
 
   for (uint32_t i = 0; i < render_pass.attachment_count_; ++i) {
-    GL_ASSERT(glClearBufferfv(GL_COLOR, i, render_pass.clear_colors_[i].array),
+    GL_ASSERT(glClearBufferfv(GL_COLOR, i, render_pass.clear_colors_[i].clear_value.array),
               "setting clear color");
   }
 
   if (render_pass.clear_depth_.clear) {
     GL_ASSERT(glDepthMask(GL_TRUE), "enabling depth writing before clearing the depth");
-    GL_ASSERT(glClearDepthf(render_pass.clear_depth_.depth), "setting clear depth");
+    GL_ASSERT(glClearDepthf(render_pass.clear_depth_.clear_value.depth), "setting clear depth");
     GL_ASSERT(glClear(GL_DEPTH_BUFFER_BIT), "clearing frame buffer depth");
   }
 }

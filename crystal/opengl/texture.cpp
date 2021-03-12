@@ -58,19 +58,19 @@ Texture::Texture(Context& ctx, const TextureDesc& desc)
       type            = GL_UNSIGNED_BYTE;
       break;
 
-    case TextureFormat::R8G8u:
+    case TextureFormat::RG8u:
       internal_format = GL_RG8;
       format          = GL_RG;
       type            = GL_UNSIGNED_BYTE;
       break;
 
-    case TextureFormat::R8G8B8u:
+    case TextureFormat::RGB8u:
       internal_format = GL_RGB8;
       format          = GL_RGB;
       type            = GL_UNSIGNED_BYTE;
       break;
 
-    case TextureFormat::R8G8B8A8u:
+    case TextureFormat::RGBA8u:
       internal_format = GL_RGBA8;
       format          = GL_RGBA;
       type            = GL_UNSIGNED_BYTE;
@@ -82,19 +82,19 @@ Texture::Texture(Context& ctx, const TextureDesc& desc)
       type            = GL_BYTE;
       break;
 
-    case TextureFormat::R8G8s:
+    case TextureFormat::RG8s:
       internal_format = GL_RG8;
       format          = GL_RG;
       type            = GL_BYTE;
       break;
 
-    case TextureFormat::R8G8B8s:
+    case TextureFormat::RGB8s:
       internal_format = GL_RGB8;
       format          = GL_RGB;
       type            = GL_BYTE;
       break;
 
-    case TextureFormat::R8G8B8A8s:
+    case TextureFormat::RGBA8s:
       internal_format = GL_RGBA8_SNORM;
       format          = GL_RGBA;
       type            = GL_BYTE;

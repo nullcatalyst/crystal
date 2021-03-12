@@ -15,7 +15,7 @@ struct AttachmentDesc {
       float alpha;
     } color;
     float depth;
-  };
+  } clear_value;
 };
 
 }  // namespace crystal

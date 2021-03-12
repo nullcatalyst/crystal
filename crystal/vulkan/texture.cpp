@@ -116,12 +116,12 @@ Texture::Texture(Context& ctx, const TextureDesc& desc) {
     case TextureFormat::Undefined:
       util::msg::fatal("undefined texture format");
 
-    case TextureFormat::RGBA32u:
+    case TextureFormat::RGBA8u:
       format_ = VK_FORMAT_R8G8B8A8_UNORM;
       layout_ = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
       break;
 
-    case TextureFormat::RGBA32s:
+    case TextureFormat::RGBA8s:
       format_ = VK_FORMAT_R8G8B8A8_SNORM;
       layout_ = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
       break;

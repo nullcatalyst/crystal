@@ -5,6 +5,7 @@
 #include "crystal/metal/mesh.hpp"
 #include "crystal/metal/pipeline.hpp"
 #include "crystal/metal/render_pass.hpp"
+#include "crystal/metal/texture.hpp"
 #include "crystal/metal/uniform_buffer.hpp"
 
 namespace crystal::metal {
@@ -30,15 +31,15 @@ void CommandBuffer::use_render_pass(RenderPass& render_pass) {
                                    /* .originY = */ 0.0,
                                    /* .width   = */ static_cast<double>(render_pass.width_),
                                    /* .height  = */ static_cast<double>(render_pass.height_),
-                                   /* .znear   = */ 1.0,
-                                   /* .zfar    = */ 0.0,
+                                   /* .znear   = */ 0.0,
+                                   /* .zfar    = */ 1.0,
                                }];
-  // [render_encoder_ setScissorRect:MTLScissorRect{
-  //                                     /* .x      = */ 0,
-  //                                     /* .y      = */ 0,
-  //                                     /* .width  = */ render_pass.width_,
-  //                                     /* .height = */ render_pass.height_,
-  //                                 }];
+  [render_encoder_ setScissorRect:MTLScissorRect{
+                                      /* .x      = */ 0,
+                                      /* .y      = */ 0,
+                                      /* .width  = */ render_pass.width_,
+                                      /* .height = */ render_pass.height_,
+                                  }];
 }
 
 void CommandBuffer::use_pipeline(Pipeline& pipeline) {
@@ -53,6 +54,10 @@ void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t l
   [render_encoder_ setFragmentBuffer:uniform_buffer.buffer_ offset:0 atIndex:binding];
 }
 
+void CommandBuffer::use_texture(Texture& texture, uint32_t location, uint32_t binding) {
+  [render_encoder_ setFragmentTexture:texture.texture_ atIndex:binding];
+}
+
 void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count) {
   for (int i = 0; i < mesh.binding_count_; ++i) {
     [render_encoder_ setVertexBuffer:mesh.bindings_[i].buffer
@@ -60,7 +65,19 @@ void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t in
                              atIndex:mesh.bindings_[i].index];
   }
 
-  [render_encoder_ drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:vertex_or_index_count];
+  if (mesh.index_buffer_ != nullptr) {
+    [render_encoder_ drawIndexedPrimitives:MTLPrimitiveTypeTriangleStrip
+                                indexCount:vertex_or_index_count
+                                 indexType:MTLIndexTypeUInt16
+                               indexBuffer:mesh.index_buffer_
+                         indexBufferOffset:0
+                             instanceCount:instance_count];
+  } else {
+    [render_encoder_ drawPrimitives:MTLPrimitiveTypeTriangleStrip
+                        vertexStart:0
+                        vertexCount:vertex_or_index_count
+                      instanceCount:instance_count];
+  }
 }
 
 CommandBuffer::CommandBuffer(OBJC(CAMetalDrawable) metal_drawable,
