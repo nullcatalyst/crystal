@@ -72,6 +72,8 @@ GLuint compile_program(GLuint program, const std::string& vertex_source) {
 
 GLuint compile_program(GLuint program, const std::string& vertex_source,
                        const std::string& fragment_source) {
+  util::msg::debug("vertex_source=", vertex_source);
+  util::msg::debug("fragment_source=", fragment_source);
   GLuint vertex_shader   = compile_shader(GL_VERTEX_SHADER, vertex_source);
   GLuint fragment_shader = compile_shader(GL_FRAGMENT_SHADER, fragment_source);
 
@@ -186,23 +188,62 @@ Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
       depth_write_(desc.depth_write),
       blend_src_(desc.blend_src),
       blend_dst_(desc.blend_dst) {
-  if (desc.fragment != nullptr) {
-    std::string vertex_source =
-        util::fs::read_file_string(util::fs::path_join(library.path_, desc.vertex));
-    std::string fragment_source =
-        util::fs::read_file_string(util::fs::path_join(library.path_, desc.fragment));
+  // if (desc.fragment != nullptr) {
+  //   std::string vertex_source;
+  //   for (int i = 0; i < library.lib_.opengl().vertex_functions_size(); ++i) {
+  //     const auto& vsh = library.lib_.opengl().vertex_functions(i);
+  //     if (vsh.name() == desc.vertex) {
+  //       vertex_source = vsh.source();
+  //       break;
+  //     }
+  //   }
 
-    GLuint program = 0;
-    GL_ASSERT(program = glCreateProgram(), "creating shader program");
-    program_ = compile_program(program, vertex_source, fragment_source);
-  } else {
-    // Vertex-only shader.
-    std::string vertex_source =
-        util::fs::read_file_string(util::fs::path_join(library.path_, desc.vertex));
+  //   std::string fragment_source;
+  //   for (int i = 0; i < library.lib_.opengl().fragment_functions_size(); ++i) {
+  //     const auto& fsh = library.lib_.opengl().fragment_functions(i);
+  //     if (fsh.name() == desc.fragment) {
+  //       fragment_source = fsh.source();
+  //       break;
+  //     }
+  //   }
 
-    GLuint program = 0;
-    GL_ASSERT(program = glCreateProgram(), "creating shader program");
-    program_ = compile_program(program, vertex_source);
+  //   GLuint program = 0;
+  //   GL_ASSERT(program = glCreateProgram(), "creating shader program");
+  //   program_ = compile_program(program, vertex_source, fragment_source);
+  // } else {
+  //   // Vertex-only shader.
+  //   std::string vertex_source;
+  //   for (int i = 0; i < library.lib_.opengl().vertex_functions_size(); ++i) {
+  //     const auto& vsh = library.lib_.opengl().vertex_functions(i);
+  //     if (vsh.name() == desc.vertex) {
+  //       vertex_source = vsh.source();
+  //       break;
+  //     }
+  //   }
+
+  //   GLuint program = 0;
+  //   GL_ASSERT(program = glCreateProgram(), "creating shader program");
+  //   program_ = compile_program(program, vertex_source);
+  // }
+
+  for (int i = 0; i < library.lib_pb_.pipelines_size(); ++i) {
+    const auto& pipeline_pb = library.lib_pb_.pipelines(i);
+    if (pipeline_pb.name() != desc.name) {
+      continue;
+    }
+
+    if (pipeline_pb.opengl().fragment_source().size() > 0) {
+      GLuint program = 0;
+      GL_ASSERT(program = glCreateProgram(), "creating shader program");
+      program_ = compile_program(program, pipeline_pb.opengl().vertex_source(),
+                                 pipeline_pb.opengl().fragment_source());
+    } else {
+      GLuint program = 0;
+      GL_ASSERT(program = glCreateProgram(), "creating shader program");
+      program_ = compile_program(program, pipeline_pb.opengl().vertex_source());
+    }
+
+    break;
   }
 
   bindings_.resize(desc.vertex_attributes.size());

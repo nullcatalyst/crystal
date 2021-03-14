@@ -8,13 +8,11 @@ cc_binary(
     copts = [
         "/EHsc",
     ],
-    data = [
-        "test.crystal",
-    ],
     visibility = [
         "//visibility:public",
     ],
     deps = [
+        "//crystal/common/proto",
         "//crystal/compiler/ast",
         "//crystal/compiler/parser",
         "//third_party/cli11",

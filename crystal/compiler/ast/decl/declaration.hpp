@@ -6,6 +6,7 @@
 namespace crystal::compiler::ast::decl {
 
 class Declaration {
+protected:
   std::string name_;
 
 public:

@@ -106,7 +106,7 @@ public:
       const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
       const std::tuple<const Texture&, AttachmentDesc>                        depth_texture);
 
-  Library  create_library(const std::string_view base_path);
+  Library  create_library(const std::string_view library_file_path);
   Pipeline create_pipeline(Library& library, RenderPass& render_pass, const PipelineDesc& desc);
 
   UniformBuffer create_uniform_buffer(const size_t byte_length);
@@ -163,8 +163,8 @@ inline RenderPass Context::create_render_pass(
   return RenderPass(*this, color_textures, depth_texture);
 }
 
-inline Library Context::create_library(const std::string_view spv_path) {
-  return Library(std::string(spv_path));
+inline Library Context::create_library(const std::string_view library_file_path) {
+  return Library(std::string(library_file_path));
 }
 
 inline Pipeline Context::create_pipeline(Library& library, RenderPass& render_pass,

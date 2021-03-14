@@ -96,16 +96,29 @@ public:
   Library  create_library(const std::string_view base_path);
   Pipeline create_pipeline(Library& library, RenderPass& render_pass, const PipelineDesc& desc);
 
+  template <typename Container>
+  UniformBuffer create_uniform_buffer(const Container& container) {
+    return create_uniform_buffer(container.data(), sizeof(container[0]) * container.size());
+  }
   UniformBuffer create_uniform_buffer(size_t byte_length);
   UniformBuffer create_uniform_buffer(const void* const data_ptr, const size_t byte_length);
   void          update_uniform_buffer(UniformBuffer& uniform_buffer, const void* const data_ptr,
                                       const size_t byte_length);
 
+  template <typename Container>
+  VertexBuffer create_vertex_buffer(const Container& container) {
+    return create_vertex_buffer(container.data(), sizeof(container[0]) * container.size());
+  }
+  VertexBuffer create_vertex_buffer(size_t byte_length);
   VertexBuffer create_vertex_buffer(size_t byte_length);
   VertexBuffer create_vertex_buffer(const void* const data_ptr, const size_t byte_length);
   void         update_vertex_buffer(VertexBuffer& vertex_buffer, const void* const data_ptr,
                                     const size_t byte_length);
 
+  template <typename Container>
+  IndexBuffer create_index_buffer(const Container& container) {
+    return create_index_buffer(container.data(), sizeof(container[0]) * container.size());
+  }
   IndexBuffer create_index_buffer(size_t byte_length);
   IndexBuffer create_index_buffer(const uint16_t* const data_ptr, const size_t byte_length);
   void        update_index_buffer(IndexBuffer& vertex_buffer, const uint16_t* const data_ptr,

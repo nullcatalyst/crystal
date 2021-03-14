@@ -1,6 +1,10 @@
 #include "crystal/compiler/ast/module.hpp"
 
+#include <sstream>
+
+#include "crystal/common/proto/proto.hpp"
 #include "crystal/compiler/ast/type/all.hpp"
+#include "util/msg/msg.hpp"
 
 namespace crystal::compiler::ast {
 
@@ -64,16 +68,14 @@ const std::optional<util::memory::Ref<decl::FragmentDeclaration>> Module::find_f
   return std::nullopt;
 }
 
-void Module::to_cpphdr(std::ostream& out) const {
+void Module::to_cpphdr(std::ostream& out, const CppOutputOptions& opts) const {
   out << "#pragma once\n\n"
-      << "#include \"crystal/pipeline_desc.hpp\"\n"
+      << "#include \"crystal/common/pipeline_desc.hpp\"\n"
       << "#include \"glm/glm.hpp\"\n\n";
-
-  const auto cpp17 = true;
 
   // Output the start of the namespace.
   if (namespace_.size() > 0) {
-    if (cpp17) {
+    if (opts.cpp17) {
       out << "namespace ";
       for (int i = 0; i < namespace_.size(); ++i) {
         if (i > 0) {
@@ -113,7 +115,7 @@ void Module::to_cpphdr(std::ostream& out) const {
 
   // Output the end of the namespace.
   if (namespace_.size() > 0) {
-    if (cpp17) {
+    if (opts.cpp17) {
       out << "}  // namespace ";
       for (int i = 0; i < namespace_.size(); ++i) {
         if (i > 0) {
@@ -127,6 +129,42 @@ void Module::to_cpphdr(std::ostream& out) const {
         out << "}  // namespace " << namespace_[i] << "\n";
       }
     }
+  }
+}
+
+void Module::to_crystallib(std::ostream& out, const CrystallibOutputOptions& opts) const {
+  crystal::common::proto::Library lib_pb;
+
+  for (const auto& pipeline : pipeline_list_) {
+    pipeline->to_crystallib(*lib_pb.add_pipelines(), *this);
+
+    // vertex_function->to_glsl(out, *this);
+
+    // crystal::common::proto::GLShader* vsh = lib.mutable_opengl()->add_vertex_functions();
+    // vsh->set_name(vertex_function->name());
+    // vsh->set_source(out.str());
+  }
+
+  // for (const auto& vertex_function : vertex_function_list_) {
+  //   std::ostringstream out;
+  //   vertex_function->to_glsl(out, *this);
+
+  //   crystal::common::proto::GLShader* vsh = lib.mutable_opengl()->add_vertex_functions();
+  //   vsh->set_name(vertex_function->name());
+  //   vsh->set_source(out.str());
+  // }
+
+  // for (const auto& fragment_function : fragment_function_list_) {
+  //   std::ostringstream out;
+  //   fragment_function->to_glsl(out, *this);
+
+  //   crystal::common::proto::GLShader* fsh = lib.mutable_opengl()->add_fragment_functions();
+  //   fsh->set_name(fragment_function->name());
+  //   fsh->set_source(out.str());
+  // }
+
+  if (!lib_pb.SerializeToOstream(&out)) {
+    util::msg::fatal("serializing library to file");
   }
 }
 

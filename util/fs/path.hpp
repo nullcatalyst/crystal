@@ -51,8 +51,8 @@ inline std::string path_join(const std::initializer_list<std::string_view> parts
   return result;
 }
 
-inline std::string ext_replace(const std::string_view path, const std::string_view ext,
-                               const std::string_view new_ext) {
+inline std::string replace_extension(const std::string_view path, const std::string_view ext,
+                                     const std::string_view new_ext) {
   std::string result;
 
   if (path.size() <= ext.size() || std::equal(ext.rbegin(), ext.rend(), path.rbegin())) {

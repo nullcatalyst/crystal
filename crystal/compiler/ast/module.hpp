@@ -13,6 +13,18 @@
 
 namespace crystal::compiler::ast {
 
+struct CppOutputOptions {
+  bool cpp17;
+};
+
+struct CrystallibOutputOptions {
+  // Path to the glslangValidator executable that will be used to convert glsl to spv.
+  std::string_view glslang_validator_path;
+  // Path to the spirv-link executable that will be used to merge the individual spv files into a
+  // single monolithic library.
+  std::string_view spirv_link_path;
+};
+
 class Module {
   std::vector<std::string> namespace_;
 
@@ -76,7 +88,8 @@ public:
   [[nodiscard]] const std::optional<util::memory::Ref<decl::FragmentDeclaration>>
   find_fragment_function(std::string_view name) const;
 
-  void to_cpphdr(std::ostream& out) const;
+  void to_cpphdr(std::ostream& out, const CppOutputOptions& opts) const;
+  void to_crystallib(std::ostream& out, const CrystallibOutputOptions& opts) const;
 };
 
 }  // namespace crystal::compiler::ast

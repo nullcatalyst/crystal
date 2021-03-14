@@ -38,8 +38,37 @@ def crystal_dependencies():
         )
 
         # load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
-
         # bazel_skylib_workspace()
+
+    # Protocol Buffers (compiler)
+    _maybe(
+        http_archive,
+        name = "com_google_protobuf",
+        strip_prefix = "protobuf-3.13.0",
+        sha256 = "9b4ee22c250fe31b16f1a24d61467e40780a3fbb9b91c3b65be2a376ed913a1a",
+        urls = [
+            "https://github.com/protocolbuffers/protobuf/archive/v3.13.0.tar.gz",
+        ],
+    )
+
+    # load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+    # protobuf_deps()
+
+    # Protocol Buffers (Bazel rules)
+    _maybe(
+        http_archive,
+        name = "rules_proto",
+        sha256 = "602e7161d9195e50246177e7c55b2f39950a9cf7366f74ed5f22fd45750cd208",
+        strip_prefix = "rules_proto-97d8af4dc474595af3900dd85cb3a29ad28cc313",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_proto/archive/97d8af4dc474595af3900dd85cb3a29ad28cc313.tar.gz",
+            "https://github.com/bazelbuild/rules_proto/archive/97d8af4dc474595af3900dd85cb3a29ad28cc313.tar.gz",
+        ],
+    )
+
+    # load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+    # rules_proto_dependencies()
+    # rules_proto_toolchains()
 
     # Apple Support
     if not native.existing_rule("build_bazel_apple_support"):
@@ -51,7 +80,6 @@ def crystal_dependencies():
         )
 
         # load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
-
         # apple_support_dependencies()
 
     # Abseil

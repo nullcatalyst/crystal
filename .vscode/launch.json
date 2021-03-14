@@ -8,10 +8,10 @@
             "name": "(win) triangle",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bazel-bin/examples/triangle/vulkan.exe.runfiles/crystal/examples/triangle/vulkan.exe",
+            "program": "${workspaceFolder}/bazel-bin/examples/triangle/opengl.exe.runfiles/crystal/examples/triangle/opengl.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/bazel-bin/examples/triangle/vulkan.exe.runfiles/crystal",
+            "cwd": "${workspaceFolder}/bazel-bin/examples/triangle/opengl.exe.runfiles/crystal",
             "environment": [],
             "externalConsole": false
         },

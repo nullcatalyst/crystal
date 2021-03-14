@@ -42,10 +42,10 @@ class VertexDeclaration : public Declaration {
   std::vector<util::memory::Ref<stmt::Statement>> implementation_;
 
 public:
-  VertexDeclaration(std::string_view name, util::memory::Ref<type::Type> return_type,
+  VertexDeclaration(util::memory::Ref<type::Type>                     return_type,
                     std::vector<decl::VertexInput>&&                  inputs,
                     std::vector<util::memory::Ref<stmt::Statement>>&& implementation)
-      : Declaration(name),
+      : Declaration(""),
         return_type_(return_type),
         inputs_(std::move(inputs)),
         implementation_(std::move(implementation)) {}
@@ -55,8 +55,10 @@ public:
   [[nodiscard]] util::memory::Ref<type::Type>  return_type() const { return return_type_; }
   [[nodiscard]] const std::vector<VertexInput> inputs() const { return inputs_; }
 
-  void to_glsl(std::ostream& out, Module& mod) const;
-  void to_pretty_glsl(std::ostream& out, Module& mod) const;
+  void set_name(const std::string_view name) { name_ = name; }
+
+  void to_glsl(std::ostream& out, const Module& mod) const;
+  void to_pretty_glsl(std::ostream& out, const Module& mod) const;
 };
 
 }  // namespace crystal::compiler::ast::decl

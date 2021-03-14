@@ -4,7 +4,7 @@
 #include <type_traits>
 
 #include "SDL.h"
-#include "examples/triangle/triangle_view.hpp"
+#include "examples/triangle/view.hpp"
 #include "util/msg/msg.hpp"
 
 namespace {
@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
   // Wrap usage of the view in an extra block so that the view destructor is called before the
   // window is destroyed.
   {
-    auto view = TriangleView<Context>(ctx, angle);
+    auto view = examples::triangle::View<Context>(ctx, angle);
     // Render the first frame before showing the window so that we don't flash an unrendered window.
     view.frame(angle);
     SDL_ShowWindow(window);

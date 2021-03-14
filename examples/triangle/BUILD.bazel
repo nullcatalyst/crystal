@@ -4,10 +4,11 @@ cc_binary(
     name = "opengl",
     srcs = [
         "main.cpp",
-        "triangle_view.hpp",
+        "view.hpp",
+        "//examples/triangle/shaders:shader.hpp",
     ],
     data = [
-        "//examples/triangle/shaders:glsl",
+        "//examples/triangle/shaders:shader.crystallib",
     ],
     defines = [
         "CRYSTAL_USE_OPENGL=1",

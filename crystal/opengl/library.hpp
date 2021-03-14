@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
 #include <string_view>
+
+#include "crystal/common/proto/proto.hpp"
 
 namespace crystal::opengl {
 
@@ -10,7 +11,7 @@ class Shader;
 class Pipeline;
 
 class Library {
-  std::string path_ = {};
+  common::proto::Library lib_pb_;
 
 public:
   constexpr Library() = default;
@@ -30,7 +31,7 @@ private:
   friend class ::crystal::opengl::Shader;
   friend class ::crystal::opengl::Pipeline;
 
-  Library(const std::string_view path) : path_(path) {}
+  Library(const std::string_view path);
 };
 
 }  // namespace crystal::opengl

@@ -7,7 +7,7 @@
 
 namespace crystal::compiler::ast::decl {
 
-void VertexDeclaration::to_glsl(std::ostream& out, Module& mod) const {
+void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
   // Output the version header. This must come first.
   out << "#version 420 core\n";
 
@@ -92,7 +92,7 @@ void VertexDeclaration::to_glsl(std::ostream& out, Module& mod) const {
   out << "}";
 }
 
-void VertexDeclaration::to_pretty_glsl(std::ostream& out, Module& mod) const {
+void VertexDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) const {
   // Output the version header. This must come first.
   out << "#version 420 core\n\n";
 

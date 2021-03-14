@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <initializer_list>
+#include <string_view>
 
 namespace crystal {
 
@@ -72,8 +73,7 @@ struct VertexBufferDesc {
 };
 
 struct PipelineDesc {
-  const char*                                vertex;
-  const char*                                fragment;
+  std::string_view                           name;
   CullMode                                   cull_mode;
   Winding                                    winding;
   DepthTest                                  depth_test;

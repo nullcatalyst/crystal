@@ -1,24 +1,27 @@
 #include "cli11/cli11.hpp"
+#include "crystal/common/proto/proto.hpp"
 #include "crystal/compiler/parser/lexer.hpp"
 #include "crystal/compiler/parser/parse.hpp"
 #include "util/fs/path.hpp"
 
 int main(const int argc, const char* const argv[]) {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
   using namespace crystal::compiler;
 
   cli::App app("App description");
 
   {  // Convert to glsl.
-    const auto glsl_cmd = app.add_subcommand("glsl");
+    const auto cmd = app.add_subcommand("glsl");
 
     std::string input_file_name;
-    glsl_cmd->add_option("-i,--input", input_file_name, "Input file name")->required();
+    cmd->add_option("-i,--input", input_file_name, "Input file name")->required();
     std::string output_directory = "";
-    glsl_cmd->add_option("-o,--output", output_directory, "Output directory");
+    cmd->add_option("-o,--output", output_directory, "Output directory");
     bool pretty = false;
-    glsl_cmd->add_flag("--pretty", pretty, "Output the shaders in a human readable form");
+    cmd->add_flag("--pretty", pretty, "Output the shaders in a human readable form");
 
-    glsl_cmd->final_callback([&]() {
+    cmd->final_callback([&]() {
       parser::Lexer lex = parser::Lexer::from_file(input_file_name);
       ast::Module   mod = parser::parse(lex);
 
@@ -51,20 +54,51 @@ int main(const int argc, const char* const argv[]) {
   }
 
   {  // Convert to cpp.
-    const auto cpp_cmd = app.add_subcommand("cpp");
+    const auto cmd = app.add_subcommand("cpp");
 
     std::string input_file_name;
-    cpp_cmd->add_option("-i,--input", input_file_name, "Input file name")->required();
+    cmd->add_option("-i,--input", input_file_name, "Input file name")->required();
     std::string output_file_name = "";
-    cpp_cmd->add_option("-o,--output", output_file_name, "Output file")->required();
+    cmd->add_option("-o,--output", output_file_name, "Output file");
 
-    cpp_cmd->final_callback([&]() {
+    cmd->final_callback([&]() {
       parser::Lexer lex = parser::Lexer::from_file(input_file_name);
       ast::Module   mod = parser::parse(lex);
 
+      if (output_file_name.size() == 0) {
+        output_file_name = util::fs::replace_extension(input_file_name, "crystal", "hpp");
+      }
+
       std::ofstream output_file(output_file_name);
       util::msg::debug("outputting cpphdr file [", output_file_name, "]");
-      mod.to_cpphdr(output_file);
+      mod.to_cpphdr(output_file, crystal::compiler::ast::CppOutputOptions{
+                                     .cpp17 = true,
+                                 });
+    });
+  }
+
+  {  // Convert to crystallib.
+    const auto cmd = app.add_subcommand("lib");
+
+    std::string input_file_name;
+    cmd->add_option("-i,--input", input_file_name, "Input file name")->required();
+    std::string output_file_name = "";
+    cmd->add_option("-o,--output", output_file_name, "Output file");
+
+    cmd->final_callback([&]() {
+      parser::Lexer lex = parser::Lexer::from_file(input_file_name);
+      ast::Module   mod = parser::parse(lex);
+
+      if (output_file_name.size() == 0) {
+        output_file_name = util::fs::replace_extension(input_file_name, "crystal", "crystallib");
+      }
+
+      std::ofstream output_file(output_file_name, std::ios_base::out | std::ios_base::binary);
+      util::msg::debug("outputting crystallib file [", output_file_name, "]");
+      mod.to_crystallib(output_file, crystal::compiler::ast::CrystallibOutputOptions{
+                                         .glslang_validator_path = "glslangValidator",
+                                         .spirv_link_path        = "spirv-link",
+                                     });
     });
   }
 

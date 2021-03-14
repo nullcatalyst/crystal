@@ -12,6 +12,7 @@ cc_library(
         "//crystal/compiler:__subpackages__",
     ],
     deps = [
+        "//crystal/common/proto",
         "//crystal/compiler/ast:module_hdr",
         "//crystal/compiler/ast/output",
         "//crystal/compiler/ast/stmt",

@@ -13,7 +13,7 @@ namespace crystal::compiler::ast::stmt {
 
 output::PrintLambda ReturnStatement::to_glsl(const decl::VertexDeclaration& vertex) const {
   return output::PrintLambda{[=](std::ostream& out) {
-    out << "const " << vertex.return_type()->name() << " _=" << expr_->to_glsl() << ";";
+    out << vertex.return_type()->name() << " _=" << expr_->to_glsl() << ";";
 
     const util::memory::Ref<type::StructType> return_struct_type = vertex.return_type();
     for (auto& prop : return_struct_type->properties()) {
@@ -37,7 +37,7 @@ output::PrintLambda ReturnStatement::to_glsl(const decl::VertexDeclaration& vert
 
 output::PrintLambda ReturnStatement::to_glsl(const decl::FragmentDeclaration& fragment) const {
   return output::PrintLambda{[=](std::ostream& out) {
-    out << "const " << fragment.return_type()->name() << " _=" << expr_->to_glsl() << ";";
+    out << fragment.return_type()->name() << " _=" << expr_->to_glsl() << ";";
 
     const util::memory::Ref<type::StructType> return_struct_type = fragment.return_type();
     for (auto& prop : return_struct_type->properties()) {

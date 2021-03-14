@@ -52,42 +52,10 @@ decl(ret)           ::= KW_STRUCT LIT_IDEN(name)
                             ret = Ref<decl::StructDeclaration>::make(type);
                             mod->add_type(type);
                         }
-decl(ret)           ::= KW_VERTEX type(ret_type) LIT_IDEN(name)
-                        OP_LRNDBRACKET vert_arg_list(args) OP_RRNDBRACKET
-                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
-                        .                                                       {
-                            const auto vertex_function = Ref<decl::VertexDeclaration>::make(name.string_value, ret_type, std::move(args), std::move(impl));
-                            mod->add_vertex_function(vertex_function);
-                            ret = vertex_function;
-                        }
-decl(ret)           ::= KW_VERTEX type(ret_type) LIT_IDEN(name)
-                        OP_LRNDBRACKET vert_arg_list(args) OP_COMMA OP_RRNDBRACKET
-                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
-                        .                                                       {
-                            const auto vertex_function = Ref<decl::VertexDeclaration>::make(name.string_value, ret_type, std::move(args), std::move(impl));
-                            mod->add_vertex_function(vertex_function);
-                            ret = vertex_function;
-                        }
-decl(ret)           ::= KW_FRAGMENT type(ret_type) LIT_IDEN(name)
-                        OP_LRNDBRACKET frag_arg_list(args) OP_RRNDBRACKET
-                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
-                        .                                                       {
-                            const auto fragment_function = Ref<decl::FragmentDeclaration>::make(name.string_value, ret_type, std::move(args), std::move(impl));
-                            mod->add_fragment_function(fragment_function);
-                            ret = fragment_function;
-                        }
-decl(ret)           ::= KW_FRAGMENT type(ret_type) LIT_IDEN(name)
-                        OP_LRNDBRACKET frag_arg_list(args) OP_COMMA OP_RRNDBRACKET
-                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
-                        .                                                       {
-                            const auto fragment_function = Ref<decl::FragmentDeclaration>::make(name.string_value, ret_type, std::move(args), std::move(impl));
-                            mod->add_fragment_function(fragment_function);
-                            ret = fragment_function;
-                        }
 decl(ret)           ::= KW_PIPELINE LIT_IDEN(name)
                         OP_LCRLBRACKET pipe_prop_list(settings) OP_RCRLBRACKET
                         .                                                       {
-                            const auto pipeline = Ref<decl::PipelineDeclaration>::make(name.string_value, *mod, settings);
+                            const auto pipeline = Ref<decl::PipelineDeclaration>::make(name.string_value, settings);
                             mod->add_pipeline(pipeline);
                             ret = pipeline;
                         }
@@ -124,8 +92,40 @@ frag_arg_list(ret)  ::= frag_arg_list(list) OP_COMMA
                         type(type) LIT_IDEN(name).                              { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::FragmentInputType::Varying, -1); }
 frag_arg_list(ret)  ::= type(type) LIT_IDEN(name).                              { ret = std::vector<decl::FragmentInput>{decl::FragmentInput{name.string_value, type, decl::FragmentInputType::Varying, -1}}; }
 
-pipe_prop_list(ret)  ::= pipe_prop_list(list) KW_VERTEX LIT_IDEN(name) OP_SEMICOLON.  { ret = list; ret.vertex_name = name.string_value; }
-pipe_prop_list(ret)  ::= pipe_prop_list(list) KW_FRAGMENT LIT_IDEN(name) OP_SEMICOLON.  { ret = list; ret.fragment_name = name.string_value; }
+// pipe_prop_list(ret)  ::= pipe_prop_list(list) KW_VERTEX LIT_IDEN(name) OP_SEMICOLON.  { ret = list; ret.vertex_name = name.string_value; }
+// pipe_prop_list(ret)  ::= pipe_prop_list(list) KW_FRAGMENT LIT_IDEN(name) OP_SEMICOLON.  { ret = list; ret.fragment_name = name.string_value; }
+pipe_prop_list(ret) ::= pipe_prop_list(list) KW_VERTEX
+                        OP_LRNDBRACKET vert_arg_list(args) OP_RRNDBRACKET
+                        OP_RARROW type(ret_type)
+                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
+                        .                                                       {
+                            ret = list;
+                            ret.vertex_function = Ref<decl::VertexDeclaration>::make(ret_type, std::move(args), std::move(impl));
+                        }
+pipe_prop_list(ret) ::= pipe_prop_list(list) KW_VERTEX
+                        OP_LRNDBRACKET vert_arg_list(args) OP_COMMA OP_RRNDBRACKET
+                        OP_RARROW type(ret_type)
+                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
+                        .                                                       {
+                            ret = list;
+                            ret.vertex_function = Ref<decl::VertexDeclaration>::make(ret_type, std::move(args), std::move(impl));
+                        }
+pipe_prop_list(ret) ::= pipe_prop_list(list) KW_FRAGMENT
+                        OP_LRNDBRACKET frag_arg_list(args) OP_RRNDBRACKET
+                        OP_RARROW type(ret_type)
+                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
+                        .                                                       {
+                            ret = list;
+                            ret.fragment_function = Ref<decl::FragmentDeclaration>::make(ret_type, std::move(args), std::move(impl));
+                        }
+pipe_prop_list(ret) ::= pipe_prop_list(list) KW_FRAGMENT
+                        OP_LRNDBRACKET frag_arg_list(args) OP_COMMA OP_RRNDBRACKET
+                        OP_RARROW type(ret_type)
+                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
+                        .                                                       {
+                            ret = list;
+                            ret.fragment_function = Ref<decl::FragmentDeclaration>::make(ret_type, std::move(args), std::move(impl));
+                        }
 pipe_prop_list(ret)  ::= .                                                      { ret = decl::PipelineSettings{}; }
 
 type(ret)           ::= LIT_IDEN(name).                                         {

@@ -23,6 +23,7 @@ cc_library(
     ],
     deps = [
         "//crystal/common",
+        "//crystal/common/proto",
         "//third_party/glad:gl42",
         "//util/fs",
         "//util/memory",
@@ -57,6 +58,7 @@ cc_library(
     ],
     deps = [
         "//crystal/common",
+        "//crystal/common/proto",
         "//third_party/glad:gl42",
         "//util/fs",
         "//util/memory",

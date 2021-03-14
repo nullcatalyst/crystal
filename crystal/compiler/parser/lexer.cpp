@@ -158,6 +158,10 @@ Token Lexer::next() {
           next_ += 2;
           return Token{TOK_OP_MINUSEQUAL};
         }
+        if ((next_ + 1) != end && *(next_ + 1) == '>') {
+          next_ += 2;
+          return Token{TOK_OP_RARROW};
+        }
         ++next_;
         return Token{TOK_OP_MINUS};
 

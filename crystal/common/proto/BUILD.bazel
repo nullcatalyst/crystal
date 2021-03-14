@@ -1,0 +1,33 @@
+load("//tools:cc.bzl", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+
+cc_library(
+    name = "proto",
+    hdrs = [
+        "proto.hpp",
+    ],
+    visibility = [
+        "//:__subpackages__",
+    ],
+    deps = [
+        ":library_cc_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "library_cc_proto",
+    visibility = [
+        "//:__subpackages__",
+    ],
+    deps = [
+        ":library_proto",
+    ],
+)
+
+proto_library(
+    name = "library_proto",
+    srcs = [
+        "library.proto",
+    ],
+)

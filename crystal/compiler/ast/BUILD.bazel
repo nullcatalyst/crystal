@@ -2,16 +2,30 @@ load("//tools:cc.bzl", "cc_library")
 
 cc_library(
     name = "ast",
+    visibility = [
+        "//crystal/compiler:__subpackages__",
+    ],
+    deps = [
+        ":module",
+        "//crystal/compiler/ast/decl",
+        "//crystal/compiler/ast/expr",
+        "//crystal/compiler/ast/stmt",
+        "//crystal/compiler/ast/type",
+        "//util/memory",
+        "@com_google_absl//absl/container:flat_hash_map",
+    ],
+)
+
+cc_library(
+    name = "module",
     srcs = glob([
         "*.cpp",
     ]),
     hdrs = glob([
         "*.hpp",
     ]),
-    visibility = [
-        "//crystal/compiler:__subpackages__",
-    ],
     deps = [
+        "//crystal/common/proto",
         "//crystal/compiler/ast/decl",
         "//crystal/compiler/ast/expr",
         "//crystal/compiler/ast/stmt",
