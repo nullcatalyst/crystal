@@ -8,12 +8,13 @@
             "name": "(win) triangle",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bazel-bin/examples/triangle/vulkan.exe.runfiles/crystal/examples/triangle/vulkan.exe",
+            "program": "${workspaceFolder}/bazel-bin/examples/triangle/opengl.exe.runfiles/crystal/examples/triangle/opengl.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/bazel-bin/examples/triangle/vulkan.exe.runfiles/crystal",
+            "cwd": "${workspaceFolder}/bazel-bin/examples/triangle/opengl.exe.runfiles/crystal",
             "environment": [],
-            "externalConsole": false
+            "console": "integratedTerminal",
+            "preLaunchTask": "Build triangle"
         },
         {
             "name": "(mac) triangle",
@@ -24,7 +25,7 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bazel-bin/examples/triangle/metal.runfiles/crystal",
             "environment": [],
-            "externalConsole": false,
+            "console": "integratedTerminal",
             "MIMode": "lldb"
         },
         {
@@ -36,7 +37,18 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bazel-bin/examples/render_texture/opengl.exe.runfiles/crystal",
             "environment": [],
-            "externalConsole": false
+            "console": "integratedTerminal",
+        },
+        {
+            "name": "(win) compiler",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/crystal/compiler/cli/cli.exe.runfiles/crystal/crystal/compiler/cli/cli.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/bazel-bin/crystal/compiler/cli/cli.exe.runfiles/crystal",
+            "environment": [],
+            "console": "integratedTerminal",
         },
     ]
 }

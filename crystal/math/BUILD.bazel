@@ -1,0 +1,11 @@
+load("//tools:cc.bzl", "cc_library")
+
+cc_library(
+    name = "math",
+    hdrs = glob([
+        "*.hpp",
+    ]),
+    visibility = [
+        "//:__subpackages__",
+    ],
+)

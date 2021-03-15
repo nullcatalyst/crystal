@@ -1,4 +1,10 @@
 {
+    "[lemon]": {
+        "editor.rulers": [
+            20,
+            80
+        ],
+    },
     // Required to support putting breakpoints in objc++
     "debug.allowBreakpointsEverywhere": true,
     "editor.formatOnSave": true,
@@ -7,7 +13,7 @@
         100
     ],
     "files.exclude": {
-        "bazel-*": true,
+        // "bazel-*": true,
     },
     "files.associations": {
         "*.inc": "cpp",
@@ -113,6 +119,8 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "stop_token": "cpp",
+        "charconv": "cpp"
     }
 }

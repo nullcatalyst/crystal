@@ -4,18 +4,20 @@
 
 namespace crystal {
 
+union ClearValue {
+  float array[4];
+  struct {
+    float red;
+    float green;
+    float blue;
+    float alpha;
+  } color;
+  float depth;
+};
+
 struct AttachmentDesc {
-  bool clear;
-  union {
-    float array[4];
-    struct {
-      float red;
-      float green;
-      float blue;
-      float alpha;
-    } color;
-    float depth;
-  } clear_value;
+  bool       clear;
+  ClearValue clear_value;
 };
 
 }  // namespace crystal

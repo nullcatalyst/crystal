@@ -46,8 +46,9 @@ CommandBuffer Context::next_frame() {
 
 #else  // ^^^ defined(CRYSTAL_USE_SDL2) / !defined(CRYSTAL_USE_SDL2) vvv
 
-Context::Context(const Context::Desc& desc)
-    : window_(desc.window), width_(desc.width), height_(desc.height) {}
+Context::Context(const Context::Desc& desc) : screen_render_pass_(*this) {
+  change_resolution(desc.width, desc.height);
+}
 
 Context::~Context() {
   if (buffers_.size() != 0) {
@@ -56,7 +57,7 @@ Context::~Context() {
   }
 }
 
-CommandBuffer Context::next_frame() { return CommandBuffer(width_, height_); }
+CommandBuffer Context::next_frame() { return CommandBuffer(); }
 
 #endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
 
@@ -66,26 +67,42 @@ void Context::change_resolution(uint32_t width, uint32_t height) {
   screen_render_pass_.height_ = height;
 }
 
+void Context::set_clear_color(RenderPass& render_pass, uint32_t attachment,
+                              ClearValue clear_value) {
+  if (attachment >= render_pass.attachment_count_) {
+    util::msg::fatal("setting clear color for out of bounds attachment [", attachment, "]");
+  }
+  render_pass.clear_colors_[attachment].clear_value = clear_value;
+}
+
+void Context::set_clear_depth(RenderPass& render_pass, ClearValue clear_value) {
+  if (!render_pass.has_depth_) {
+    util::msg::fatal(
+        "setting clear depth for render pass that does not contain a depth attachment");
+  }
+  render_pass.clear_depth_.clear_value = clear_value;
+}
+
 void Context::add_buffer_(GLuint buffer) noexcept { buffers_.emplace_back(buffer); }
 
 void Context::retain_buffer_(GLuint buffer) noexcept {
   auto it = std::find_if(buffers_.begin(), buffers_.end(),
-                         [buffer](auto& value) { return value == buffer; });
+                         [buffer](const auto& value) { return value.id == buffer; });
   if (it == buffers_.end()) {
     util::msg::fatal("retaining buffer that does not exist");
   }
 
-  it->retain();
+  ++it->ref_count;
 }
 
 void Context::release_buffer_(GLuint buffer) noexcept {
   auto it = std::find_if(buffers_.begin(), buffers_.end(),
-                         [buffer](auto& value) { return value == buffer; });
+                         [buffer](const auto& value) { return value.id == buffer; });
   if (it == buffers_.end()) {
-    return;
+    util::msg::fatal("releasing buffer that does not exist");
   }
 
-  if (it->release()) {
+  if (--it->ref_count == 0) {
     GL_ASSERT(glDeleteBuffers(1, &buffer), "deleting buffer");
     buffers_.erase(it);
   }
@@ -95,22 +112,22 @@ void Context::add_texture_(GLuint texture) noexcept { textures_.emplace_back(tex
 
 void Context::retain_texture_(GLuint texture) noexcept {
   auto it = std::find_if(textures_.begin(), textures_.end(),
-                         [texture](auto& value) { return value == texture; });
+                         [texture](const auto& value) { return value.id == texture; });
   if (it == textures_.end()) {
     util::msg::fatal("retaining texture that does not exist");
   }
 
-  it->retain();
+  ++it->ref_count;
 }
 
 void Context::release_texture_(GLuint texture) noexcept {
   auto it = std::find_if(textures_.begin(), textures_.end(),
-                         [texture](auto& value) { return value == texture; });
+                         [texture](const auto& value) { return value.id == texture; });
   if (it == textures_.end()) {
-    return;
+    util::msg::fatal("releasing texture that does not exist");
   }
 
-  if (it->release()) {
+  if (--it->ref_count == 0) {
     GL_ASSERT(glDeleteTextures(1, &texture), "deleting texture");
     textures_.erase(it);
   }

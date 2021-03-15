@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <initializer_list>
+#include <string_view>
 
 namespace crystal {
 
@@ -72,16 +73,13 @@ struct VertexBufferDesc {
 };
 
 struct PipelineDesc {
-  const char*                                vertex;
-  const char*                                fragment;
+  std::string_view                           name;
   CullMode                                   cull_mode;
   Winding                                    winding;
   DepthTest                                  depth_test;
   DepthWrite                                 depth_write;
   AlphaBlend                                 blend_src;
   AlphaBlend                                 blend_dst;
-  std::initializer_list<UniformBinding>      uniform_bindings;
-  std::initializer_list<TextureBinding>      texture_bindings;
   std::initializer_list<VertexAttributeDesc> vertex_attributes;
   std::initializer_list<VertexBufferDesc>    vertex_buffers;
 };

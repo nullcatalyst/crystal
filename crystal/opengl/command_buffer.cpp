@@ -119,15 +119,14 @@ void CommandBuffer::use_pipeline(Pipeline& pipeline) {
   }
 }
 
-void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t location,
-                                       uint32_t binding) {
-  GL_ASSERT(glBindBufferBase(GL_UNIFORM_BUFFER, location, uniform_buffer.buffer_),
+void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t binding) {
+  GL_ASSERT(glBindBufferBase(GL_UNIFORM_BUFFER, binding, uniform_buffer.buffer_),
             "setting uniform buffer base");
-  GL_ASSERT(glUniformBlockBinding(pipeline_->program_, location, binding),
+  GL_ASSERT(glUniformBlockBinding(pipeline_->program_, binding, pipeline_->uniforms_[binding]),
             "binding uniform buffer block");
 }
 
-void CommandBuffer::use_texture(Texture& texture, uint32_t location, uint32_t binding) {
+void CommandBuffer::use_texture(Texture& texture, uint32_t binding) {
   // GL_ASSERT(glUniform1i(location, binding), "setting texture uniform");
   GL_ASSERT(glActiveTexture(GL_TEXTURE0 + binding), "setting active texture");
   GL_ASSERT(glBindTexture(GL_TEXTURE_2D, texture.texture_), "binding texture");
@@ -136,7 +135,7 @@ void CommandBuffer::use_texture(Texture& texture, uint32_t location, uint32_t bi
 void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count) {
   const auto it = std::find_if(
       mesh.vaos_.begin(), mesh.vaos_.end(),
-      [pipeline_id = pipeline_->id_](auto vao) { return vao.pipeline_id == pipeline_id; });
+      [pipeline_id = pipeline_->id_](const auto& vao) { return vao.pipeline_id == pipeline_id; });
   if (it != mesh.vaos_.end()) {
     GL_ASSERT(glBindVertexArray(it->vao), "binding vertex array");
   } else {
@@ -144,7 +143,7 @@ void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t in
     GL_ASSERT(glGenVertexArrays(1, &vao), "generating vertex array");
     GL_ASSERT(glBindVertexArray(vao), "binding vertex array");
 
-    for (const auto binding : pipeline_->bindings_) {
+    for (const auto binding : pipeline_->attributes_) {
       const auto it = std::find_if(mesh.bindings_.begin(), mesh.bindings_.end(),
                                    [=, buffer_index = binding.buffer_index](auto binding) {
                                      return binding.buffer_index == buffer_index;
@@ -169,10 +168,7 @@ void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t in
       GL_ASSERT(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.index_buffer_), "setting index buffer");
     }
 
-    mesh.bindings_.emplace_back(Mesh::Binding{
-        pipeline_->id_,
-        vao,
-    });
+    mesh.vaos_.emplace_back(pipeline_->id_, vao);
   }
 
   if (mesh.index_buffer_ != 0) {

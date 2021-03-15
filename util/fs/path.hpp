@@ -12,8 +12,12 @@ inline std::string path_join(const std::string_view a, const std::string_view b)
   std::string result;
   result.reserve(a.size() + DIR_SEPERATOR.size() + b.size());
 
-  result.assign(a);
-  result.append(DIR_SEPERATOR);
+  if (a.size() != 0) {
+    result.assign(a);
+  }
+  if (a.size() != 0 && b.size() != 0) {
+    result.append(DIR_SEPERATOR);
+  }
   result.append(b);
 
   return result;
@@ -30,6 +34,10 @@ inline std::string path_join(const std::initializer_list<std::string_view> parts
 
   bool first = true;
   for (const auto& part : parts) {
+    if (part.size() == 0) {
+      continue;
+    }
+
     if (first) {
       first = false;
       result.assign(part);
@@ -43,8 +51,8 @@ inline std::string path_join(const std::initializer_list<std::string_view> parts
   return result;
 }
 
-inline std::string ext_replace(const std::string_view path, const std::string_view ext,
-                               const std::string_view new_ext) {
+inline std::string replace_extension(const std::string_view path, const std::string_view ext,
+                                     const std::string_view new_ext) {
   std::string result;
 
   if (path.size() <= ext.size() || std::equal(ext.rbegin(), ext.rend(), path.rbegin())) {

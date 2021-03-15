@@ -1,5 +1,14 @@
-load("//tools:spv.bzl", "spv_fragment", "spv_library", "spv_vertex")
+load("//tools:crystal.bzl", "crystal_library")
 load("//tools:metal.bzl", "metal_library")
+load("//tools:spv.bzl", "spv_fragment", "spv_library", "spv_vertex")
+
+crystal_library(
+    name = "shader",
+    src = "shader.crystal",
+    visibility = [
+        "//examples/triangle:__subpackages__",
+    ],
+)
 
 filegroup(
     name = "glsl",

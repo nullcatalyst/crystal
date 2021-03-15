@@ -55,13 +55,6 @@ public:
     SDL_Window* window;
   };
 
-private:
-  SDL_Window*                                 window_;
-  SDL_GLContext                               context_;
-  RenderPass                                  screen_render_pass_;
-  std::vector<util::memory::RefCount<GLuint>> buffers_;
-  std::vector<util::memory::RefCount<GLuint>> textures_;
-
 #else  // ^^^ defined(CRYSTAL_USE_SDL2) / !defined(CRYSTAL_USE_SDL2) vvv
 
   struct Desc {
@@ -69,12 +62,33 @@ private:
     uint32_t height;
   };
 
-private:
-  RenderPass                                  screen_render_pass_;
-  std::vector<util::memory::RefCount<GLuint>> buffers_;
-  std::vector<util::memory::RefCount<GLuint>> textures_;
-
 #endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
+
+private:
+  struct RefCountedBuffer {
+    uint32_t ref_count;
+    GLuint   id;
+
+    constexpr RefCountedBuffer(GLuint id) : ref_count(1), id(id) {}
+  };
+
+  struct RefCountedTexture {
+    uint32_t ref_count;
+    GLuint   id;
+
+    constexpr RefCountedTexture(GLuint id) : ref_count(1), id(id) {}
+  };
+
+#ifdef CRYSTAL_USE_SDL2
+
+  SDL_Window*   window_;
+  SDL_GLContext context_;
+
+#endif  // ^^^ defined(CRYSTAL_USE_SDL2)
+
+  RenderPass                     screen_render_pass_;
+  std::vector<RefCountedBuffer>  buffers_;
+  std::vector<RefCountedTexture> textures_;
 
 public:
   Context() = delete;
@@ -105,8 +119,10 @@ public:
   RenderPass create_render_pass(
       const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
       const std::tuple<const Texture&, AttachmentDesc>                        depth_texture);
+  void set_clear_color(RenderPass& render_pass, uint32_t attachment, ClearValue clear_value);
+  void set_clear_depth(RenderPass& render_pass, ClearValue clear_value);
 
-  Library  create_library(const std::string_view base_path);
+  Library  create_library(const std::string_view library_file_path);
   Pipeline create_pipeline(Library& library, RenderPass& render_pass, const PipelineDesc& desc);
 
   UniformBuffer create_uniform_buffer(const size_t byte_length);
@@ -121,12 +137,55 @@ public:
 
   IndexBuffer create_index_buffer(const size_t byte_length);
   IndexBuffer create_index_buffer(const uint16_t* const data_ptr, const size_t byte_length);
-  void        update_index_buffer(IndexBuffer& vertex_buffer, const uint16_t* const data_ptr,
+  void        update_index_buffer(IndexBuffer& index_buffer, const uint16_t* const data_ptr,
                                   const size_t byte_length);
 
   Mesh create_mesh(const std::initializer_list<std::tuple<uint32_t, const VertexBuffer&>> bindings);
   Mesh create_mesh(const std::initializer_list<std::tuple<uint32_t, const VertexBuffer&>> bindings,
                    const IndexBuffer& index_buffer);
+
+  // Templated convenience helpers.
+
+  template <typename T>
+  UniformBuffer create_uniform_buffer(const T& value) {
+    return create_uniform_buffer(&value, sizeof(T));
+  }
+
+  template <typename T>
+  void update_uniform_buffer(UniformBuffer& uniform_buffer, const T& value) {
+    return update_uniform_buffer(uniform_buffer, &value, sizeof(T));
+  }
+
+  template <typename T>
+  VertexBuffer create_vertex_buffer(const std::initializer_list<T> list) {
+    return create_vertex_buffer(list.begin(), sizeof(list.begin()[0]) * list.size());
+  }
+
+  template <typename Container>
+  VertexBuffer create_vertex_buffer(const Container& container) {
+    return create_vertex_buffer(container.data(), sizeof(container.data()[0]) * container.size());
+  }
+
+  template <typename T>
+  void update_vertex_buffer(VertexBuffer& vertex_buffer, const std::initializer_list<T> list) {
+    return update_vertex_buffer(list.begin(), sizeof(list.begin()[0]) * list.size());
+  }
+
+  template <typename Container>
+  void update_vertex_buffer(VertexBuffer& vertex_buffer, const Container& container) {
+    return create_vertex_buffer(container.data(), sizeof(container.data()[0]) * container.size());
+  }
+
+  template <typename Container>
+  IndexBuffer create_index_buffer(const Container& container) {
+    static_assert(std::is_same<decltype(container.data()[0]), uint16_t>::value,
+                  "index buffer type must be [uint16_t]");
+    return create_index_buffer(container.data(), sizeof(container.data()[0]) * container.size());
+  }
+
+  void update_index_buffer(IndexBuffer& index_buffer, const std::initializer_list<uint16_t> list) {
+    return update_index_buffer(index_buffer, list.begin(), sizeof(list.begin()[0]) * list.size());
+  }
 
 private:
   friend CommandBuffer;
@@ -163,8 +222,8 @@ inline RenderPass Context::create_render_pass(
   return RenderPass(*this, color_textures, depth_texture);
 }
 
-inline Library Context::create_library(const std::string_view spv_path) {
-  return Library(std::string(spv_path));
+inline Library Context::create_library(const std::string_view library_file_path) {
+  return Library(std::string(library_file_path));
 }
 
 inline Pipeline Context::create_pipeline(Library& library, RenderPass& render_pass,

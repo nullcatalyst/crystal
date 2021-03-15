@@ -1,0 +1,32 @@
+load("//tools:cc.bzl", "cc_library")
+
+cc_library(
+    name = "stmt",
+    srcs = glob([
+        "*.cpp",
+    ]),
+    hdrs = glob([
+        "*.hpp",
+    ]),
+    visibility = [
+        "//crystal/compiler:__subpackages__",
+    ],
+    deps = [
+        "//crystal/compiler/ast/decl:hdrs",
+        "//crystal/compiler/ast/expr:hdrs",
+        "//crystal/compiler/ast/output",
+        "//crystal/compiler/ast/type:hdrs",
+        "//util/memory",
+        "//util/msg",
+    ],
+)
+
+cc_library(
+    name = "hdrs",
+    hdrs = glob([
+        "*.hpp",
+    ]),
+    visibility = [
+        "//crystal/compiler:__subpackages__",
+    ],
+)

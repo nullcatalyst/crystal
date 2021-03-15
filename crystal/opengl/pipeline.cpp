@@ -122,7 +122,7 @@ Pipeline::Pipeline(Pipeline&& other)
       depth_write_(other.depth_write_),
       blend_src_(other.blend_src_),
       blend_dst_(other.blend_dst_),
-      bindings_(std::move(other.bindings_)) {
+      attributes_(std::move(other.attributes_)) {
   other.ctx_         = nullptr;
   other.id_          = 0;
   other.program_     = 0;
@@ -144,7 +144,7 @@ Pipeline& Pipeline::operator=(Pipeline&& other) {
   depth_write_ = other.depth_write_;
   blend_src_   = other.blend_src_;
   blend_dst_   = other.blend_dst_;
-  bindings_    = std::move(other.bindings_);
+  attributes_  = std::move(other.attributes_);
 
   other.ctx_         = nullptr;
   other.id_          = 0;
@@ -175,7 +175,7 @@ void Pipeline::destroy() noexcept {
   depth_write_ = DepthWrite::Disable;
   blend_src_   = AlphaBlend::Zero;
   blend_dst_   = AlphaBlend::Zero;
-  bindings_.resize(0);
+  attributes_.resize(0);
 }
 
 Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
@@ -186,35 +186,47 @@ Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
       depth_write_(desc.depth_write),
       blend_src_(desc.blend_src),
       blend_dst_(desc.blend_dst) {
-  if (desc.fragment != nullptr) {
-    std::string vertex_source =
-        util::fs::read_file_string(util::fs::path_join(library.path_, desc.vertex));
-    std::string fragment_source =
-        util::fs::read_file_string(util::fs::path_join(library.path_, desc.fragment));
+  for (int i = 0; i < library.lib_pb_.pipelines_size(); ++i) {
+    const auto& pipeline_pb = library.lib_pb_.pipelines(i);
+    if (pipeline_pb.name() != desc.name) {
+      continue;
+    }
 
-    GLuint program = 0;
-    GL_ASSERT(program = glCreateProgram(), "creating shader program");
-    program_ = compile_program(program, vertex_source, fragment_source);
-  } else {
-    // Vertex-only shader.
-    std::string vertex_source =
-        util::fs::read_file_string(util::fs::path_join(library.path_, desc.vertex));
+    if (pipeline_pb.opengl().fragment_source().size() > 0) {
+      GLuint program = 0;
+      GL_ASSERT(program = glCreateProgram(), "creating shader program");
+      program_ = compile_program(program, pipeline_pb.opengl().vertex_source(),
+                                 pipeline_pb.opengl().fragment_source());
+    } else {
+      GLuint program = 0;
+      GL_ASSERT(program = glCreateProgram(), "creating shader program");
+      program_ = compile_program(program, pipeline_pb.opengl().vertex_source());
+    }
 
-    GLuint program = 0;
-    GL_ASSERT(program = glCreateProgram(), "creating shader program");
-    program_ = compile_program(program, vertex_source);
+    // Initialize the uniforms.
+    uniforms_ = {};
+    for (const auto& uniform_pb : pipeline_pb.opengl().uniforms()) {
+      uniforms_[uniform_pb.binding()] = glGetUniformBlockIndex(program_, uniform_pb.name().c_str());
+    }
+
+    break;
   }
 
-  bindings_.resize(desc.vertex_attributes.size());
+  if (program_ == 0) {
+    util::msg::fatal("pipeline named [", desc.name, "] not found");
+  }
+
+  // Initialize the vertex attributes.
+  attributes_.resize(desc.vertex_attributes.size());
   std::transform(
-      desc.vertex_attributes.begin(), desc.vertex_attributes.end(), bindings_.begin(),
+      desc.vertex_attributes.begin(), desc.vertex_attributes.end(), attributes_.begin(),
       [&desc](const auto& attribute) {
         return Binding{
-            /* .id             = */ attribute.id,
-            /* .offset         = */ attribute.offset,
-            /* .buffer_index   = */ attribute.buffer_index,
-            /* .stride         = */ desc.vertex_buffers.begin()[attribute.buffer_index].stride,
-            /* .step_function  = */
+            /* .id            = */ attribute.id,
+            /* .offset        = */ attribute.offset,
+            /* .buffer_index  = */ attribute.buffer_index,
+            /* .stride        = */ desc.vertex_buffers.begin()[attribute.buffer_index].stride,
+            /* .step_function = */
             desc.vertex_buffers.begin()[attribute.buffer_index].step_function,
         };
       });

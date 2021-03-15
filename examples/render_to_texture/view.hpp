@@ -4,6 +4,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+namespace examples::render_to_texture {
+
 namespace {
 
 struct Uniform {
@@ -338,3 +340,5 @@ struct Helpers<crystal::metal::Context> {
 }  // namespace
 
 #endif  // ^^^ CRYSTAL_USE_METAL
+
+}  // namespace examples::render_to_texture

@@ -1,0 +1,45 @@
+namespace examples::triangle::shaders;
+
+struct Uniform {
+    mat4 matrix;
+}
+
+struct Vertex {
+    vec4 position : 0;
+    vec4 color    : 1;
+}
+
+struct Varyings {
+    vec4 position : 0;
+    vec4 color    : 1;
+}
+
+struct Out {
+    vec4 color : 0;
+}
+
+pipeline triangle {
+    uniform Uniform u : 0;
+
+    // cull = "back";
+    // winding = "ccw";
+    // depth_test = true;
+    // depth_write = true;
+    // blend_src = "one";
+    // blend_dst = "zero";
+
+    vertex (
+        Vertex in : 0,
+    ) -> Varyings {
+        Varyings out;
+        out.position = u.matrix * in.position;
+        out.color    = in.color;
+        return out;
+    }
+
+    fragment (Varyings in) -> Out {
+        Out out;
+        out.color = in.color;
+        return out;
+    }
+}

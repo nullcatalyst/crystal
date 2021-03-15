@@ -1,0 +1,24 @@
+load("//tools:cc.bzl", "cc_library")
+
+cc_library(
+    name = "base",
+    srcs = [
+        "controller.cpp",
+        "window.cpp",
+    ],
+    hdrs = [
+        "controller.hpp",
+        "engine.hpp",
+        "scene.hpp",
+        "window.hpp",
+    ],
+    visibility = [
+        "//examples:__subpackages__",
+    ],
+    deps = [
+        "//crystal",
+        "//util/msg",
+        "@glm",
+        "@sdl2",
+    ],
+)
