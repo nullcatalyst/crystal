@@ -219,7 +219,7 @@ void Plink_delete(struct plink *);
 void Reprint(struct lemon *);
 void ReportOutput(struct lemon *);
 void ReportTable(struct lemon *, int, int, int);
-void ReportHeader(struct lemon *);
+void ReportHeader(struct lemon *, int);
 void CompressTables(struct lemon *);
 void ResortStates(struct lemon *);
 

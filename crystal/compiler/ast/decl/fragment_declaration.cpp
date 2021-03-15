@@ -48,6 +48,10 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
 
     const util::memory::Ref<type::StructType> struct_type = input.type;
     for (auto& prop : struct_type->properties()) {
+      if (prop.index < 0) {
+        // Skip properties that don't have an input index.
+        continue;
+      }
       out << "layout(location=" << prop.index << ")in " << prop.type->name() << " i" << prop.index
           << output::glsl_mangle_name{prop.name} << ";";
     }
@@ -129,6 +133,11 @@ void FragmentDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) c
 
     const util::memory::Ref<type::StructType> struct_type = input.type;
     for (const auto& prop : struct_type->properties()) {
+      if (prop.index < 0) {
+        // Skip properties that don't have an input index.
+        continue;
+      }
+
       out << "layout(location=" << prop.index << ") in " << prop.type->name() << " i" << prop.index
           << output::glsl_mangle_name{prop.name} << ";\n";
     }

@@ -55,13 +55,6 @@ public:
     SDL_Window* window;
   };
 
-private:
-  SDL_Window*                                 window_;
-  SDL_GLContext                               context_;
-  RenderPass                                  screen_render_pass_;
-  std::vector<util::memory::RefCount<GLuint>> buffers_;
-  std::vector<util::memory::RefCount<GLuint>> textures_;
-
 #else  // ^^^ defined(CRYSTAL_USE_SDL2) / !defined(CRYSTAL_USE_SDL2) vvv
 
   struct Desc {
@@ -69,12 +62,37 @@ private:
     uint32_t height;
   };
 
-private:
-  RenderPass                                  screen_render_pass_;
-  std::vector<util::memory::RefCount<GLuint>> buffers_;
-  std::vector<util::memory::RefCount<GLuint>> textures_;
-
 #endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
+
+private:
+  struct RefCountedBuffer {
+    uint32_t ref_count;
+    GLuint   id;
+
+    constexpr RefCountedBuffer(GLuint id) : ref_count(1), id(id) {}
+
+    ~RefCountedBuffer() { GL_ASSERT(glDeleteBuffers(1, &id), "deleting buffer"); }
+  };
+
+  struct RefCountedTexture {
+    uint32_t ref_count;
+    GLuint   id;
+
+    constexpr RefCountedTexture(GLuint id) : ref_count(1), id(id) {}
+
+    ~RefCountedTexture() { GL_ASSERT(glDeleteTextures(1, &id), "deleting texture"); }
+  };
+
+#ifdef CRYSTAL_USE_SDL2
+
+  SDL_Window*   window_;
+  SDL_GLContext context_;
+
+#endif  // ^^^ defined(CRYSTAL_USE_SDL2)
+
+  RenderPass                     screen_render_pass_;
+  std::vector<RefCountedBuffer>  buffers_;
+  std::vector<RefCountedTexture> textures_;
 
 public:
   Context() = delete;
@@ -105,20 +123,43 @@ public:
   RenderPass create_render_pass(
       const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
       const std::tuple<const Texture&, AttachmentDesc>                        depth_texture);
+  void set_clear_color(RenderPass& render_pass, uint32_t attachment, ClearValue clear_value);
+  void set_clear_depth(RenderPass& render_pass, ClearValue clear_value);
 
   Library  create_library(const std::string_view library_file_path);
   Pipeline create_pipeline(Library& library, RenderPass& render_pass, const PipelineDesc& desc);
 
+  template <typename T>
+  UniformBuffer create_uniform_buffer(const T& data) {
+    return create_uniform_buffer(&data, sizeof(T));
+  }
   UniformBuffer create_uniform_buffer(const size_t byte_length);
   UniformBuffer create_uniform_buffer(const void* const data_ptr, const size_t byte_length);
   void          update_uniform_buffer(UniformBuffer& uniform_buffer, const void* const data_ptr,
                                       const size_t byte_length);
 
+  template <typename T>
+  VertexBuffer create_vertex_buffer(const std::initializer_list<T>& data) {
+    return create_vertex_buffer(data.begin(), sizeof(*data.begin()) * data.size());
+  }
+  template <typename Container>
+  VertexBuffer create_vertex_buffer(const Container& container) {
+    return create_vertex_buffer(container.data(), sizeof(*container.data()) * container.size());
+  }
   VertexBuffer create_vertex_buffer(const size_t byte_length);
   VertexBuffer create_vertex_buffer(const void* const data_ptr, const size_t byte_length);
   void         update_vertex_buffer(VertexBuffer& vertex_buffer, const void* const data_ptr,
                                     const size_t byte_length);
 
+  IndexBuffer create_index_buffer(const std::initializer_list<uint16_t>& data) {
+    return create_index_buffer(data.begin(), sizeof(uint16_t) * data.size());
+  }
+  template <typename Container>
+  IndexBuffer create_index_buffer(const Container& container) {
+    static_assert(std::is_same<decltype(container.data()[0]), uint16_t>::value,
+                  "index buffer type must be [uint16_t]");
+    return create_index_buffer(container.data(), sizeof(uint16_t) * container.size());
+  }
   IndexBuffer create_index_buffer(const size_t byte_length);
   IndexBuffer create_index_buffer(const uint16_t* const data_ptr, const size_t byte_length);
   void        update_index_buffer(IndexBuffer& vertex_buffer, const uint16_t* const data_ptr,

@@ -14,11 +14,15 @@ class IndexBuffer;
 class VertexBuffer;
 
 class Mesh {
+public:
   struct Vao {
     uint32_t pipeline_id;
     GLuint   vao;
 
-    ~Vao();
+    constexpr Vao() : pipeline_id(0), vao(0) {}
+    constexpr Vao(uint32_t pipeline_id, GLuint vao) : pipeline_id(pipeline_id), vao(vao) {}
+
+    ~Vao() { GL_ASSERT(glDeleteVertexArrays(1, &vao), "deleting vertex array"); }
   };
 
   struct Binding {

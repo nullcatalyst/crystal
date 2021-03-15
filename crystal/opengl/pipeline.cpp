@@ -72,8 +72,6 @@ GLuint compile_program(GLuint program, const std::string& vertex_source) {
 
 GLuint compile_program(GLuint program, const std::string& vertex_source,
                        const std::string& fragment_source) {
-  util::msg::debug("vertex_source=", vertex_source);
-  util::msg::debug("fragment_source=", fragment_source);
   GLuint vertex_shader   = compile_shader(GL_VERTEX_SHADER, vertex_source);
   GLuint fragment_shader = compile_shader(GL_FRAGMENT_SHADER, fragment_source);
 
@@ -237,6 +235,35 @@ Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
       GL_ASSERT(program = glCreateProgram(), "creating shader program");
       program_ = compile_program(program, pipeline_pb.opengl().vertex_source(),
                                  pipeline_pb.opengl().fragment_source());
+      //       program_ = compile_program(program,
+      //                                  R"(#version 420 core
+
+      // // layout(set = 0, binding = 0) uniform Uniform { mat4 u_matrix; };
+
+      // // Vertex
+      // layout(location = 0) in vec4 i_position;
+      // layout(location = 1) in vec4 i_color;
+
+      // // Varyings
+      // layout(location = 0) out vec4 v_color;
+
+      // out gl_PerVertex { vec4 gl_Position; };
+
+      // void main() {
+      // // gl_Position = u_matrix * i_position;
+      // gl_Position = i_position;
+      // v_color     = i_color;
+      // }
+      // )",
+      //                                  R"(#version 420 core
+
+      // layout(location = 0) in vec4 v_color;
+
+      // layout(location = 0) out vec4 o_color;
+
+      // void main() { o_color = v_color; }
+      // )");
+
     } else {
       GLuint program = 0;
       GL_ASSERT(program = glCreateProgram(), "creating shader program");
@@ -246,16 +273,20 @@ Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
     break;
   }
 
+  if (program_ == 0) {
+    util::msg::fatal("pipeline named [", desc.name, "] not found");
+  }
+
   bindings_.resize(desc.vertex_attributes.size());
   std::transform(
       desc.vertex_attributes.begin(), desc.vertex_attributes.end(), bindings_.begin(),
       [&desc](const auto& attribute) {
         return Binding{
-            /* .id             = */ attribute.id,
-            /* .offset         = */ attribute.offset,
-            /* .buffer_index   = */ attribute.buffer_index,
-            /* .stride         = */ desc.vertex_buffers.begin()[attribute.buffer_index].stride,
-            /* .step_function  = */
+            /* .id            = */ attribute.id,
+            /* .offset        = */ attribute.offset,
+            /* .buffer_index  = */ attribute.buffer_index,
+            /* .stride        = */ desc.vertex_buffers.begin()[attribute.buffer_index].stride,
+            /* .step_function = */
             desc.vertex_buffers.begin()[attribute.buffer_index].step_function,
         };
       });

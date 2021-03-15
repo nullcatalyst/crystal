@@ -43,15 +43,13 @@ public:
     auto library = ctx.create_library(LIBRARY_FILE_NAME);
     pipeline_    = ctx.create_pipeline(library, ctx.screen_render_pass(), shaders::triangle_desc);
 
-    const std::array<shaders::Vertex, 3> vertices{
+    auto vertex_buffer = ctx.create_vertex_buffer({
         // clang-format off
         shaders::Vertex{glm::vec4{0.75f * -0.866f, 0.75f * -0.5f, 0.0f, 1.0f}, glm::vec4{1.0f, 0.0f, 0.0f, 1.0f}},
         shaders::Vertex{glm::vec4{0.75f *  0.866f, 0.75f * -0.5f, 0.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}},
         shaders::Vertex{glm::vec4{0.75f *  0.000f, 0.75f *  1.0f, 0.0f, 1.0f}, glm::vec4{0.0f, 0.0f, 1.0f, 1.0f}},
         // clang-format on
-    };
-    auto vertex_buffer =
-        ctx.create_vertex_buffer(vertices.data(), sizeof(shaders::Vertex) * vertices.size());
+    });
     mesh_ = ctx.create_mesh({
         std::make_tuple(0, std::ref(vertex_buffer)),
     });
@@ -61,6 +59,10 @@ public:
 
   void frame(float angle) {
     auto cmd = ctx_.next_frame();
+
+    ctx_.set_clear_color(
+        ctx_.screen_render_pass(), 0,
+        crystal::ClearValue{.color = {0.0f, 0.5f * std::sin(angle) * std::sin(angle), 0.0f, 0.0f}});
 
     // {  // Update uniform buffer.
     //   const auto aspect =

@@ -22,13 +22,12 @@ output::PrintLambda ReturnStatement::to_glsl(const decl::VertexDeclaration& vert
         continue;
       }
 
+      out << "o_" << prop.name << "=_." << prop.name << ";";
+
       if (prop.index == 0) {
         // The zero output for the vertex function must be the vertex position.
         out << "gl_Position=_." << prop.name << ";";
-        continue;
       }
-
-      out << "o_" << prop.name << "=_." << prop.name << ";";
     }
 
     out << "return;";
@@ -37,7 +36,7 @@ output::PrintLambda ReturnStatement::to_glsl(const decl::VertexDeclaration& vert
 
 output::PrintLambda ReturnStatement::to_glsl(const decl::FragmentDeclaration& fragment) const {
   return output::PrintLambda{[=](std::ostream& out) {
-    out << fragment.return_type()->name() << " _=" << expr_->to_glsl() << ";";
+    out << "const " << fragment.return_type()->name() << " _=" << expr_->to_glsl() << ";";
 
     const util::memory::Ref<type::StructType> return_struct_type = fragment.return_type();
     for (auto& prop : return_struct_type->properties()) {

@@ -59,6 +59,11 @@ void RenderPass::destroy() noexcept {
   }
 
   for (uint32_t i = 0; i != attachment_count_ + (has_depth_ ? 1 : 0); ++i) {
+    if (attachments_[i] == 0) {
+      // Ignore the default screen framebuffer.
+      continue;
+    }
+
     ctx_->release_texture_(attachments_[i]);
   }
 

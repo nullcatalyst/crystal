@@ -137,31 +137,7 @@ void Module::to_crystallib(std::ostream& out, const CrystallibOutputOptions& opt
 
   for (const auto& pipeline : pipeline_list_) {
     pipeline->to_crystallib(*lib_pb.add_pipelines(), *this);
-
-    // vertex_function->to_glsl(out, *this);
-
-    // crystal::common::proto::GLShader* vsh = lib.mutable_opengl()->add_vertex_functions();
-    // vsh->set_name(vertex_function->name());
-    // vsh->set_source(out.str());
   }
-
-  // for (const auto& vertex_function : vertex_function_list_) {
-  //   std::ostringstream out;
-  //   vertex_function->to_glsl(out, *this);
-
-  //   crystal::common::proto::GLShader* vsh = lib.mutable_opengl()->add_vertex_functions();
-  //   vsh->set_name(vertex_function->name());
-  //   vsh->set_source(out.str());
-  // }
-
-  // for (const auto& fragment_function : fragment_function_list_) {
-  //   std::ostringstream out;
-  //   fragment_function->to_glsl(out, *this);
-
-  //   crystal::common::proto::GLShader* fsh = lib.mutable_opengl()->add_fragment_functions();
-  //   fsh->set_name(fragment_function->name());
-  //   fsh->set_source(out.str());
-  // }
 
   if (!lib_pb.SerializeToOstream(&out)) {
     util::msg::fatal("serializing library to file");

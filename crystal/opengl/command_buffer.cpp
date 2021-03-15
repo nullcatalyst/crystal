@@ -64,10 +64,10 @@ void CommandBuffer::use_render_pass(RenderPass& render_pass) {
   GL_ASSERT(glBindFramebuffer(GL_FRAMEBUFFER, render_pass.framebuffer_), "binding framebuffer");
   GL_ASSERT(glViewport(0, 0, render_pass.width_, render_pass.height_), "changing viewport size");
 
-  // for (uint32_t i = 0; i < render_pass.attachment_count_; ++i) {
-  //   GL_ASSERT(glClearBufferfv(GL_COLOR, i, render_pass.clear_colors_[i].clear_value.array),
-  //             "setting clear color");
-  // }
+  for (uint32_t i = 0; i < render_pass.attachment_count_; ++i) {
+    GL_ASSERT(glClearBufferfv(GL_COLOR, i, render_pass.clear_colors_[i].clear_value.array),
+              "setting clear color");
+  }
 
   if (render_pass.clear_depth_.clear) {
     GL_ASSERT(glDepthMask(GL_TRUE), "enabling depth writing before clearing the depth");
@@ -136,7 +136,7 @@ void CommandBuffer::use_texture(Texture& texture, uint32_t location, uint32_t bi
 void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count) {
   const auto it = std::find_if(
       mesh.vaos_.begin(), mesh.vaos_.end(),
-      [pipeline_id = pipeline_->id_](auto vao) { return vao.pipeline_id == pipeline_id; });
+      [pipeline_id = pipeline_->id_](const auto& vao) { return vao.pipeline_id == pipeline_id; });
   if (it != mesh.vaos_.end()) {
     GL_ASSERT(glBindVertexArray(it->vao), "binding vertex array");
   } else {
@@ -169,10 +169,7 @@ void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t in
       GL_ASSERT(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.index_buffer_), "setting index buffer");
     }
 
-    mesh.bindings_.emplace_back(Mesh::Binding{
-        pipeline_->id_,
-        vao,
-    });
+    mesh.vaos_.emplace_back(pipeline_->id_, vao);
   }
 
   if (mesh.index_buffer_ != 0) {

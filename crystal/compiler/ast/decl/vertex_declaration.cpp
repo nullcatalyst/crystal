@@ -49,6 +49,10 @@ void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
 
     const util::memory::Ref<type::StructType> struct_type = input.type;
     for (auto& prop : struct_type->properties()) {
+      if (prop.index < 0) {
+        // Skip properties that don't have an input index.
+        continue;
+      }
       out << "layout(location=" << prop.index << ")in " << prop.type->name() << " i" << prop.index
           << output::glsl_mangle_name{prop.name} << ";";
     }
@@ -58,14 +62,12 @@ void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
   // This is the decomposed form of the return struct type from the vertex function.
   const util::memory::Ref<type::StructType> return_struct_type = return_type_;
   for (auto& prop : return_struct_type->properties()) {
-    if (prop.index <= 0) {
+    if (prop.index < 0) {
       // Skip properties that don't have an output index.
-      // The zero output for the vertex function must be the vertex position.
       continue;
     }
-
-    out << "layout(location=" << (prop.index - 1) << ")out " << prop.type->name() << " o_"
-        << prop.name << ";";
+    out << "layout(location=" << prop.index << ")out " << prop.type->name() << " o_" << prop.name
+        << ";";
   }
 
   // Output the fixed line denoting the name of the vertex position variable. (Optional)
@@ -136,6 +138,10 @@ void VertexDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) con
 
     const util::memory::Ref<type::StructType> struct_type = input.type;
     for (auto& prop : struct_type->properties()) {
+      if (prop.index < 0) {
+        // Skip properties that don't have an input index.
+        continue;
+      }
       out << "layout(location=" << prop.index << ") in " << prop.type->name() << " i" << prop.index
           << "_" << prop.name << ";\n";
     }
@@ -147,14 +153,13 @@ void VertexDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) con
   // This is the decomposed form of the return struct type from the vertex function.
   const util::memory::Ref<type::StructType> return_struct_type = return_type_;
   for (auto& prop : return_struct_type->properties()) {
-    if (prop.index <= 0) {
+    if (prop.index < 0) {
       // Skip properties that don't have an output index.
-      // The zero output for the vertex function must be the vertex position.
       continue;
     }
 
-    out << "layout(location=" << (prop.index - 1) << ") out " << prop.type->name() << " o_"
-        << prop.name << ";\n";
+    out << "layout(location=" << prop.index << ") out " << prop.type->name() << " o_" << prop.name
+        << ";\n";
   }
 
   // Output the fixed line denoting the name of the vertex position variable. (Optional)

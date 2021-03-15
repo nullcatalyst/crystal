@@ -65,22 +65,15 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
   }
 
   // clang-format off
-  out << "constexpr crystal::PipelineDesc " << name() << "_desc{\n"
+  out << "const crystal::PipelineDesc " << name() << "_desc{\n"
       << "    /* .name              = */ \"" << name() << "\",\n"
       << "    /* .cull_mode         = */ crystal::CullMode::Back,\n"
       << "    /* .winding           = */ crystal::Winding::CounterClockwise,\n"
       << "    /* .depth_test        = */ crystal::DepthTest::Always,\n"
       << "    /* .depth_write       = */ crystal::DepthWrite::Disable,\n"
-      << "    /* .blend_src         = */ crystal::AlphaBlend::SrcAlpha,\n"
-      << "    /* .blend_dst         = */ crystal::AlphaBlend::OneMinusSrcAlpha,\n"
+      << "    /* .blend_src         = */ crystal::AlphaBlend::One,\n"
+      << "    /* .blend_dst         = */ crystal::AlphaBlend::Zero,\n"
       << "    /* .uniform_bindings  = */";
-
-      // /* .cull_mode         = */ crystal::CullMode::Back,
-      // /* .winding           = */ crystal::Winding::CounterClockwise,
-      // /* .depth_test        = */ crystal::DepthTest::Always,
-      // /* .depth_write       = */ crystal::DepthWrite::Disable,
-      // /* .blend_src         = */ crystal::AlphaBlend::SrcAlpha,
-      // /* .blend_dst         = */ crystal::AlphaBlend::OneMinusSrcAlpha,
 
   if (uniforms.size() == 0) {
     out << " {},\n";
@@ -140,42 +133,13 @@ void PipelineDeclaration::to_crystallib(crystal::common::proto::Pipeline& pipeli
   {
     std::ostringstream out;
     vertex_function_->to_glsl(out, mod);
-    // opengl_pb->set_vertex_source(out.str());
-
-    opengl_pb->set_vertex_source(R"(#version 410 core
-
-// layout(set = 0, binding = 0) uniform Uniform { mat4 u_matrix; };
-
-// Vertex
-layout(location = 0) in vec4 i_position;
-layout(location = 1) in vec4 i_color;
-
-// Varyings
-layout(location = 0) out vec4 v_color;
-
-out gl_PerVertex { vec4 gl_Position; };
-
-void main() {
-  // gl_Position = u_matrix * i_position;
-  gl_Position = i_position;
-  v_color     = i_color;
-}
-)");
+    opengl_pb->set_vertex_source(out.str());
   }
 
   {
     std::ostringstream out;
     fragment_function_->to_glsl(out, mod);
-    // opengl_pb->set_fragment_source(out.str());
-
-    opengl_pb->set_fragment_source(R"(#version 410 core
-
-layout(location = 0) in vec4 v_color;
-
-layout(location = 0) out vec4 o_color;
-
-void main() { o_color = vec4(1.0); }
-)");
+    opengl_pb->set_fragment_source(out.str());
   }
 }
 

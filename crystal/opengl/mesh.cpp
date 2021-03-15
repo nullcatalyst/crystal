@@ -7,8 +7,6 @@
 
 namespace crystal::opengl {
 
-Mesh::Vao::~Vao() { GL_ASSERT(glDeleteVertexArrays(1, &vao), "deleting vertex array"); }
-
 Mesh::Mesh(Mesh&& other)
     : ctx_(other.ctx_),
       vaos_(std::move(other.vaos_)),
@@ -57,7 +55,7 @@ Mesh::Mesh(Context&                                                             
            const std::initializer_list<std::tuple<uint32_t, const VertexBuffer&>> bindings)
     : ctx_(&ctx), index_buffer_(0) {
   bindings_.resize(bindings.size());
-  std::transform(bindings.begin(), bindings.end(), bindings_.begin(), [](auto binding) {
+  std::transform(bindings.begin(), bindings.end(), bindings_.begin(), [](const auto binding) {
     const auto [index, vertex_buffer] = binding;
     if (vertex_buffer.ctx_ == nullptr) {
       util::msg::fatal("creating mesh from moved vertex buffer");
