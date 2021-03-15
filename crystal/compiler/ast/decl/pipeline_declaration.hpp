@@ -15,20 +15,27 @@ class Module;
 
 }  // namespace crystal::compiler::ast
 
+namespace crystal::compiler::ast::type {
+
+class Type;
+
+}  // namespace crystal::compiler::ast::type
+
 namespace crystal::compiler::ast::decl {
 
 class VertexDeclaration;
 class FragmentDeclaration;
 
 struct PipelineSettings {
-  util::memory::Ref<VertexDeclaration>           vertex_function;
-  util::memory::Ref<FragmentDeclaration>         fragment_function;
-  std::vector<std::tuple<uint32_t, std::string>> uniforms;
+  util::memory::Ref<VertexDeclaration>                                          vertex_function;
+  util::memory::Ref<FragmentDeclaration>                                        fragment_function;
+  std::vector<std::tuple<util::memory::Ref<type::Type>, std::string, uint32_t>> uniforms;
 };
 
 class PipelineDeclaration : public Declaration {
-  util::memory::Ref<VertexDeclaration>   vertex_function_;
-  util::memory::Ref<FragmentDeclaration> fragment_function_;
+  util::memory::Ref<VertexDeclaration>                                          vertex_function_;
+  util::memory::Ref<FragmentDeclaration>                                        fragment_function_;
+  std::vector<std::tuple<util::memory::Ref<type::Type>, std::string, uint32_t>> uniforms_;
 
 public:
   PipelineDeclaration(std::string_view name, const PipelineSettings& settings);

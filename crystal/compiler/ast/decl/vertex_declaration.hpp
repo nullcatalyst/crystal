@@ -57,6 +57,10 @@ public:
 
   void set_name(const std::string_view name) { name_ = name; }
 
+  void add_uniform(util::memory::Ref<type::Type> type, std::string name, int32_t index) {
+    inputs_.emplace_back(name, type, VertexInputType::Uniform, index);
+  }
+
   void to_glsl(std::ostream& out, const Module& mod) const;
   void to_pretty_glsl(std::ostream& out, const Module& mod) const;
 };

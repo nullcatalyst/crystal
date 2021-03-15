@@ -33,12 +33,10 @@ class View {
 
 public:
   View(Ctx& ctx, float angle) : ctx_(ctx) {
-    // const auto             aspect = static_cast<float>(ctx.screen_width()) / ctx.screen_height();
-    // const shaders::Uniform uniform{
-    //     glm::rotate(glm::ortho(-aspect, aspect, -1.0f, 1.0f), angle, glm::vec3(0.0f,
-    //     0.0f, 1.0f)),
-    // };
-    // uniform_buffer_ = ctx.create_uniform_buffer(&uniform, sizeof(shaders::Uniform));
+    const auto aspect = static_cast<float>(ctx.screen_width()) / ctx.screen_height();
+    uniform_buffer_   = ctx.create_uniform_buffer(shaders::Uniform{
+        glm::rotate(glm::ortho(-aspect, aspect, -1.0f, 1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f)),
+    });
 
     auto library = ctx.create_library(LIBRARY_FILE_NAME);
     pipeline_    = ctx.create_pipeline(library, ctx.screen_render_pass(), shaders::triangle_desc);
@@ -64,18 +62,18 @@ public:
         ctx_.screen_render_pass(), 0,
         crystal::ClearValue{.color = {0.0f, 0.5f * std::sin(angle) * std::sin(angle), 0.0f, 0.0f}});
 
-    // {  // Update uniform buffer.
-    //   const auto aspect =
-    //       static_cast<float>(ctx_.screen_width()) / static_cast<float>(ctx_.screen_height());
-    //   const shaders::Uniform uniform{
-    //       glm::rotate(matrix<Ctx>(aspect), angle, glm::vec3{0.0f, 0.0f, 1.0f}),
-    //   };
-    //   ctx_.update_uniform_buffer(uniform_buffer_, &uniform, sizeof(shaders::Uniform));
-    // }
+    {  // Update uniform buffer.
+      const auto aspect =
+          static_cast<float>(ctx_.screen_width()) / static_cast<float>(ctx_.screen_height());
+      ctx_.update_uniform_buffer(
+          uniform_buffer_, shaders::Uniform{
+                               glm::rotate(matrix<Ctx>(aspect), angle, glm::vec3{0.0f, 0.0f, 1.0f}),
+                           });
+    }
 
     cmd.use_render_pass(ctx_.screen_render_pass());
     cmd.use_pipeline(pipeline_);
-    // cmd.use_uniform_buffer(uniform_buffer_, 0, 0);
+    cmd.use_uniform_buffer(uniform_buffer_, 0);
     cmd.draw(mesh_, 3, 1);
   }
 };

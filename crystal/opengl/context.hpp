@@ -70,8 +70,6 @@ private:
     GLuint   id;
 
     constexpr RefCountedBuffer(GLuint id) : ref_count(1), id(id) {}
-
-    ~RefCountedBuffer() { GL_ASSERT(glDeleteBuffers(1, &id), "deleting buffer"); }
   };
 
   struct RefCountedTexture {
@@ -79,8 +77,6 @@ private:
     GLuint   id;
 
     constexpr RefCountedTexture(GLuint id) : ref_count(1), id(id) {}
-
-    ~RefCountedTexture() { GL_ASSERT(glDeleteTextures(1, &id), "deleting texture"); }
   };
 
 #ifdef CRYSTAL_USE_SDL2
@@ -129,45 +125,67 @@ public:
   Library  create_library(const std::string_view library_file_path);
   Pipeline create_pipeline(Library& library, RenderPass& render_pass, const PipelineDesc& desc);
 
-  template <typename T>
-  UniformBuffer create_uniform_buffer(const T& data) {
-    return create_uniform_buffer(&data, sizeof(T));
-  }
   UniformBuffer create_uniform_buffer(const size_t byte_length);
   UniformBuffer create_uniform_buffer(const void* const data_ptr, const size_t byte_length);
   void          update_uniform_buffer(UniformBuffer& uniform_buffer, const void* const data_ptr,
                                       const size_t byte_length);
 
-  template <typename T>
-  VertexBuffer create_vertex_buffer(const std::initializer_list<T>& data) {
-    return create_vertex_buffer(data.begin(), sizeof(*data.begin()) * data.size());
-  }
-  template <typename Container>
-  VertexBuffer create_vertex_buffer(const Container& container) {
-    return create_vertex_buffer(container.data(), sizeof(*container.data()) * container.size());
-  }
   VertexBuffer create_vertex_buffer(const size_t byte_length);
   VertexBuffer create_vertex_buffer(const void* const data_ptr, const size_t byte_length);
   void         update_vertex_buffer(VertexBuffer& vertex_buffer, const void* const data_ptr,
                                     const size_t byte_length);
 
-  IndexBuffer create_index_buffer(const std::initializer_list<uint16_t>& data) {
-    return create_index_buffer(data.begin(), sizeof(uint16_t) * data.size());
-  }
-  template <typename Container>
-  IndexBuffer create_index_buffer(const Container& container) {
-    static_assert(std::is_same<decltype(container.data()[0]), uint16_t>::value,
-                  "index buffer type must be [uint16_t]");
-    return create_index_buffer(container.data(), sizeof(uint16_t) * container.size());
-  }
   IndexBuffer create_index_buffer(const size_t byte_length);
   IndexBuffer create_index_buffer(const uint16_t* const data_ptr, const size_t byte_length);
-  void        update_index_buffer(IndexBuffer& vertex_buffer, const uint16_t* const data_ptr,
+  void        update_index_buffer(IndexBuffer& index_buffer, const uint16_t* const data_ptr,
                                   const size_t byte_length);
 
   Mesh create_mesh(const std::initializer_list<std::tuple<uint32_t, const VertexBuffer&>> bindings);
   Mesh create_mesh(const std::initializer_list<std::tuple<uint32_t, const VertexBuffer&>> bindings,
                    const IndexBuffer& index_buffer);
+
+  // Templated convenience helpers.
+
+  template <typename T>
+  UniformBuffer create_uniform_buffer(const T& value) {
+    return create_uniform_buffer(&value, sizeof(T));
+  }
+
+  template <typename T>
+  void update_uniform_buffer(UniformBuffer& uniform_buffer, const T& value) {
+    return update_uniform_buffer(uniform_buffer, &value, sizeof(T));
+  }
+
+  template <typename T>
+  VertexBuffer create_vertex_buffer(const std::initializer_list<T> list) {
+    return create_vertex_buffer(list.begin(), sizeof(list.begin()[0]) * list.size());
+  }
+
+  template <typename Container>
+  VertexBuffer create_vertex_buffer(const Container& container) {
+    return create_vertex_buffer(container.data(), sizeof(container.data()[0]) * container.size());
+  }
+
+  template <typename T>
+  void update_vertex_buffer(VertexBuffer& vertex_buffer, const std::initializer_list<T> list) {
+    return update_vertex_buffer(list.begin(), sizeof(list.begin()[0]) * list.size());
+  }
+
+  template <typename Container>
+  void update_vertex_buffer(VertexBuffer& vertex_buffer, const Container& container) {
+    return create_vertex_buffer(container.data(), sizeof(container.data()[0]) * container.size());
+  }
+
+  template <typename Container>
+  IndexBuffer create_index_buffer(const Container& container) {
+    static_assert(std::is_same<decltype(container.data()[0]), uint16_t>::value,
+                  "index buffer type must be [uint16_t]");
+    return create_index_buffer(container.data(), sizeof(container.data()[0]) * container.size());
+  }
+
+  void update_index_buffer(IndexBuffer& index_buffer, const std::initializer_list<uint16_t> list) {
+    return update_index_buffer(index_buffer, list.begin(), sizeof(list.begin()[0]) * list.size());
+  }
 
 private:
   friend CommandBuffer;

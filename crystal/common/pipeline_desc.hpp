@@ -80,8 +80,6 @@ struct PipelineDesc {
   DepthWrite                                 depth_write;
   AlphaBlend                                 blend_src;
   AlphaBlend                                 blend_dst;
-  std::initializer_list<UniformBinding>      uniform_bindings;
-  std::initializer_list<TextureBinding>      texture_bindings;
   std::initializer_list<VertexAttributeDesc> vertex_attributes;
   std::initializer_list<VertexBufferDesc>    vertex_buffers;
 };

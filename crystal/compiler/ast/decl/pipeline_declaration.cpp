@@ -13,13 +13,20 @@ namespace crystal::compiler::ast::decl {
 PipelineDeclaration::PipelineDeclaration(std::string_view name, const PipelineSettings& settings)
     : Declaration(name),
       vertex_function_(settings.vertex_function),
-      fragment_function_(settings.fragment_function) {
+      fragment_function_(settings.fragment_function),
+      uniforms_(settings.uniforms) {
   if (vertex_function_ != nullptr) {
     vertex_function_->set_name(std::string(name) + "_vert");
+    for (const auto& [type, name, index] : settings.uniforms) {
+      vertex_function_->add_uniform(type, name, index);
+    }
   }
 
   if (fragment_function_ != nullptr) {
     fragment_function_->set_name(std::string(name) + "_frag");
+    for (const auto& [type, name, index] : settings.uniforms) {
+      fragment_function_->add_uniform(type, name, index);
+    }
   }
 }
 
@@ -72,22 +79,7 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
       << "    /* .depth_test        = */ crystal::DepthTest::Always,\n"
       << "    /* .depth_write       = */ crystal::DepthWrite::Disable,\n"
       << "    /* .blend_src         = */ crystal::AlphaBlend::One,\n"
-      << "    /* .blend_dst         = */ crystal::AlphaBlend::Zero,\n"
-      << "    /* .uniform_bindings  = */";
-
-  if (uniforms.size() == 0) {
-    out << " {},\n";
-  } else {
-    out << "\n    {\n";
-    // TODO: Sort these before outputting them, for my own sanity.
-    for (const auto uniform : uniforms) {
-      out << "        crystal::UniformBinding{/* .binding = */ " << uniform << "},\n";
-    }
-    out << "    },\n";
-  }
-
-  // TODO: Support textures.
-  out << "    /* .texture_bindings  = */ {},\n";
+      << "    /* .blend_dst         = */ crystal::AlphaBlend::Zero,\n";
 
   out << "    /* .vertex_attributes = */";
   if (vertex_attributes.size() == 0) {
@@ -130,16 +122,24 @@ void PipelineDeclaration::to_crystallib(crystal::common::proto::Pipeline& pipeli
   pipeline_pb.set_name(name());
 
   crystal::common::proto::OpenGL* opengl_pb = pipeline_pb.mutable_opengl();
-  {
+  {  // Vertex shader.
     std::ostringstream out;
     vertex_function_->to_glsl(out, mod);
     opengl_pb->set_vertex_source(out.str());
   }
 
-  {
+  {  // Fragment shader.
     std::ostringstream out;
     fragment_function_->to_glsl(out, mod);
     opengl_pb->set_fragment_source(out.str());
+  }
+
+  {  // Uniforms.
+    for (const auto& [type, name, binding] : uniforms_) {
+      crystal::common::proto::GLBinding* uniform_pb = opengl_pb->add_uniforms();
+      uniform_pb->set_name(name);
+      uniform_pb->set_binding(binding);
+    }
   }
 }
 

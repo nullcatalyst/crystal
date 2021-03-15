@@ -96,29 +96,17 @@ public:
   Library  create_library(const std::string_view base_path);
   Pipeline create_pipeline(Library& library, RenderPass& render_pass, const PipelineDesc& desc);
 
-  template <typename Container>
-  UniformBuffer create_uniform_buffer(const Container& container) {
-    return create_uniform_buffer(container.data(), sizeof(container[0]) * container.size());
-  }
   UniformBuffer create_uniform_buffer(size_t byte_length);
   UniformBuffer create_uniform_buffer(const void* const data_ptr, const size_t byte_length);
   void          update_uniform_buffer(UniformBuffer& uniform_buffer, const void* const data_ptr,
                                       const size_t byte_length);
 
-  template <typename Container>
-  VertexBuffer create_vertex_buffer(const Container& container) {
-    return create_vertex_buffer(container.data(), sizeof(container[0]) * container.size());
-  }
   VertexBuffer create_vertex_buffer(size_t byte_length);
   VertexBuffer create_vertex_buffer(size_t byte_length);
   VertexBuffer create_vertex_buffer(const void* const data_ptr, const size_t byte_length);
   void         update_vertex_buffer(VertexBuffer& vertex_buffer, const void* const data_ptr,
                                     const size_t byte_length);
 
-  template <typename Container>
-  IndexBuffer create_index_buffer(const Container& container) {
-    return create_index_buffer(container.data(), sizeof(container[0]) * container.size());
-  }
   IndexBuffer create_index_buffer(size_t byte_length);
   IndexBuffer create_index_buffer(const uint16_t* const data_ptr, const size_t byte_length);
   void        update_index_buffer(IndexBuffer& vertex_buffer, const uint16_t* const data_ptr,
@@ -127,6 +115,49 @@ public:
   Mesh create_mesh(const std::initializer_list<std::tuple<uint32_t, const VertexBuffer&>> bindings);
   Mesh create_mesh(const std::initializer_list<std::tuple<uint32_t, const VertexBuffer&>> bindings,
                    const IndexBuffer& index_buffer);
+
+  // Templated convenience helpers.
+
+  template <typename T>
+  UniformBuffer create_uniform_buffer(const T& value) {
+    return create_uniform_buffer(&value, sizeof(T));
+  }
+
+  template <typename T>
+  void update_uniform_buffer(const T& value) {
+    return update_uniform_buffer(&value, sizeof(T));
+  }
+
+  template <typename T>
+  VertexBuffer create_vertex_buffer(const std::initializer_list<T> list) {
+    return create_vertex_buffer(list.begin(), sizeof(list.begin()[0]) * list.size());
+  }
+
+  template <typename Container>
+  VertexBuffer create_vertex_buffer(const Container& container) {
+    return create_vertex_buffer(container.data(), sizeof(container.data()[0]) * container.size());
+  }
+
+  template <typename T>
+  void update_vertex_buffer(const std::initializer_list<T> list) {
+    return update_vertex_buffer(list.begin(), sizeof(list.begin()[0]) * list.size());
+  }
+
+  template <typename Container>
+  void update_vertex_buffer(const Container& container) {
+    return create_vertex_buffer(container.data(), sizeof(container.data()[0]) * container.size());
+  }
+
+  template <typename Container>
+  IndexBuffer create_index_buffer(const Container& container) {
+    static_assert(std::is_same<decltype(container.data()[0]), uint16_t>::value,
+                  "index buffer type must be [uint16_t]");
+    return create_index_buffer(container.data(), sizeof(container.data()[0]) * container.size());
+  }
+
+  void update_index_buffer(const std::initializer_list<uint16_t> list) {
+    return update_index_buffer(list.begin(), sizeof(list.begin()[0]) * list.size());
+  }
 
 private:
   friend CommandBuffer;

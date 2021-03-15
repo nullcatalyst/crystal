@@ -18,3 +18,13 @@ cc_library(
         "//crystal/concepts",
     ],
 )
+
+cc_library(
+    name = "config",
+    hdrs = [
+        "config.hpp",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+)

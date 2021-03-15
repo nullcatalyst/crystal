@@ -69,31 +69,26 @@ struct_prop_list(ret)  ::= struct_prop_list(list)
 struct_prop_list(ret)  ::= .                                                    { ret = std::vector<type::StructProperty>(); }
 
 vert_arg_list(ret)  ::= vert_arg_list(list) OP_COMMA
-                        type(type) LIT_IDEN(name) OP_COLON KW_UNIFORM LIT_INT(index)
-                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputType::Uniform, static_cast<int32_t>(index.int_value)); }
-vert_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON KW_UNIFORM LIT_INT(index)
-                        .                                                       { ret = std::vector<decl::VertexInput>{decl::VertexInput{name.string_value, type, decl::VertexInputType::Uniform, static_cast<int32_t>(index.int_value)}}; }
+                        type(type) LIT_IDEN(name) OP_COLON LIT_INT(index)
+                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputType::Vertex, static_cast<int32_t>(index.int_value)); }
+vert_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON LIT_INT(index).      { ret = std::vector<decl::VertexInput>{decl::VertexInput{name.string_value, type, decl::VertexInputType::Vertex, static_cast<int32_t>(index.int_value)}}; }
 vert_arg_list(ret)  ::= vert_arg_list(list) OP_COMMA
                         type(type) LIT_IDEN(name) OP_COLON KW_INSTANCED LIT_INT(index)
                         .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputType::Instanced, static_cast<int32_t>(index.int_value)); }
 vert_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON KW_INSTANCED LIT_INT(index)
                         .                                                       { ret = std::vector<decl::VertexInput>{decl::VertexInput{name.string_value, type, decl::VertexInputType::Instanced, static_cast<int32_t>(index.int_value)}}; }
-vert_arg_list(ret)  ::= vert_arg_list(list) OP_COMMA
-                        type(type) LIT_IDEN(name) OP_COLON LIT_INT(index)
-                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputType::Vertex, static_cast<int32_t>(index.int_value)); }
-vert_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON LIT_INT(index).      { ret = std::vector<decl::VertexInput>{decl::VertexInput{name.string_value, type, decl::VertexInputType::Vertex, static_cast<int32_t>(index.int_value)}}; }
 
-frag_arg_list(ret)  ::= frag_arg_list(list) OP_COMMA
-                        type(type) LIT_IDEN(name) OP_COLON KW_UNIFORM LIT_INT(index)
-                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::FragmentInputType::Uniform, static_cast<int32_t>(index.int_value)); }
-frag_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON KW_UNIFORM LIT_INT(index)
-                        .                                                       { ret = std::vector<decl::FragmentInput>{decl::FragmentInput{name.string_value, type, decl::FragmentInputType::Uniform, static_cast<int32_t>(index.int_value)}}; }
 frag_arg_list(ret)  ::= frag_arg_list(list) OP_COMMA
                         type(type) LIT_IDEN(name).                              { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::FragmentInputType::Varying, -1); }
 frag_arg_list(ret)  ::= type(type) LIT_IDEN(name).                              { ret = std::vector<decl::FragmentInput>{decl::FragmentInput{name.string_value, type, decl::FragmentInputType::Varying, -1}}; }
 
-// pipe_prop_list(ret)  ::= pipe_prop_list(list) KW_VERTEX LIT_IDEN(name) OP_SEMICOLON.  { ret = list; ret.vertex_name = name.string_value; }
-// pipe_prop_list(ret)  ::= pipe_prop_list(list) KW_FRAGMENT LIT_IDEN(name) OP_SEMICOLON.  { ret = list; ret.fragment_name = name.string_value; }
+
+pipe_prop_list(ret) ::= pipe_prop_list(list) KW_UNIFORM
+                        type(type) LIT_IDEN(name) OP_COLON LIT_INT(index) OP_SEMICOLON
+                        .                                                       {
+                            ret = list;
+                            ret.uniforms.emplace_back(type, std::string(name.string_value), static_cast<uint32_t>(index.int_value));
+                        }
 pipe_prop_list(ret) ::= pipe_prop_list(list) KW_VERTEX
                         OP_LRNDBRACKET vert_arg_list(args) OP_RRNDBRACKET
                         OP_RARROW type(ret_type)
