@@ -22,9 +22,12 @@ public:
   Window& operator=(Window&& other) {
     sdl_       = other.sdl_;
     other.sdl_ = nullptr;
+    return *this;
   }
 
-  ~Window() { SDL_DestroyWindow(sdl_); }
+  ~Window() {
+    if (sdl_ != nullptr) SDL_DestroyWindow(sdl_);
+  }
 
   [[nodiscard]] constexpr operator SDL_Window*() const { return sdl_; }
 

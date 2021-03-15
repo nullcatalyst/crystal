@@ -5,6 +5,7 @@ load("//tools:spv.bzl", "spv_fragment", "spv_library", "spv_vertex")
 crystal_library(
     name = "shader",
     src = "shader.crystal",
+    tags = ["no-sandbox"],
     visibility = [
         "//examples/triangle:__subpackages__",
     ],

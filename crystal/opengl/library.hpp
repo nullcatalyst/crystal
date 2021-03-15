@@ -14,7 +14,7 @@ class Library {
   common::proto::Library lib_pb_;
 
 public:
-  constexpr Library() = default;
+  Library() = default;
 
   Library(const Library&) = delete;
   Library& operator=(const Library&) = delete;

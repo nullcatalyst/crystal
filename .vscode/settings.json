@@ -13,7 +13,7 @@
         100
     ],
     "files.exclude": {
-        // "bazel-*": true,
+        "bazel-*": true,
     },
     "files.associations": {
         "*.inc": "cpp",
@@ -121,6 +121,12 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "stop_token": "cpp",
-        "charconv": "cpp"
+        "charconv": "cpp",
+        "__config": "cpp",
+        "__errc": "cpp",
+        "__nullptr": "cpp",
+        "__string": "cpp",
+        "__tuple": "cpp",
+        "cwctype": "cpp"
     }
 }

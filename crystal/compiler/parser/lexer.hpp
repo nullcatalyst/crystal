@@ -11,7 +11,7 @@ namespace crystal::compiler::parser {
 
 struct Lexer {
   std::string                 buffer_ = "";
-  std::string::const_iterator next_   = std::end(std::string());
+  std::string::const_iterator next_   = std::end(buffer_);
 
 public:
   static Lexer from_file(std::string file_name);

@@ -19,8 +19,8 @@ public:
   Controller(std::unique_ptr<engine::Engine>&& engine, std::unique_ptr<engine::Scene>&& scene)
       : engine_(std::move(engine)), scene_(std::move(scene)), tick_(0) {}
 
-  Controller(const Controller&) = default;
-  Controller& operator=(const Controller&) = default;
+  Controller(const Controller&) = delete;
+  Controller& operator=(const Controller&) = delete;
 
   Controller(Controller&&) = default;
   Controller& operator=(Controller&&) = default;

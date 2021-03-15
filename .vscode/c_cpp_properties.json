@@ -3,7 +3,7 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**",
+                "${workspaceFolder}",
                 "${workspaceFolder}/third_party",
                 "${workspaceFolder}/bazel-bin",
                 "${workspaceFolder}/bazel-crystal/external/com_google_absl",
@@ -16,13 +16,34 @@
                 "UNICODE",
                 "_UNICODE",
                 "CRYSTAL_USE_SDL2",
-                "CRYSTAL_USE_OPENGL"
+                "CRYSTAL_USE_OPENGL",
             ],
             "windowsSdkVersion": "10.0.18362.0",
             "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.27.29110/bin/Hostx64/x64/cl.exe",
             "cStandard": "c17",
             "cppStandard": "c++20",
             "intelliSenseMode": "msvc-x64"
+        },
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/third_party",
+                "${workspaceFolder}/bazel-bin",
+                "${workspaceFolder}/bazel-crystal/external/com_google_absl",
+                "${workspaceFolder}/bazel-crystal/external/glm",
+                "${workspaceFolder}/bazel-crystal/external/sdl2/include",
+                "${workspaceFolder}/bazel-crystal/external/vulkan/include"
+            ],
+            "defines": [
+                "CRYSTAL_USE_SDL2",
+                "CRYSTAL_USE_OPENGL",
+            ],
+            "macFrameworkPath": [],
+            "compilerPath": "/usr/local/opt/llvm/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-x64"
         }
     ],
     "version": 4

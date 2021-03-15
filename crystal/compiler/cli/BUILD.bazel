@@ -5,9 +5,12 @@ cc_binary(
     srcs = [
         "main.cpp",
     ],
-    copts = [
-        "/EHsc",
-    ],
+    copts = select({
+        "@//:windows": [
+            "/EHsc",
+        ],
+        "//conditions:default": [],
+    }),
     visibility = [
         "//visibility:public",
     ],

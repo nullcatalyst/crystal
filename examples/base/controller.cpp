@@ -25,8 +25,7 @@ void Controller::run() {
   auto prev_frame_start_time = clock::now();
 
   for (;;) {
-    const auto   curr_frame_start_time = prev_frame_start_time + MICROSECS_PER_FRAME;
-    const double dt                    = 1.0 / 60.0;
+    const auto curr_frame_start_time = prev_frame_start_time + MICROSECS_PER_FRAME;
 
     {  // Update the window.
       if (engine_ == nullptr) {

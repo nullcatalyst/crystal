@@ -9,6 +9,9 @@ cc_library(
         "@//:windows": [
             "//crystal/opengl:opengl_sdl2",
         ],
+        "@//:macos": [
+            "//crystal/opengl:opengl_sdl2",
+        ],
     }) + [
         ":include",
     ],

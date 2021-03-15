@@ -1,5 +1,6 @@
 #include "crystal/compiler/ast/decl/pipeline_declaration.hpp"
 
+#include <sstream>
 #include <tuple>
 
 #include "absl/container/flat_hash_set.h"
@@ -41,7 +42,7 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
       std::tuple<std::string /* type */, uint32_t /* buffer_index */, bool /* instanced */>>
       vertex_buffers;
   if (vertex_function_ != nullptr) {
-    for (const auto input : vertex_function_->inputs()) {
+    for (const auto& input : vertex_function_->inputs()) {
       if (input.input_type == VertexInputType::Vertex ||
           input.input_type == VertexInputType::Instanced) {
         const util::memory::Ref<type::StructType> struct_type = input.type;
@@ -63,7 +64,7 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
     }
   }
   if (fragment_function_ != nullptr) {
-    for (const auto input : fragment_function_->inputs()) {
+    for (const auto& input : fragment_function_->inputs()) {
       if (input.input_type != FragmentInputType::Uniform) {
         continue;
       }
@@ -87,7 +88,7 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
   } else {
     out << "\n    {\n";
     // TODO: Sort these before outputting them, for my own sanity.
-    for (const auto [type, prop, attr, buffer_index] : vertex_attributes) {
+    for (const auto& [type, prop, attr, buffer_index] : vertex_attributes) {
       out << "        crystal::VertexAttributeDesc{\n"
           << "            /* .attribute    = */ " << attr << ",\n"
           << "            /* .offset       = */ offsetof(" << type << ", " << prop << "),\n"
@@ -103,7 +104,7 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
   } else {
     out << "\n    {\n";
     // TODO: Sort these before outputting them, for my own sanity.
-    for (const auto [type, buffer_index, instanced] : vertex_buffers) {
+    for (const auto& [type, buffer_index, instanced] : vertex_buffers) {
       out << "        crystal::VertexBufferDesc{\n"
           << "            /* .buffer_index  = */ " << buffer_index << ",\n"
           << "            /* .stride        = */ sizeof(" << type << "),\n"
@@ -126,12 +127,14 @@ void PipelineDeclaration::to_crystallib(crystal::common::proto::Pipeline& pipeli
     std::ostringstream out;
     vertex_function_->to_glsl(out, mod);
     opengl_pb->set_vertex_source(out.str());
+    std::cout << out.str() << std::endl;
   }
 
   {  // Fragment shader.
     std::ostringstream out;
     fragment_function_->to_glsl(out, mod);
     opengl_pb->set_fragment_source(out.str());
+    std::cout << out.str() << std::endl;
   }
 
   {  // Uniforms.

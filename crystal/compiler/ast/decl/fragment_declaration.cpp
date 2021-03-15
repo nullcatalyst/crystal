@@ -9,7 +9,8 @@ namespace crystal::compiler::ast::decl {
 
 void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
   // Output the version header. This must come first.
-  out << "#version 420 core\n";
+  // out << "#version 420 core\n";
+  out << "#version 410 core\n";
 
   // TODO: Output only the used types.
   // Output the struct types.
@@ -32,7 +33,8 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
       continue;
     }
 
-    out << "layout(set=0, binding=" << input.index << ")uniform U" << input.index << "{";
+    // out << "layout(set=0, binding=" << input.index << ")uniform U" << input.index << "{";
+    out << "uniform U" << input.index << "{";
     const util::memory::Ref<type::StructType> struct_type = input.type;
     for (auto& prop : struct_type->properties()) {
       out << prop.type->name() << " " << prop.name << ";";
@@ -52,7 +54,7 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
         // Skip properties that don't have an input index.
         continue;
       }
-      out << "layout(location=" << prop.index << ")in " << prop.type->name() << " i" << prop.index
+      out << "layout(location=" << prop.index << ")in " << prop.type->name() << " v" << prop.index
           << output::glsl_mangle_name{prop.name} << ";";
     }
   }
@@ -80,7 +82,7 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
     const util::memory::Ref<type::StructType> struct_type = input.type;
     out << input.type->name() << " " << output::glsl_mangle_name{input.name} << ";";
     for (const auto& prop : struct_type->properties()) {
-      out << output::glsl_mangle_name{input.name} << "." << prop.name << "=i" << prop.index
+      out << output::glsl_mangle_name{input.name} << "." << prop.name << "=v" << prop.index
           << output::glsl_mangle_name{prop.name} << ";";
     }
   }

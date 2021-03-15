@@ -11,7 +11,6 @@ def _crystal_library_impl(ctx):
     ctx.actions.run(
         outputs = [lib],
         inputs = [src],
-        # progress_message = 'Compiling GLSL "%s"' % vert_in.short_path,
         executable = ctx.executable._compiler,
         arguments = [args],
     )
@@ -24,7 +23,6 @@ def _crystal_library_impl(ctx):
     ctx.actions.run(
         outputs = [hpp],
         inputs = [src],
-        # progress_message = 'Compiling GLSL "%s"' % vert_in.short_path,
         executable = ctx.executable._compiler,
         arguments = [args],
     )

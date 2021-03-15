@@ -67,7 +67,10 @@ def _lemon_cpp_library_impl(ctx):
 
     ctx.actions.run(
         outputs = outs,
-        inputs = [ctx.file.src],
+        inputs = [
+            ctx.file.src,
+            ctx.file._template,
+        ],
         executable = ctx.executable._compiler,
         arguments = [args],
     )

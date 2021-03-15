@@ -50,5 +50,23 @@
             "environment": [],
             "console": "integratedTerminal",
         },
+        {
+            "name": "(macos) compiler",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/crystal/compiler/cli/cli.runfiles/crystal/crystal/compiler/cli/cli",
+            "args": [
+                "lib",
+                "-i",
+                "${workspaceFolder}/examples/triangle/shaders/shader.crystal",
+                "-o",
+                "${workspaceFolder}/triangle_shader.crystallib",
+            ],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}/bazel-bin/crystal/compiler/cli/cli.runfiles/crystal",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        },
     ]
 }

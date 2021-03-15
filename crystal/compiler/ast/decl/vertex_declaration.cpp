@@ -9,7 +9,8 @@ namespace crystal::compiler::ast::decl {
 
 void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
   // Output the version header. This must come first.
-  out << "#version 420 core\n";
+  // out << "#version 420 core\n";
+  out << "#version 410 core\n";
 
   // TODO: Output only the used types.
   // Output the struct types.
@@ -32,7 +33,8 @@ void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
       continue;
     }
 
-    out << "layout(set=0, binding=" << input.index << ")uniform U" << input.index << "{";
+    // out << "layout(set=0, binding=" << input.index << ")uniform U" << input.index << "{";
+    out << "uniform U" << input.index << "{";
     const util::memory::Ref<type::StructType> struct_type = input.type;
     for (auto& prop : struct_type->properties()) {
       out << prop.type->name() << " " << prop.name << ";";
@@ -66,8 +68,8 @@ void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
       // Skip properties that don't have an output index.
       continue;
     }
-    out << "layout(location=" << prop.index << ")out " << prop.type->name() << " o_" << prop.name
-        << ";";
+    out << "layout(location=" << prop.index << ")out " << prop.type->name() << " v" << prop.index
+        << output::glsl_mangle_name{prop.name} << ";";
   }
 
   // Output the fixed line denoting the name of the vertex position variable. (Optional)
