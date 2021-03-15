@@ -86,8 +86,6 @@ int main(const int argc, const char* const argv[]) {
   lib_cmd->add_option("-o,--output", lib_output_file_name, "Output file");
 
   lib_cmd->final_callback([&]() {
-    util::msg::info("input_file_name=", lib_input_file_name);
-    util::msg::info("output_file_name=", lib_output_file_name);
     parser::Lexer lex = parser::Lexer::from_file(lib_input_file_name);
     ast::Module   mod = parser::parse(lex);
 

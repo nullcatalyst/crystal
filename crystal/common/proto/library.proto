@@ -2,7 +2,12 @@ syntax = "proto3";
 
 package crystal.common.proto;
 
-message GLBinding {
+message GLUniform {
+    string name = 1;
+    uint32 binding = 2;
+}
+
+message GLTexture {
     string name = 1;
     uint32 binding = 2;
 }
@@ -10,16 +15,22 @@ message GLBinding {
 message OpenGL {
     string vertex_source = 1;
     string fragment_source = 2;
-    repeated GLBinding uniforms = 3;
-    repeated GLBinding textures = 4;
+    repeated GLUniform uniforms = 3;
+    repeated GLTexture textures = 4;
 }
 
 message Vulkan {
     bytes lib = 1;
 }
 
+message MTLUniform {
+    string binding = 1;
+    uint32 actual = 2;
+}
+
 message Metal {
     bytes lib = 1;
+    repeated MTLUniform uniforms = 2;
 }
 
 message Pipeline {

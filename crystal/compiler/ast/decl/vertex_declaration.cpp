@@ -9,8 +9,7 @@ namespace crystal::compiler::ast::decl {
 
 void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
   // Output the version header. This must come first.
-  // out << "#version 420 core\n";
-  out << "#version 410 core\n";
+  out << output::VERSION_HDR;
 
   // TODO: Output only the used types.
   // Output the struct types.
@@ -55,8 +54,8 @@ void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
         // Skip properties that don't have an input index.
         continue;
       }
-      out << "layout(location=" << prop.index << ")in " << prop.type->name() << " i" << prop.index
-          << output::glsl_mangle_name{prop.name} << ";";
+      out << "layout(location=" << prop.index << ")in " << prop.type->name() << " "
+          << output::glsl_vertex_input_name{static_cast<uint32_t>(prop.index), prop.name} << ";";
     }
   }
 
@@ -68,8 +67,8 @@ void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
       // Skip properties that don't have an output index.
       continue;
     }
-    out << "layout(location=" << prop.index << ")out " << prop.type->name() << " v" << prop.index
-        << output::glsl_mangle_name{prop.name} << ";";
+    out << "layout(location=" << prop.index << ")out " << prop.type->name() << " "
+        << output::glsl_varying_name{static_cast<uint32_t>(prop.index), prop.name} << ";";
   }
 
   // Output the fixed line denoting the name of the vertex position variable. (Optional)
@@ -86,8 +85,8 @@ void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
     const util::memory::Ref<type::StructType> struct_type = input.type;
     out << input.type->name() << " " << output::glsl_mangle_name{input.name} << ";";
     for (auto& prop : struct_type->properties()) {
-      out << output::glsl_mangle_name{input.name} << "." << prop.name << "=i" << prop.index << "_"
-          << prop.name << ";";
+      out << output::glsl_mangle_name{input.name} << "." << prop.name << "="
+          << output::glsl_vertex_input_name{static_cast<uint32_t>(prop.index), prop.name} << ";";
     }
   }
   for (auto stmt : implementation_) {
@@ -98,7 +97,7 @@ void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
 
 void VertexDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) const {
   // Output the version header. This must come first.
-  out << "#version 420 core\n\n";
+  out << output::VERSION_HDR << "\n";
 
   // TODO: Output only the used types.
   // Output the struct types.
@@ -144,8 +143,8 @@ void VertexDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) con
         // Skip properties that don't have an input index.
         continue;
       }
-      out << "layout(location=" << prop.index << ") in " << prop.type->name() << " i" << prop.index
-          << "_" << prop.name << ";\n";
+      out << "layout(location=" << prop.index << ") in " << prop.type->name() << " "
+          << output::glsl_vertex_input_name{static_cast<uint32_t>(prop.index), prop.name} << ";\n";
     }
   }
 
@@ -165,7 +164,7 @@ void VertexDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) con
   }
 
   // Output the fixed line denoting the name of the vertex position variable. (Optional)
-  out << "\nout gl_PerVertex { vec4 gl_Position; };\n\n";
+  // out << "\nout gl_PerVertex { vec4 gl_Position; };\n\n";
 
   // Finally output the function implementation.
   out << "void main() {\n";
@@ -178,8 +177,8 @@ void VertexDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) con
     const util::memory::Ref<type::StructType> struct_type = input.type;
     out << "    " << input.type->name() << " " << output::glsl_mangle_name{input.name} << ";\n";
     for (auto& prop : struct_type->properties()) {
-      out << "    " << output::glsl_mangle_name{input.name} << "." << prop.name << " = i"
-          << prop.index << "_" << prop.name << ";\n";
+      out << "    " << output::glsl_mangle_name{input.name} << "." << prop.name << " = "
+          << output::glsl_vertex_input_name{static_cast<uint32_t>(prop.index), prop.name} << ";\n";
     }
   }
   out << "\n";

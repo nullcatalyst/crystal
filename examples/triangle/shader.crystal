@@ -1,4 +1,4 @@
-namespace examples::triangle::shaders;
+namespace examples::triangle;
 
 struct Uniform {
     mat4 matrix;

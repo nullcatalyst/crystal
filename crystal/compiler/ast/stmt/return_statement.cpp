@@ -22,7 +22,8 @@ output::PrintLambda ReturnStatement::to_glsl(const decl::VertexDeclaration& vert
         continue;
       }
 
-      out << "v" << prop.index << output::glsl_mangle_name{prop.name} << "=_." << prop.name << ";";
+      out << output::glsl_varying_name{static_cast<uint32_t>(prop.index), prop.name} << "=_."
+          << prop.name << ";";
 
       if (prop.index == 0) {
         // The zero output for the vertex function must be the vertex position.
@@ -45,7 +46,8 @@ output::PrintLambda ReturnStatement::to_glsl(const decl::FragmentDeclaration& fr
         continue;
       }
 
-      out << "o_" << prop.name << "=_." << prop.name << ";";
+      out << output::glsl_fragment_output_name{static_cast<uint32_t>(prop.index), prop.name}
+          << "=_." << prop.name << ";";
     }
 
     out << "return;";
@@ -65,7 +67,9 @@ output::PrintLambda ReturnStatement::to_pretty_glsl(const decl::VertexDeclaratio
         continue;
       }
 
-      out << output::glsl_indent{indent} << "o_" << prop.name << " = _." << prop.name << ";\n";
+      out << output::glsl_indent{indent}
+          << output::glsl_varying_name{static_cast<uint32_t>(prop.index), prop.name} << " = _."
+          << prop.name << ";\n";
 
       if (prop.index == 0) {
         // The zero output for the vertex function must be the vertex position.
@@ -90,7 +94,9 @@ output::PrintLambda ReturnStatement::to_pretty_glsl(const decl::FragmentDeclarat
         continue;
       }
 
-      out << output::glsl_indent{indent} << "o_" << prop.name << " = _." << prop.name << ";\n";
+      out << output::glsl_indent{indent}
+          << output::glsl_fragment_output_name{static_cast<uint32_t>(prop.index), prop.name}
+          << " = _." << prop.name << ";\n";
     }
 
     out << output::glsl_indent{indent} << "return;\n";

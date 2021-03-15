@@ -10,7 +10,7 @@ namespace crystal::compiler::ast::decl {
 void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
   // Output the version header. This must come first.
   // out << "#version 420 core\n";
-  out << "#version 410 core\n";
+  out << output::VERSION_HDR;
 
   // TODO: Output only the used types.
   // Output the struct types.
@@ -54,8 +54,8 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
         // Skip properties that don't have an input index.
         continue;
       }
-      out << "layout(location=" << prop.index << ")in " << prop.type->name() << " v" << prop.index
-          << output::glsl_mangle_name{prop.name} << ";";
+      out << "layout(location=" << prop.index << ")in " << prop.type->name() << " "
+          << output::glsl_varying_name{static_cast<uint32_t>(prop.index), prop.name} << ";";
     }
   }
 
@@ -68,8 +68,8 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
       continue;
     }
 
-    out << "layout(location=" << prop.index << ")out " << prop.type->name() << " o_" << prop.name
-        << ";";
+    out << "layout(location=" << prop.index << ")out " << prop.type->name() << " "
+        << output::glsl_fragment_output_name{static_cast<uint32_t>(prop.index), prop.name} << ";";
   }
 
   // Finally output the function implementation.
@@ -82,8 +82,8 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
     const util::memory::Ref<type::StructType> struct_type = input.type;
     out << input.type->name() << " " << output::glsl_mangle_name{input.name} << ";";
     for (const auto& prop : struct_type->properties()) {
-      out << output::glsl_mangle_name{input.name} << "." << prop.name << "=v" << prop.index
-          << output::glsl_mangle_name{prop.name} << ";";
+      out << output::glsl_mangle_name{input.name} << "." << prop.name << "="
+          << output::glsl_varying_name{static_cast<uint32_t>(prop.index), prop.name} << ";";
     }
   }
   for (const auto& stmt : implementation_) {
@@ -94,7 +94,7 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
 
 void FragmentDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) const {
   // Output the version header. This must come first.
-  out << "#version 420 core\n\n";
+  out << output::VERSION_HDR << "\n";
 
   // TODO: Output only the used types.
   // Output the struct types.
@@ -117,7 +117,8 @@ void FragmentDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) c
       continue;
     }
 
-    out << "layout(set=0, binding=" << input.index << ") uniform U" << input.index << " {\n";
+    // out << "layout(set=0, binding=" << input.index << ") uniform U" << input.index << " {\n";
+    out << "uniform U" << input.index << " {\n";
     const util::memory::Ref<type::StructType> struct_type = input.type;
     for (const auto& prop : struct_type->properties()) {
       out << "    " << prop.type->name() << " " << prop.name << ";\n";
@@ -140,8 +141,8 @@ void FragmentDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) c
         continue;
       }
 
-      out << "layout(location=" << prop.index << ") in " << prop.type->name() << " i" << prop.index
-          << output::glsl_mangle_name{prop.name} << ";\n";
+      out << "layout(location=" << prop.index << ") in " << prop.type->name() << " "
+          << output::glsl_varying_name{static_cast<uint32_t>(prop.index), prop.name} << ";\n";
     }
   }
 
@@ -156,8 +157,8 @@ void FragmentDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) c
       continue;
     }
 
-    out << "layout(location=" << prop.index << ") out " << prop.type->name() << " o_" << prop.name
-        << ";\n";
+    out << "layout(location=" << prop.index << ") out " << prop.type->name() << " "
+        << output::glsl_fragment_output_name{static_cast<uint32_t>(prop.index), prop.name} << ";\n";
   }
 
   // Finally output the function implementation.
@@ -170,8 +171,8 @@ void FragmentDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) c
     const util::memory::Ref<type::StructType> struct_type = input.type;
     out << "    " << input.type->name() << " " << output::glsl_mangle_name{input.name} << ";\n";
     for (const auto& prop : struct_type->properties()) {
-      out << "    " << output::glsl_mangle_name{input.name} << "." << prop.name << " = i"
-          << prop.index << output::glsl_mangle_name{prop.name} << ";\n";
+      out << "    " << output::glsl_mangle_name{input.name} << "." << prop.name << " = "
+          << output::glsl_varying_name{static_cast<uint32_t>(prop.index), prop.name} << ";\n";
     }
   }
   out << "\n";

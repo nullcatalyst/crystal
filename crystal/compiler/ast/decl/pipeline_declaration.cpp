@@ -127,19 +127,17 @@ void PipelineDeclaration::to_crystallib(crystal::common::proto::Pipeline& pipeli
     std::ostringstream out;
     vertex_function_->to_glsl(out, mod);
     opengl_pb->set_vertex_source(out.str());
-    std::cout << out.str() << std::endl;
   }
 
   {  // Fragment shader.
     std::ostringstream out;
     fragment_function_->to_glsl(out, mod);
     opengl_pb->set_fragment_source(out.str());
-    std::cout << out.str() << std::endl;
   }
 
   {  // Uniforms.
     for (const auto& [type, name, binding] : uniforms_) {
-      crystal::common::proto::GLBinding* uniform_pb = opengl_pb->add_uniforms();
+      crystal::common::proto::GLUniform* uniform_pb = opengl_pb->add_uniforms();
       uniform_pb->set_name(name);
       uniform_pb->set_binding(binding);
     }

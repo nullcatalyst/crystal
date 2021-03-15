@@ -1,7 +1,7 @@
 #pragma once
 
 #include "crystal/crystal.hpp"
-#include "examples/triangle/shaders/shader.hpp"
+#include "examples/triangle/shader.hpp"
 #include "examples/triangle/state.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -29,19 +29,19 @@ class ViewImpl : public View {
 public:
   ViewImpl(Ctx& ctx, const State& state) : ctx_(ctx) {
     const auto aspect = static_cast<float>(ctx.screen_width()) / ctx.screen_height();
-    uniform_buffer_   = ctx.create_uniform_buffer(shaders::Uniform{
+    uniform_buffer_   = ctx.create_uniform_buffer(Uniform{
         glm::rotate(glm::ortho(-aspect, aspect, -1.0f, 1.0f), state.angle,
                     glm::vec3(0.0f, 0.0f, 1.0f)),
     });
 
-    auto library = ctx.create_library("examples/triangle/shaders/shader.crystallib");
-    pipeline_    = ctx.create_pipeline(library, ctx.screen_render_pass(), shaders::triangle_desc);
+    auto library = ctx.create_library("examples/triangle/shader.crystallib");
+    pipeline_    = ctx.create_pipeline(library, ctx.screen_render_pass(), triangle_desc);
 
     auto vertex_buffer = ctx.create_vertex_buffer({
         // clang-format off
-        shaders::Vertex{glm::vec4{0.75f * -0.866f, 0.75f * -0.5f, 0.0f, 1.0f}, glm::vec4{1.0f, 0.0f, 0.0f, 1.0f}},
-        shaders::Vertex{glm::vec4{0.75f *  0.866f, 0.75f * -0.5f, 0.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}},
-        shaders::Vertex{glm::vec4{0.75f *  0.000f, 0.75f *  1.0f, 0.0f, 1.0f}, glm::vec4{0.0f, 0.0f, 1.0f, 1.0f}},
+        Vertex{glm::vec4{0.75f * -0.866f, 0.75f * -0.5f, 0.0f, 1.0f}, glm::vec4{1.0f, 0.0f, 0.0f, 1.0f}},
+        Vertex{glm::vec4{0.75f *  0.866f, 0.75f * -0.5f, 0.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}},
+        Vertex{glm::vec4{0.75f *  0.000f, 0.75f *  1.0f, 0.0f, 1.0f}, glm::vec4{0.0f, 0.0f, 1.0f, 1.0f}},
         // clang-format on
     });
     mesh_ = ctx.create_mesh({
@@ -63,7 +63,7 @@ public:
       const auto aspect =
           static_cast<float>(ctx_.screen_width()) / static_cast<float>(ctx_.screen_height());
       ctx_.update_uniform_buffer(
-          uniform_buffer_, shaders::Uniform{
+          uniform_buffer_, Uniform{
                                glm::rotate(glm::ortho(-aspect, aspect, -1.0f, 1.0f), state.angle,
                                            glm::vec3(0.0f, 0.0f, 1.0f)),
                            });

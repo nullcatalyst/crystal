@@ -1,4 +1,5 @@
 load("//tools:cc.bzl", "cc_binary")
+load("//tools:crystal.bzl", "crystal_library")
 
 cc_binary(
     name = "triangle",
@@ -7,10 +8,10 @@ cc_binary(
         "scene.hpp",
         "state.hpp",
         "view.hpp",
-        "//examples/triangle/shaders:shader.hpp",
+        ":shader.hpp",
     ],
     data = [
-        "//examples/triangle/shaders:shader.crystallib",
+        ":shader.crystallib",
     ],
     deps = [
         "//crystal:include",
@@ -21,67 +22,11 @@ cc_binary(
     ],
 )
 
-cc_binary(
-    name = "opengl",
-    srcs = [
-        "engine.hpp",
-        "main.cpp",
-        "view.hpp",
-        "//examples/triangle/shaders:shader.hpp",
-    ],
-    data = [
-        "//examples/triangle/shaders:shader.crystallib",
-    ],
-    defines = [
-        "CRYSTAL_USE_OPENGL=1",
-    ],
-    deps = [
-        "//crystal:include",
-        "//crystal/opengl:opengl_sdl2",
-        "@glm",
-        "@sdl2",
-        "@sdl2//:sdl2_main",
-    ],
-)
-
-cc_binary(
-    name = "vulkan",
-    srcs = [
-        "main.cpp",
-        "triangle_view.hpp",
-    ],
-    data = [
-        "//examples/triangle/shaders:shader.spv",
-    ],
-    defines = [
-        "CRYSTAL_USE_VULKAN=1",
-    ],
-    deps = [
-        "//crystal:include",
-        "//crystal/vulkan:vulkan_sdl2",
-        "@glm",
-        "@sdl2",
-        "@sdl2//:sdl2_main",
-    ],
-)
-
-cc_binary(
-    name = "metal",
-    srcs = [
-        "main.cpp",
-        "triangle_view.hpp",
-    ],
-    data = [
-        "//examples/triangle/shaders:shader.metallib",
-    ],
-    defines = [
-        "CRYSTAL_USE_METAL=1",
-    ],
-    deps = [
-        "//crystal:include",
-        "//crystal/metal:metal_sdl2",
-        "@glm",
-        "@sdl2",
-        "@sdl2//:sdl2_main",
+crystal_library(
+    name = "shader",
+    src = "shader.crystal",
+    tags = ["no-sandbox"],
+    visibility = [
+        "//examples/triangle:__subpackages__",
     ],
 )
