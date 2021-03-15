@@ -1,6 +1,20 @@
 load("//tools:cc.bzl", "cc_library")
 
 cc_library(
+    name = "crystal",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = select({
+        "@//:windows": [
+            "//crystal/opengl:opengl_sdl2",
+        ],
+    }) + [
+        ":include",
+    ],
+)
+
+cc_library(
     name = "include",
     hdrs = [
         "crystal.hpp",

@@ -1,8 +1,30 @@
 load("//tools:cc.bzl", "cc_binary")
 
 cc_binary(
+    name = "triangle",
+    srcs = [
+        "main.cpp",
+        "scene.hpp",
+        "state.hpp",
+        "view.hpp",
+        "//examples/triangle/shaders:shader.hpp",
+    ],
+    data = [
+        "//examples/triangle/shaders:shader.crystallib",
+    ],
+    deps = [
+        "//crystal:include",
+        "//examples/base",
+        "@glm",
+        "@sdl2",
+        "@sdl2//:sdl2_main",
+    ],
+)
+
+cc_binary(
     name = "opengl",
     srcs = [
+        "engine.hpp",
         "main.cpp",
         "view.hpp",
         "//examples/triangle/shaders:shader.hpp",

@@ -195,7 +195,6 @@ Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
     if (pipeline_pb.opengl().fragment_source().size() > 0) {
       GLuint program = 0;
       GL_ASSERT(program = glCreateProgram(), "creating shader program");
-      util::msg::debug("vertex=", pipeline_pb.opengl().vertex_source());
       program_ = compile_program(program, pipeline_pb.opengl().vertex_source(),
                                  pipeline_pb.opengl().fragment_source());
     } else {

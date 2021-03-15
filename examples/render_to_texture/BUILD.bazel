@@ -4,13 +4,10 @@ cc_binary(
     name = "opengl",
     srcs = [
         "main.cpp",
-        "render_texture_view.hpp",
+        "view.hpp",
     ],
     data = [
-        "//examples/render_texture/shaders:glsl",
-    ],
-    defines = [
-        "CRYSTAL_USE_OPENGL=1",
+        "//examples/render_to_texture/shaders:glsl",
     ],
     deps = [
         "//crystal:include",
@@ -25,13 +22,10 @@ cc_binary(
     name = "vulkan",
     srcs = [
         "main.cpp",
-        "render_texture_view.hpp",
+        "view.hpp",
     ],
     data = [
-        "//examples/render_texture/shaders:shader.spv",
-    ],
-    defines = [
-        "CRYSTAL_USE_VULKAN=1",
+        "//examples/render_to_texture/shaders:shader.spv",
     ],
     deps = [
         "//crystal:include",
@@ -46,13 +40,10 @@ cc_binary(
     name = "metal",
     srcs = [
         "main.cpp",
-        "render_texture_view.hpp",
+        "view.hpp",
     ],
     data = [
-        "//examples/render_texture/shaders:shader.metallib",
-    ],
-    defines = [
-        "CRYSTAL_USE_METAL=1",
+        "//examples/render_to_texture/shaders:shader.metallib",
     ],
     deps = [
         "//crystal:include",

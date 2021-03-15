@@ -4,7 +4,7 @@
 #include <type_traits>
 
 #include "SDL.h"
-#include "examples/render_texture/render_texture_view.hpp"
+#include "examples/render_to_texture/render_texture_view.hpp"
 #include "util/msg/msg.hpp"
 
 namespace {
