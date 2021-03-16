@@ -14,6 +14,9 @@ public:
   virtual void tick(Controller& ctrl)  = 0;
   virtual void frame(Controller& ctrl) = 0;
 
+  virtual void key_down(Controller& ctrl, int scancode) {}
+  virtual void key_up(Controller& ctrl, int scancode) {}
+
   template <typename Context>
   void         init_graphics(Controller& ctrl, Context& ctx);
   virtual void destroy_graphics() = 0;

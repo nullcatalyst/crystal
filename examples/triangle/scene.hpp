@@ -23,6 +23,27 @@ public:
     }
   }
 
+  virtual void key_down(engine::Controller& ctrl, int scancode) override {
+    util::msg::info("key down=", scancode);
+    switch (scancode) {
+#if CRYSTAL_USE_OPENGL
+      case SDL_SCANCODE_1:
+        ctrl.change_engine(engine::create_engine<crystal::opengl::Context>("triangle"));
+        break;
+#endif  // ^^^ CRYSTAL_USE_OPENGL
+#if CRYSTAL_USE_VULKAN
+      case SDL_SCANCODE_2:
+        ctrl.change_engine(engine::create_engine<crystal::vulkan::Context>("triangle"));
+        break;
+#endif  // ^^^ CRYSTAL_USE_VULKAN
+#if CRYSTAL_USE_METAL
+      case SDL_SCANCODE_3:
+        ctrl.change_engine(engine::create_engine<crystal::metal::Context>("triangle"));
+        break;
+#endif  // ^^^ CRYSTAL_USE_METAL
+    }
+  }
+
 protected:
 #if CRYSTAL_USE_OPENGL
   virtual void init_graphics_opengl(engine::Controller&       ctrl,

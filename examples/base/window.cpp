@@ -12,13 +12,18 @@ void Window::update(Controller& ctrl) {
         ctrl.exit();
         return;
 
+      case SDL_KEYDOWN:
+        if (sdl_event.key.repeat != 0) {
+          break;
+        }
+        ctrl.scene().key_down(ctrl, sdl_event.key.keysym.scancode);
+        break;
+
       case SDL_KEYUP:
         if (sdl_event.key.repeat != 0) {
           break;
         }
-        //   ctrl.scene().key_up(ctrl, engine::KeyEvent{
-        //                                 engine::KeyCode(sdl_event.key.keysym.scancode),
-        //                             });
+        ctrl.scene().key_up(ctrl, sdl_event.key.keysym.scancode);
         break;
     }
   }
