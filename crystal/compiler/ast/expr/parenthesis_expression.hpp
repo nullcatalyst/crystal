@@ -15,8 +15,11 @@ public:
   virtual ~ParenthesisExpression() = default;
 
   virtual output::PrintLambda to_glsl() const override {
-    return output::PrintLambda{
-        [=](std::ostream& out) { out << "(" << expr_->to_glsl() << ")"; }};
+    return output::PrintLambda{[=](std::ostream& out) { out << "(" << expr_->to_glsl() << ")"; }};
+  }
+
+  virtual output::PrintLambda to_metal() const override {
+    return output::PrintLambda{[=](std::ostream& out) { out << "(" << expr_->to_metal() << ")"; }};
   }
 };
 

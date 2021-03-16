@@ -63,14 +63,42 @@ Pipeline::Pipeline(OBJC(MTLDevice) device, Library& library, RenderPass& render_
                           : MTLVertexStepFunctionPerInstance;
                 });
 
-  MTLRenderPipelineDescriptor* pipeline_state_desc = [[MTLRenderPipelineDescriptor alloc] init];
-  id<MTLFunction>              vertex_function     = [library.library_
-      newFunctionWithName:[NSString stringWithCString:desc.vertex encoding:NSUTF8StringEncoding]];
-  id<MTLFunction>              fragment_function   = nullptr;
+  std::string vertex_name;
+  std::string fragment_name;
+  const auto& metal_pb = library.lib_pb_.metal();
+  std::cout << "metal_pipelines=" << metal_pb.pipelines_size() << std::endl;
+  for (int i = 0; i < metal_pb.pipelines_size(); ++i) {
+    const auto& pipeline_pb = metal_pb.pipelines(i);
+    std::cout << "pipeline_name=" << pipeline_pb.name() << std::endl;
+    if (pipeline_pb.name() != desc.name) {
+      continue;
+    }
 
-  if (desc.fragment != nullptr) {
+    vertex_name   = pipeline_pb.vertex_name();
+    fragment_name = pipeline_pb.fragment_name();
+
+    std::cout << "vertex_name=" << vertex_name << std::endl;
+    std::cout << "fragment_name=" << fragment_name << std::endl;
+
+    // Initialize the uniforms.
+    // uniforms_ = {};
+    // for (const auto& uniform_pb : pipeline_pb.uniforms()) {
+    //   uniforms_[uniform_pb.binding()] = glGetUniformBlockIndex(program_,
+    //   uniform_pb.name().c_str());
+    // }
+
+    break;
+  }
+
+  MTLRenderPipelineDescriptor* pipeline_state_desc = [[MTLRenderPipelineDescriptor alloc] init];
+  id<MTLFunction>              vertex_function =
+      [library.library_ newFunctionWithName:[NSString stringWithCString:vertex_name.c_str()
+                                                               encoding:NSUTF8StringEncoding]];
+  id<MTLFunction> fragment_function = nullptr;
+
+  if (fragment_name.size() > 0) {
     fragment_function =
-        [library.library_ newFunctionWithName:[NSString stringWithCString:desc.fragment
+        [library.library_ newFunctionWithName:[NSString stringWithCString:fragment_name.c_str()
                                                                  encoding:NSUTF8StringEncoding]];
   }
 

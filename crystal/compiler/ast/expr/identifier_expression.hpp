@@ -2,6 +2,7 @@
 
 #include "crystal/compiler/ast/expr/expression.hpp"
 #include "crystal/compiler/ast/output/glsl.hpp"
+#include "crystal/compiler/ast/output/metal.hpp"
 #include "crystal/compiler/ast/output/print.hpp"
 
 namespace crystal::compiler::ast::expr {
@@ -15,7 +16,12 @@ public:
   virtual ~IdentifierExpression() = default;
 
   virtual output::PrintLambda to_glsl() const override {
-    return output::PrintLambda{[=](std::ostream& out) { out << output::glsl_mangle_name{name_}; }};
+    return output::PrintLambda{[=](std::ostream& out) { out << output::glsl::mangle_name{name_}; }};
+  }
+
+  virtual output::PrintLambda to_metal() const override {
+    return output::PrintLambda{
+        [=](std::ostream& out) { out << output::metal::mangle_name{name_}; }};
   }
 };
 

@@ -22,7 +22,7 @@ output::PrintLambda ReturnStatement::to_glsl(const decl::VertexDeclaration& vert
         continue;
       }
 
-      out << output::glsl_varying_name{static_cast<uint32_t>(prop.index), prop.name} << "=_."
+      out << output::glsl::varying_name{static_cast<uint32_t>(prop.index), prop.name} << "=_."
           << prop.name << ";";
 
       if (prop.index == 0) {
@@ -46,7 +46,7 @@ output::PrintLambda ReturnStatement::to_glsl(const decl::FragmentDeclaration& fr
         continue;
       }
 
-      out << output::glsl_fragment_output_name{static_cast<uint32_t>(prop.index), prop.name}
+      out << output::glsl::fragment_output_name{static_cast<uint32_t>(prop.index), prop.name}
           << "=_." << prop.name << ";";
     }
 
@@ -57,7 +57,7 @@ output::PrintLambda ReturnStatement::to_glsl(const decl::FragmentDeclaration& fr
 output::PrintLambda ReturnStatement::to_pretty_glsl(const decl::VertexDeclaration& vertex,
                                                     uint32_t                       indent) const {
   return output::PrintLambda{[=](std::ostream& out) {
-    out << output::glsl_indent{indent} << vertex.return_type()->name()
+    out << output::glsl::indent{indent} << vertex.return_type()->name()
         << " _ = " << expr_->to_glsl() << ";\n";
 
     const util::memory::Ref<type::StructType> return_struct_type = vertex.return_type();
@@ -67,24 +67,24 @@ output::PrintLambda ReturnStatement::to_pretty_glsl(const decl::VertexDeclaratio
         continue;
       }
 
-      out << output::glsl_indent{indent}
-          << output::glsl_varying_name{static_cast<uint32_t>(prop.index), prop.name} << " = _."
+      out << output::glsl::indent{indent}
+          << output::glsl::varying_name{static_cast<uint32_t>(prop.index), prop.name} << " = _."
           << prop.name << ";\n";
 
       if (prop.index == 0) {
         // The zero output for the vertex function must be the vertex position.
-        out << output::glsl_indent{indent} << "gl_Position = _." << prop.name << ";\n";
+        out << output::glsl::indent{indent} << "gl_Position = _." << prop.name << ";\n";
       }
     }
 
-    out << output::glsl_indent{indent} << "return;\n";
+    out << output::glsl::indent{indent} << "return;\n";
   }};
 }
 
 output::PrintLambda ReturnStatement::to_pretty_glsl(const decl::FragmentDeclaration& fragment,
                                                     uint32_t                         indent) const {
   return output::PrintLambda{[=](std::ostream& out) {
-    out << output::glsl_indent{indent} << fragment.return_type()->name()
+    out << output::glsl::indent{indent} << fragment.return_type()->name()
         << " _ = " << expr_->to_glsl() << ";\n";
 
     const util::memory::Ref<type::StructType> return_struct_type = fragment.return_type();
@@ -94,12 +94,26 @@ output::PrintLambda ReturnStatement::to_pretty_glsl(const decl::FragmentDeclarat
         continue;
       }
 
-      out << output::glsl_indent{indent}
-          << output::glsl_fragment_output_name{static_cast<uint32_t>(prop.index), prop.name}
+      out << output::glsl::indent{indent}
+          << output::glsl::fragment_output_name{static_cast<uint32_t>(prop.index), prop.name}
           << " = _." << prop.name << ";\n";
     }
 
-    out << output::glsl_indent{indent} << "return;\n";
+    out << output::glsl::indent{indent} << "return;\n";
+  }};
+}
+
+output::PrintLambda ReturnStatement::to_metal(const decl::VertexDeclaration& vertex,
+                                              uint32_t                       indent) const {
+  return output::PrintLambda{[=](std::ostream& out) {
+    out << output::glsl::indent{indent} << "return " << expr_->to_metal() << ";\n";
+  }};
+}
+
+output::PrintLambda ReturnStatement::to_metal(const decl::FragmentDeclaration& fragment,
+                                              uint32_t                         indent) const {
+  return output::PrintLambda{[=](std::ostream& out) {
+    out << output::glsl::indent{indent} << "return " << expr_->to_metal() << ";\n";
   }};
 }
 

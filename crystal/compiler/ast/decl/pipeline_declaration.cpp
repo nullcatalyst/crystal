@@ -7,6 +7,7 @@
 #include "crystal/compiler/ast/decl/fragment_declaration.hpp"
 #include "crystal/compiler/ast/decl/vertex_declaration.hpp"
 #include "crystal/compiler/ast/module.hpp"
+#include "crystal/compiler/ast/output/metal.hpp"
 #include "crystal/compiler/ast/type/struct_type.hpp"
 
 namespace crystal::compiler::ast::decl {
@@ -75,7 +76,7 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
   // clang-format off
   out << "const crystal::PipelineDesc " << name() << "_desc{\n"
       << "    /* .name              = */ \"" << name() << "\",\n"
-      << "    /* .cull_mode         = */ crystal::CullMode::Back,\n"
+      << "    /* .cull_mode         = */ crystal::CullMode::None,\n"
       << "    /* .winding           = */ crystal::Winding::CounterClockwise,\n"
       << "    /* .depth_test        = */ crystal::DepthTest::Always,\n"
       << "    /* .depth_write       = */ crystal::DepthWrite::Disable,\n"
@@ -118,27 +119,37 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
   // clang-format on
 }
 
-void PipelineDeclaration::to_crystallib(crystal::common::proto::Pipeline& pipeline_pb,
-                                        const Module&                     mod) const {
+void PipelineDeclaration::to_metal(std::ostream& out, const Module& mod) const {
+  vertex_function_->to_metal(out, mod);
+
+  if (fragment_function_ != nullptr) {
+    fragment_function_->to_metal(out, mod);
+  }
+}
+
+void PipelineDeclaration::to_crystallib(crystal::common::proto::GLPipeline& pipeline_pb,
+                                        const Module&                       mod) const {
   pipeline_pb.set_name(name());
 
-  crystal::common::proto::OpenGL* opengl_pb = pipeline_pb.mutable_opengl();
   {  // Vertex shader.
     std::ostringstream out;
     vertex_function_->to_glsl(out, mod);
-    opengl_pb->set_vertex_source(out.str());
+    pipeline_pb.set_vertex_source(out.str());
   }
 
   {  // Fragment shader.
     std::ostringstream out;
     fragment_function_->to_glsl(out, mod);
-    opengl_pb->set_fragment_source(out.str());
+    pipeline_pb.set_fragment_source(out.str());
   }
 
   {  // Uniforms.
     for (const auto& [type, name, binding] : uniforms_) {
-      crystal::common::proto::GLUniform* uniform_pb = opengl_pb->add_uniforms();
-      uniform_pb->set_name(name);
+      crystal::common::proto::GLUniform* uniform_pb = pipeline_pb.add_uniforms();
+
+      std::stringstream sstream;
+      sstream << "U" << binding;
+      uniform_pb->set_name(sstream.str());
       uniform_pb->set_binding(binding);
     }
   }

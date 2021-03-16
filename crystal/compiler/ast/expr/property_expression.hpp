@@ -19,6 +19,11 @@ public:
   virtual output::PrintLambda to_glsl() const override {
     return output::PrintLambda{[=](std::ostream& out) { out << expr_->to_glsl() << "." << name_; }};
   }
+
+  virtual output::PrintLambda to_metal() const override {
+    return output::PrintLambda{
+        [=](std::ostream& out) { out << expr_->to_metal() << "." << name_; }};
+  }
 };
 
 }  // namespace crystal::compiler::ast::expr

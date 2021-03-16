@@ -37,17 +37,42 @@ public:
     return to_pretty_glsl(indent);
   }
 
+  virtual output::PrintLambda to_metal(const decl::VertexDeclaration& vertex,
+                                       uint32_t                       indent) const override {
+    if (type_ == vertex.return_type()) {
+      std::string short_name = vertex.name().substr(0, vertex.name().size() - 5);
+      return output::PrintLambda{[=](std::ostream& out) {
+        out << output::metal::indent{indent} << short_name << "_v "
+            << output::metal::mangle_name{name_} << ";\n";
+      }};
+    }
+
+    return to_metal(indent);
+  }
+
+  virtual output::PrintLambda to_metal(const decl::FragmentDeclaration& fragment,
+                                       uint32_t                         indent) const override {
+    return to_metal(indent);
+  }
+
 private:
   output::PrintLambda to_glsl() const {
     return output::PrintLambda{[=](std::ostream& out) {
-      out << type_->name() << " " << output::glsl_mangle_name{name_} << ";";
+      out << type_->glsl_name() << " " << output::glsl::mangle_name{name_} << ";";
     }};
   }
 
   output::PrintLambda to_pretty_glsl(uint32_t indent) const {
     return output::PrintLambda{[=](std::ostream& out) {
-      out << output::glsl_indent{indent} << type_->name() << " " << output::glsl_mangle_name{name_}
-          << ";\n";
+      out << output::glsl::indent{indent} << type_->glsl_name() << " "
+          << output::glsl::mangle_name{name_} << ";\n";
+    }};
+  }
+
+  output::PrintLambda to_metal(uint32_t indent) const {
+    return output::PrintLambda{[=](std::ostream& out) {
+      out << output::metal::indent{indent} << type_->metal_name() << " "
+          << output::metal::mangle_name{name_} << ";\n";
     }};
   }
 };

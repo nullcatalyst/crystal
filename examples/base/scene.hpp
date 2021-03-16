@@ -27,7 +27,7 @@ protected:
     util::msg::fatal("unsupported graphics context type: Vulkan");
   }
 
-  virtual void init_graphics_metal(Controller& ctrl, crystal::vulkan::Context& ctx) {
+  virtual void init_graphics_metal(Controller& ctrl, crystal::metal::Context& ctx) {
     util::msg::fatal("unsupported graphics context type: Metal");
   }
 };

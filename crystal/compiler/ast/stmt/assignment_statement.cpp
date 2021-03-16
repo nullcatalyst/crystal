@@ -22,7 +22,7 @@ output::PrintLambda AssignmentStatement::to_pretty_glsl(uint32_t indent) const {
   switch (op_) {
     case AssignmentOp::Set:
       return output::PrintLambda{[=](std::ostream& out) {
-        out << output::glsl_indent{indent} << var_->to_glsl() << " = " << value_->to_glsl()
+        out << output::glsl::indent{indent} << var_->to_glsl() << " = " << value_->to_glsl()
             << ";\n";
       }};
 

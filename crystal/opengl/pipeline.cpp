@@ -186,26 +186,27 @@ Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
       depth_write_(desc.depth_write),
       blend_src_(desc.blend_src),
       blend_dst_(desc.blend_dst) {
-  for (int i = 0; i < library.lib_pb_.pipelines_size(); ++i) {
-    const auto& pipeline_pb = library.lib_pb_.pipelines(i);
+  const auto& opengl_pb = library.lib_pb_.opengl();
+  for (int i = 0; i < opengl_pb.pipelines_size(); ++i) {
+    const auto& pipeline_pb = opengl_pb.pipelines(i);
     if (pipeline_pb.name() != desc.name) {
       continue;
     }
 
-    if (pipeline_pb.opengl().fragment_source().size() > 0) {
+    if (pipeline_pb.fragment_source().size() > 0) {
       GLuint program = 0;
       GL_ASSERT(program = glCreateProgram(), "creating shader program");
-      program_ = compile_program(program, pipeline_pb.opengl().vertex_source(),
-                                 pipeline_pb.opengl().fragment_source());
+      program_ =
+          compile_program(program, pipeline_pb.vertex_source(), pipeline_pb.fragment_source());
     } else {
       GLuint program = 0;
       GL_ASSERT(program = glCreateProgram(), "creating shader program");
-      program_ = compile_program(program, pipeline_pb.opengl().vertex_source());
+      program_ = compile_program(program, pipeline_pb.vertex_source());
     }
 
     // Initialize the uniforms.
     uniforms_ = {};
-    for (const auto& uniform_pb : pipeline_pb.opengl().uniforms()) {
+    for (const auto& uniform_pb : pipeline_pb.uniforms()) {
       uniforms_[uniform_pb.binding()] = glGetUniformBlockIndex(program_, uniform_pb.name().c_str());
     }
 

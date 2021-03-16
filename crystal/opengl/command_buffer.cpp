@@ -122,7 +122,7 @@ void CommandBuffer::use_pipeline(Pipeline& pipeline) {
 void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t binding) {
   GL_ASSERT(glBindBufferBase(GL_UNIFORM_BUFFER, binding, uniform_buffer.buffer_),
             "setting uniform buffer base");
-  GL_ASSERT(glUniformBlockBinding(pipeline_->program_, binding, pipeline_->uniforms_[binding]),
+  GL_ASSERT(glUniformBlockBinding(pipeline_->program_, pipeline_->uniforms_[binding], binding),
             "binding uniform buffer block");
 }
 

@@ -63,6 +63,7 @@ public:
 
   void to_glsl(std::ostream& out, const Module& mod) const;
   void to_pretty_glsl(std::ostream& out, const Module& mod) const;
+  void to_metal(std::ostream& out, const Module& mod) const;
 };
 
 }  // namespace crystal::compiler::ast::decl

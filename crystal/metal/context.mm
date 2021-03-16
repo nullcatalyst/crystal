@@ -86,4 +86,20 @@ void Context::change_resolution(uint32_t width, uint32_t height) {
   screen_render_pass_.height_ = height;
 }
 
+void Context::set_clear_color(RenderPass& render_pass, uint32_t attachment,
+                              ClearValue clear_value) {
+  // if (attachment >= render_pass.attachment_count_) {
+  //   util::msg::fatal("setting clear color for out of bounds attachment [", attachment, "]");
+  // }
+  // render_pass.clear_colors_[attachment].clear_value = clear_value;
+}
+
+void Context::set_clear_depth(RenderPass& render_pass, ClearValue clear_value) {
+  // if (!render_pass.has_depth_) {
+  //   util::msg::fatal(
+  //       "setting clear depth for render pass that does not contain a depth attachment");
+  // }
+  // render_pass.clear_depth_.clear_value = clear_value;
+}
+
 }  // namespace crystal::metal

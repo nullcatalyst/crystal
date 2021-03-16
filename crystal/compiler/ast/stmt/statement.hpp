@@ -24,6 +24,12 @@ public:
 
   virtual output::PrintLambda to_pretty_glsl(const decl::FragmentDeclaration& fragment,
                                              uint32_t                         indent) const = 0;
+
+  virtual output::PrintLambda to_metal(const decl::VertexDeclaration& vertex,
+                                       uint32_t                       indent) const = 0;
+
+  virtual output::PrintLambda to_metal(const decl::FragmentDeclaration& fragment,
+                                       uint32_t                         indent) const = 0;
 };
 
 }  // namespace crystal::compiler::ast::stmt

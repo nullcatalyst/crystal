@@ -11,6 +11,7 @@ cc_library(
         ],
         "@//:macos": [
             "//crystal/opengl:opengl_sdl2",
+            "//crystal/metal:metal_sdl2",
         ],
     }) + [
         ":include",

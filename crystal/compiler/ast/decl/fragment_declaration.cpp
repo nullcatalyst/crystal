@@ -2,6 +2,7 @@
 
 #include "crystal/compiler/ast/module.hpp"
 #include "crystal/compiler/ast/output/glsl.hpp"
+#include "crystal/compiler/ast/output/metal.hpp"
 #include "crystal/compiler/ast/output/print.hpp"
 #include "crystal/compiler/ast/type/struct_type.hpp"
 
@@ -9,8 +10,7 @@ namespace crystal::compiler::ast::decl {
 
 void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
   // Output the version header. This must come first.
-  // out << "#version 420 core\n";
-  out << output::VERSION_HDR;
+  out << output::glsl::HDR;
 
   // TODO: Output only the used types.
   // Output the struct types.
@@ -39,7 +39,7 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
     for (auto& prop : struct_type->properties()) {
       out << prop.type->name() << " " << prop.name << ";";
     }
-    out << "}" << output::glsl_mangle_name{input.name} << ";";
+    out << "}" << output::glsl::mangle_name{input.name} << ";";
   }
 
   // Output the input variables (vertex buffers).
@@ -55,7 +55,7 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
         continue;
       }
       out << "layout(location=" << prop.index << ")in " << prop.type->name() << " "
-          << output::glsl_varying_name{static_cast<uint32_t>(prop.index), prop.name} << ";";
+          << output::glsl::varying_name{static_cast<uint32_t>(prop.index), prop.name} << ";";
     }
   }
 
@@ -69,7 +69,7 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
     }
 
     out << "layout(location=" << prop.index << ")out " << prop.type->name() << " "
-        << output::glsl_fragment_output_name{static_cast<uint32_t>(prop.index), prop.name} << ";";
+        << output::glsl::fragment_output_name{static_cast<uint32_t>(prop.index), prop.name} << ";";
   }
 
   // Finally output the function implementation.
@@ -80,10 +80,10 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
     }
 
     const util::memory::Ref<type::StructType> struct_type = input.type;
-    out << input.type->name() << " " << output::glsl_mangle_name{input.name} << ";";
+    out << input.type->name() << " " << output::glsl::mangle_name{input.name} << ";";
     for (const auto& prop : struct_type->properties()) {
-      out << output::glsl_mangle_name{input.name} << "." << prop.name << "="
-          << output::glsl_varying_name{static_cast<uint32_t>(prop.index), prop.name} << ";";
+      out << output::glsl::mangle_name{input.name} << "." << prop.name << "="
+          << output::glsl::varying_name{static_cast<uint32_t>(prop.index), prop.name} << ";";
     }
   }
   for (const auto& stmt : implementation_) {
@@ -94,7 +94,7 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod) const {
 
 void FragmentDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) const {
   // Output the version header. This must come first.
-  out << output::VERSION_HDR << "\n";
+  out << output::glsl::HDR << "\n";
 
   // TODO: Output only the used types.
   // Output the struct types.
@@ -123,7 +123,7 @@ void FragmentDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) c
     for (const auto& prop : struct_type->properties()) {
       out << "    " << prop.type->name() << " " << prop.name << ";\n";
     }
-    out << "} " << output::glsl_mangle_name{input.name} << ";\n";
+    out << "} " << output::glsl::mangle_name{input.name} << ";\n";
   }
 
   out << "\n";
@@ -142,7 +142,7 @@ void FragmentDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) c
       }
 
       out << "layout(location=" << prop.index << ") in " << prop.type->name() << " "
-          << output::glsl_varying_name{static_cast<uint32_t>(prop.index), prop.name} << ";\n";
+          << output::glsl::varying_name{static_cast<uint32_t>(prop.index), prop.name} << ";\n";
     }
   }
 
@@ -158,7 +158,8 @@ void FragmentDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) c
     }
 
     out << "layout(location=" << prop.index << ") out " << prop.type->name() << " "
-        << output::glsl_fragment_output_name{static_cast<uint32_t>(prop.index), prop.name} << ";\n";
+        << output::glsl::fragment_output_name{static_cast<uint32_t>(prop.index), prop.name}
+        << ";\n";
   }
 
   // Finally output the function implementation.
@@ -169,15 +170,43 @@ void FragmentDeclaration::to_pretty_glsl(std::ostream& out, const Module& mod) c
     }
 
     const util::memory::Ref<type::StructType> struct_type = input.type;
-    out << "    " << input.type->name() << " " << output::glsl_mangle_name{input.name} << ";\n";
+    out << "    " << input.type->name() << " " << output::glsl::mangle_name{input.name} << ";\n";
     for (const auto& prop : struct_type->properties()) {
-      out << "    " << output::glsl_mangle_name{input.name} << "." << prop.name << " = "
-          << output::glsl_varying_name{static_cast<uint32_t>(prop.index), prop.name} << ";\n";
+      out << "    " << output::glsl::mangle_name{input.name} << "." << prop.name << " = "
+          << output::glsl::varying_name{static_cast<uint32_t>(prop.index), prop.name} << ";\n";
     }
   }
   out << "\n";
   for (const auto& stmt : implementation_) {
     out << stmt->to_pretty_glsl(*this, 1);
+  }
+  out << "}\n";
+}
+
+void FragmentDeclaration::to_metal(std::ostream& out, const Module& mod) const {
+  // Output the function implementation.
+  out << "fragment " << return_type_->metal_name() << " " << name() << "(";
+
+  bool first = true;
+  for (const auto& input : inputs_) {
+    if (!first) {
+      out << ", ";
+    } else {
+      first = false;
+    }
+
+    if (input.input_type == decl::FragmentInputType::Varying) {
+      std::string short_name = name().substr(0, name().size() - 5);
+      out << short_name << "_v " << output::metal::mangle_name{input.name} << " [[ stage_in ]]";
+    }
+    if (input.input_type == decl::FragmentInputType::Uniform) {
+      out << "constant " << input.type->metal_name() << "& "
+          << output::metal::mangle_name{input.name} << " [[ buffer(" << input.index << ") ]]";
+    }
+  }
+  out << ") {\n";
+  for (const auto& stmt : implementation_) {
+    out << stmt->to_metal(*this, 1);
   }
   out << "}\n";
 }

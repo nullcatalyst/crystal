@@ -42,8 +42,16 @@ public:
 
   virtual ~PipelineDeclaration() = default;
 
+  [[nodiscard]] const util::memory::Ref<VertexDeclaration>& vertex_function() const {
+    return vertex_function_;
+  }
+  [[nodiscard]] const util::memory::Ref<FragmentDeclaration>& fragment_function() const {
+    return fragment_function_;
+  }
+
   void to_cpphdr(std::ostream& out, const Module& mod) const;
-  void to_crystallib(crystal::common::proto::Pipeline& pipeline_pb, const Module& mod) const;
+  void to_metal(std::ostream& out, const Module& mod) const;
+  void to_crystallib(crystal::common::proto::GLPipeline& pipeline_pb, const Module& mod) const;
 };
 
 }  // namespace crystal::compiler::ast::decl

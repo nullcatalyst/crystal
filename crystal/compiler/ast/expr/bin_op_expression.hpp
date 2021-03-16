@@ -50,6 +50,30 @@ public:
         break;
     }
   }
+
+  virtual output::PrintLambda to_metal() const override {
+    switch (op_) {
+      case BinOp::Add:
+        return output::PrintLambda{
+            [=](std::ostream& out) { out << lhs_->to_metal() << "+" << rhs_->to_metal(); }};
+
+      case BinOp::Sub:
+        return output::PrintLambda{
+            [=](std::ostream& out) { out << lhs_->to_metal() << "-" << rhs_->to_metal(); }};
+
+      case BinOp::Mul:
+        return output::PrintLambda{
+            [=](std::ostream& out) { out << lhs_->to_metal() << "*" << rhs_->to_metal(); }};
+
+      case BinOp::Div:
+        return output::PrintLambda{
+            [=](std::ostream& out) { out << lhs_->to_metal() << "/" << rhs_->to_metal(); }};
+
+      default:
+        util::msg::fatal("unhandled binary operator [", static_cast<uint32_t>(op_), "]");
+        break;
+    }
+  }
 };
 
 }  // namespace crystal::compiler::ast::expr

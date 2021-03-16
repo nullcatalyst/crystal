@@ -99,6 +99,7 @@ int main(const int argc, const char* const argv[]) {
     mod.to_crystallib(output_file, crystal::compiler::ast::CrystallibOutputOptions{
                                        .glslang_validator_path = "glslangValidator",
                                        .spirv_link_path        = "spirv-link",
+                                       .tmp                    = lib_output_file_name,
                                    });
   });
   // }

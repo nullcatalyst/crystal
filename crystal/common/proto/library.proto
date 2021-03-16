@@ -12,15 +12,20 @@ message GLTexture {
     uint32 binding = 2;
 }
 
+message GLPipeline {
+    string name = 1;
+    string vertex_source = 2;
+    string fragment_source = 3;
+    repeated GLUniform uniforms = 4;
+    repeated GLTexture textures = 5;
+}
+
 message OpenGL {
-    string vertex_source = 1;
-    string fragment_source = 2;
-    repeated GLUniform uniforms = 3;
-    repeated GLTexture textures = 4;
+    repeated GLPipeline pipelines = 1;
 }
 
 message Vulkan {
-    bytes lib = 1;
+    bytes library = 1;
 }
 
 message MTLUniform {
@@ -28,19 +33,20 @@ message MTLUniform {
     uint32 actual = 2;
 }
 
-message Metal {
-    bytes lib = 1;
-    repeated MTLUniform uniforms = 2;
+message MTLPipeline {
+    string name = 1;
+    string vertex_name = 2;
+    string fragment_name = 3;
+    repeated MTLUniform uniforms = 4;
 }
 
-message Pipeline {
-    string name = 1;
-    OpenGL opengl = 2;
-    Vulkan vulkan = 3;
-    Metal metal = 4;
+message Metal {
+    bytes library = 1;
+    repeated MTLPipeline pipelines = 2;
 }
 
 message Library {
-    string version = 1;
-    repeated Pipeline pipelines = 2;
+    OpenGL opengl = 1;
+    Vulkan vulkan = 2;
+    Metal metal = 3;
 }

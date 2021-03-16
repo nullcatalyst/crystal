@@ -2,6 +2,7 @@
 
 #include <string_view>
 
+#include "crystal/common/proto/proto.hpp"
 #include "crystal/metal/mtl.hpp"
 
 namespace crystal::metal {
@@ -12,9 +13,10 @@ class Pipeline;
 
 class Library {
   OBJC(MTLLibrary) library_ = nullptr;
+  common::proto::Library lib_pb_;
 
 public:
-  constexpr Library() = default;
+  Library() = default;
 
   Library(const Library&) = delete;
   Library& operator=(const Library&) = delete;
@@ -31,7 +33,7 @@ private:
   friend class ::crystal::metal::Shader;
   friend class ::crystal::metal::Pipeline;
 
-  Library(OBJC(MTLDevice) device, const std::string_view path);
+  Library(OBJC(MTLDevice) device, const std::string_view file_path);
 };
 
 }  // namespace crystal::metal

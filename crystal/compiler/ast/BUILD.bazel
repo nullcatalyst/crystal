@@ -30,6 +30,7 @@ cc_library(
         "//crystal/compiler/ast/expr",
         "//crystal/compiler/ast/stmt",
         "//crystal/compiler/ast/type",
+        "//util/fs",
         "//util/memory",
         "@com_google_absl//absl/container:flat_hash_map",
     ],

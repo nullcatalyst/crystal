@@ -19,6 +19,11 @@ public:
                                              uint32_t                       indent) const override;
   virtual output::PrintLambda to_pretty_glsl(const decl::FragmentDeclaration& fragment,
                                              uint32_t indent) const override;
+
+  virtual output::PrintLambda to_metal(const decl::VertexDeclaration& vertex,
+                                       uint32_t                       indent) const override;
+  virtual output::PrintLambda to_metal(const decl::FragmentDeclaration& fragment,
+                                       uint32_t                         indent) const override;
 };
 
 }  // namespace crystal::compiler::ast::stmt

@@ -19,7 +19,7 @@ struct Out {
 }
 
 pipeline triangle {
-    uniform Uniform u : 0;
+    uniform Uniform u : 1;
 
     // cull = "back";
     // winding = "ccw";

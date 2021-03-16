@@ -39,8 +39,8 @@ protected:
 #endif  // ^^^ CRYSTAL_USE_VULKAN
 
 #if CRYSTAL_USE_METAL
-  virtual void init_graphics_metal(engine::Controller&       ctrl,
-                                   crystal::vulkan::Context& ctx) override {
+  virtual void init_graphics_metal(engine::Controller&      ctrl,
+                                   crystal::metal::Context& ctx) override {
     view_ = std::make_unique<ViewImpl<crystal::metal::Context>>(ctx, state_);
   }
 #endif  // ^^^ CRYSTAL_USE_METAL

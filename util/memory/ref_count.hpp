@@ -116,6 +116,8 @@ public:
 
   [[nodiscard]] constexpr bool operator==(std::nullptr_t) const { return ref_ == nullptr; }
   [[nodiscard]] constexpr bool operator!=(std::nullptr_t) const { return ref_ != nullptr; }
+  [[nodiscard]] constexpr bool operator==(const Ref& other) const { return ref_ == other.ref_; }
+  [[nodiscard]] constexpr bool operator!=(const Ref& other) const { return ref_ != other.ref_; }
 
   [[nodiscard]] constexpr    operator T&() { return *ref_->ptr(); }
   [[nodiscard]] constexpr T* operator->() { return ref_->ptr(); }

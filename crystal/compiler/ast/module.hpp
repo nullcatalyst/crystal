@@ -17,12 +17,16 @@ struct CppOutputOptions {
   bool cpp17;
 };
 
+struct MetalOutputOptions {};
+
 struct CrystallibOutputOptions {
   // Path to the glslangValidator executable that will be used to convert glsl to spv.
   std::string_view glslang_validator_path;
   // Path to the spirv-link executable that will be used to merge the individual spv files into a
   // single monolithic library.
   std::string_view spirv_link_path;
+
+  std::string_view tmp;
 };
 
 class Module {
@@ -89,6 +93,7 @@ public:
   find_fragment_function(std::string_view name) const;
 
   void to_cpphdr(std::ostream& out, const CppOutputOptions& opts) const;
+  void to_metal(std::ostream& out, const MetalOutputOptions& opts) const;
   void to_crystallib(std::ostream& out, const CrystallibOutputOptions& opts) const;
 };
 

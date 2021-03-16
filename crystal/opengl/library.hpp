@@ -31,7 +31,7 @@ private:
   friend class ::crystal::opengl::Shader;
   friend class ::crystal::opengl::Pipeline;
 
-  Library(const std::string_view path);
+  Library(const std::string_view file_path);
 };
 
 }  // namespace crystal::opengl

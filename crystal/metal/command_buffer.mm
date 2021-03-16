@@ -48,13 +48,12 @@ void CommandBuffer::use_pipeline(Pipeline& pipeline) {
   [render_encoder_ setCullMode:pipeline.cull_mode_];
 }
 
-void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t location,
-                                       uint32_t binding) {
+void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t binding) {
   [render_encoder_ setVertexBuffer:uniform_buffer.buffer_ offset:0 atIndex:binding];
   [render_encoder_ setFragmentBuffer:uniform_buffer.buffer_ offset:0 atIndex:binding];
 }
 
-void CommandBuffer::use_texture(Texture& texture, uint32_t location, uint32_t binding) {
+void CommandBuffer::use_texture(Texture& texture, uint32_t binding) {
   [render_encoder_ setFragmentTexture:texture.texture_ atIndex:binding];
 }
 
