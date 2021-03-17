@@ -33,7 +33,7 @@ using Ref = util::memory::Ref<T>;
 %type stmt          { Ref<stmt::Statement> }
 %type stmt_list     { std::vector<Ref<stmt::Statement>> }
 %type type          { Ref<type::Type> }
-// %type type_struct   { Type* }
+%type call_arg_list { std::vector<Ref<expr::Expression>> }
 %syntax_error       { util::msg::fatal("invalid syntax"); }
 
 main                ::= decl_list.
@@ -86,7 +86,7 @@ frag_arg_list(ret)  ::= type(type) LIT_IDEN(name).                              
 pipe_prop_list(ret) ::= pipe_prop_list(list) KW_UNIFORM
                         type(type) LIT_IDEN(name) OP_COLON LIT_INT(index) OP_SEMICOLON
                         .                                                       {
-                            ret = list;
+                            ret = std::move(list);
                             ret.uniforms.emplace_back(type, std::string(name.string_value), static_cast<uint32_t>(index.int_value));
                         }
 pipe_prop_list(ret) ::= pipe_prop_list(list) KW_VERTEX
@@ -94,7 +94,7 @@ pipe_prop_list(ret) ::= pipe_prop_list(list) KW_VERTEX
                         OP_RARROW type(ret_type)
                         OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
                         .                                                       {
-                            ret = list;
+                            ret = std::move(list);
                             ret.vertex_function = Ref<decl::VertexDeclaration>::make(ret_type, std::move(args), std::move(impl));
                         }
 pipe_prop_list(ret) ::= pipe_prop_list(list) KW_VERTEX
@@ -102,7 +102,7 @@ pipe_prop_list(ret) ::= pipe_prop_list(list) KW_VERTEX
                         OP_RARROW type(ret_type)
                         OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
                         .                                                       {
-                            ret = list;
+                            ret = std::move(list);
                             ret.vertex_function = Ref<decl::VertexDeclaration>::make(ret_type, std::move(args), std::move(impl));
                         }
 pipe_prop_list(ret) ::= pipe_prop_list(list) KW_FRAGMENT
@@ -110,7 +110,7 @@ pipe_prop_list(ret) ::= pipe_prop_list(list) KW_FRAGMENT
                         OP_RARROW type(ret_type)
                         OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
                         .                                                       {
-                            ret = list;
+                            ret = std::move(list);
                             ret.fragment_function = Ref<decl::FragmentDeclaration>::make(ret_type, std::move(args), std::move(impl));
                         }
 pipe_prop_list(ret) ::= pipe_prop_list(list) KW_FRAGMENT
@@ -118,7 +118,7 @@ pipe_prop_list(ret) ::= pipe_prop_list(list) KW_FRAGMENT
                         OP_RARROW type(ret_type)
                         OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
                         .                                                       {
-                            ret = list;
+                            ret = std::move(list);
                             ret.fragment_function = Ref<decl::FragmentDeclaration>::make(ret_type, std::move(args), std::move(impl));
                         }
 pipe_prop_list(ret)  ::= .                                                      { ret = decl::PipelineSettings{}; }
@@ -143,7 +143,7 @@ stmt(ret)           ::= expr_var(var) OP_MINUSEQUAL expr(expr) OP_SEMICOLON.    
 stmt(ret)           ::= expr_var(var) OP_STAREQUAL expr(expr) OP_SEMICOLON.     { ret = Ref<stmt::AssignmentStatement>::make(std::move(var), std::move(expr), stmt::AssignmentOp::Mul); }
 stmt(ret)           ::= expr_var(var) OP_SLASHEQUAL expr(expr) OP_SEMICOLON.    { ret = Ref<stmt::AssignmentStatement>::make(std::move(var), std::move(expr), stmt::AssignmentOp::Div); }
 
-expr(ret)           ::= expr_add(expr).                                         { ret = expr; }
+expr                ::= expr_add.
 
 expr_add(ret)       ::= expr_add(lhs) OP_PLUS expr_mul(rhs).                    { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Add); }
 expr_add(ret)       ::= expr_add(lhs) OP_MINUS expr_mul(rhs).                   { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Sub); }
@@ -155,15 +155,29 @@ expr_mul            ::= expr_prefix.
 
 expr_prefix(ret)    ::= OP_PLUS expr_atom(rhs).                                 { ret = Ref<expr::UnOpExpression>::make(rhs, expr::UnOp::Pos); }
 expr_prefix(ret)    ::= OP_MINUS expr_atom(rhs).                                { ret = Ref<expr::UnOpExpression>::make(rhs, expr::UnOp::Neg); }
-expr_prefix(ret)    ::= expr_atom(expr).                                        { ret = expr; }
+expr_prefix         ::= expr_call.
+
+expr_call(ret)      ::= expr_var(func) OP_PERIOD
+                        OP_LPAREN OP_RPAREN
+                        .                                                       { ret = Ref<expr::CallExpression>::make(func); }
+expr_call(ret)      ::= expr_var(func) OP_PERIOD
+                        OP_LPAREN call_arg_list(list) OP_RPAREN
+                        .                                                       { ret = Ref<expr::CallExpression>::make(func, list); }
+expr_call(ret)      ::= expr_var(func) OP_PERIOD
+                        OP_LPAREN call_arg_list(list) OP_COMMA OP_RPAREN
+                        .                                                       { ret = Ref<expr::CallExpression>::make(func, list); }
+expr_call           ::= expr_atom.
 
 expr_atom(ret)      ::= LIT_INT(val).                                           { ret = Ref<expr::IntegerExpression>::make(val.int_value); }
 expr_atom(ret)      ::= LIT_FLOAT(val).                                         { ret = Ref<expr::FloatExpression>::make(val.float_value); }
-expr_atom(ret)      ::= expr_var(expr).                                         { ret = expr; }
-expr_atom(ret)      ::= expr_paren(expr).                                       { ret = expr; }
+expr_atom           ::= expr_var.
+expr_atom           ::= expr_paren.
 
 expr_var(ret)       ::= expr_var(expr_) OP_PERIOD LIT_IDEN(name).               { ret = Ref<expr::PropertyExpression>::make(expr_, name.string_value); }
 expr_var(ret)       ::= expr_paren(expr_) OP_PERIOD LIT_IDEN(name).             { ret = Ref<expr::PropertyExpression>::make(expr_, name.string_value); }
 expr_var(ret)       ::= LIT_IDEN(name).                                         { ret = Ref<expr::IdentifierExpression>::make(name.string_value); }
 
 expr_paren(ret)     ::= OP_LRNDBRACKET expr(expr_) OP_RRNDBRACKET.              { ret = Ref<expr::ParenthesisExpression>::make(expr_); }
+
+call_arg_list(ret)  ::= call_arg_list(list) OP_COMMA expr(expr).                { ret = std::move(list); ret.push_back(expr); }
+call_arg_list(ret)  ::= expr(expr_).                                            { ret = std::vector<Ref<expr::Expression>>{expr_}; }

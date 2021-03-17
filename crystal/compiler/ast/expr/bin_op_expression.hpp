@@ -27,23 +27,23 @@ public:
 
   virtual ~BinOpExpression() = default;
 
-  virtual output::PrintLambda to_glsl() const override {
+  virtual output::PrintLambda to_glsl(const output::glsl::Options opts) const override {
     switch (op_) {
       case BinOp::Add:
         return output::PrintLambda{
-            [=](std::ostream& out) { out << lhs_->to_glsl() << "+" << rhs_->to_glsl(); }};
+            [=](std::ostream& out) { out << lhs_->to_glsl(opts) << "+" << rhs_->to_glsl(opts); }};
 
       case BinOp::Sub:
         return output::PrintLambda{
-            [=](std::ostream& out) { out << lhs_->to_glsl() << "-" << rhs_->to_glsl(); }};
+            [=](std::ostream& out) { out << lhs_->to_glsl(opts) << "-" << rhs_->to_glsl(opts); }};
 
       case BinOp::Mul:
         return output::PrintLambda{
-            [=](std::ostream& out) { out << lhs_->to_glsl() << "*" << rhs_->to_glsl(); }};
+            [=](std::ostream& out) { out << lhs_->to_glsl(opts) << "*" << rhs_->to_glsl(opts); }};
 
       case BinOp::Div:
         return output::PrintLambda{
-            [=](std::ostream& out) { out << lhs_->to_glsl() << "/" << rhs_->to_glsl(); }};
+            [=](std::ostream& out) { out << lhs_->to_glsl(opts) << "/" << rhs_->to_glsl(opts); }};
 
       default:
         util::msg::fatal("unhandled binary operator [", static_cast<uint32_t>(op_), "]");
@@ -51,23 +51,23 @@ public:
     }
   }
 
-  virtual output::PrintLambda to_metal() const override {
+  virtual output::PrintLambda to_metal(const output::metal::Options opts) const override {
     switch (op_) {
       case BinOp::Add:
         return output::PrintLambda{
-            [=](std::ostream& out) { out << lhs_->to_metal() << "+" << rhs_->to_metal(); }};
+            [=](std::ostream& out) { out << lhs_->to_metal(opts) << "+" << rhs_->to_metal(opts); }};
 
       case BinOp::Sub:
         return output::PrintLambda{
-            [=](std::ostream& out) { out << lhs_->to_metal() << "-" << rhs_->to_metal(); }};
+            [=](std::ostream& out) { out << lhs_->to_metal(opts) << "-" << rhs_->to_metal(opts); }};
 
       case BinOp::Mul:
         return output::PrintLambda{
-            [=](std::ostream& out) { out << lhs_->to_metal() << "*" << rhs_->to_metal(); }};
+            [=](std::ostream& out) { out << lhs_->to_metal(opts) << "*" << rhs_->to_metal(opts); }};
 
       case BinOp::Div:
         return output::PrintLambda{
-            [=](std::ostream& out) { out << lhs_->to_metal() << "/" << rhs_->to_metal(); }};
+            [=](std::ostream& out) { out << lhs_->to_metal(opts) << "/" << rhs_->to_metal(opts); }};
 
       default:
         util::msg::fatal("unhandled binary operator [", static_cast<uint32_t>(op_), "]");

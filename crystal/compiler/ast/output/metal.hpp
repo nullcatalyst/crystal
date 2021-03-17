@@ -11,6 +11,19 @@ constexpr std::string_view HDR = R"(#include <metal_stdlib>
 using namespace metal;
 )";
 
+struct Options {
+  const Module&                    mod;
+  const decl::VertexDeclaration*   vertex;
+  const decl::FragmentDeclaration* fragment;
+  const uint32_t                   indent;
+
+  constexpr Options(const Module& mod, const decl::VertexDeclaration* vertex,
+                    const decl::FragmentDeclaration* fragment, const uint32_t indent)
+      : mod(mod), vertex(vertex), fragment(fragment), indent(indent) {}
+
+  constexpr Options incr_indent() const { return Options{mod, vertex, fragment, indent}; }
+};
+
 struct indent {
   uint32_t indent;
 };

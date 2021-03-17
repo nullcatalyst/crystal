@@ -14,12 +14,14 @@ public:
 
   virtual ~ParenthesisExpression() = default;
 
-  virtual output::PrintLambda to_glsl() const override {
-    return output::PrintLambda{[=](std::ostream& out) { out << "(" << expr_->to_glsl() << ")"; }};
+  virtual output::PrintLambda to_glsl(const output::glsl::Options opts) const override {
+    return output::PrintLambda{
+        [=](std::ostream& out) { out << "(" << expr_->to_glsl(opts) << ")"; }};
   }
 
-  virtual output::PrintLambda to_metal() const override {
-    return output::PrintLambda{[=](std::ostream& out) { out << "(" << expr_->to_metal() << ")"; }};
+  virtual output::PrintLambda to_metal(const output::metal::Options opts) const override {
+    return output::PrintLambda{
+        [=](std::ostream& out) { out << "(" << expr_->to_metal(opts) << ")"; }};
   }
 };
 

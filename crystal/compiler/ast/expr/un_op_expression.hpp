@@ -21,15 +21,13 @@ public:
 
   virtual ~UnOpExpression() = default;
 
-  virtual output::PrintLambda to_glsl() const override {
+  virtual output::PrintLambda to_glsl(const output::glsl::Options opts) const override {
     switch (op_) {
       case UnOp::Pos:
-        return output::PrintLambda{
-            [rhs = rhs_](std::ostream& out) { out << "+" << rhs->to_glsl(); }};
+        return output::PrintLambda{[=](std::ostream& out) { out << "+" << rhs_->to_glsl(opts); }};
 
       case UnOp::Neg:
-        return output::PrintLambda{
-            [rhs = rhs_](std::ostream& out) { out << "-" << rhs->to_glsl(); }};
+        return output::PrintLambda{[=](std::ostream& out) { out << "-" << rhs_->to_glsl(opts); }};
 
       default:
         util::msg::fatal("unhandled unary operator [", static_cast<uint32_t>(op_), "]");
@@ -37,15 +35,13 @@ public:
     }
   }
 
-  virtual output::PrintLambda to_metal() const override {
+  virtual output::PrintLambda to_metal(const output::metal::Options opts) const override {
     switch (op_) {
       case UnOp::Pos:
-        return output::PrintLambda{
-            [rhs = rhs_](std::ostream& out) { out << "+" << rhs->to_metal(); }};
+        return output::PrintLambda{[=](std::ostream& out) { out << "+" << rhs_->to_metal(opts); }};
 
       case UnOp::Neg:
-        return output::PrintLambda{
-            [rhs = rhs_](std::ostream& out) { out << "-" << rhs->to_metal(); }};
+        return output::PrintLambda{[=](std::ostream& out) { out << "-" << rhs_->to_metal(opts); }};
 
       default:
         util::msg::fatal("unhandled unary operator [", static_cast<uint32_t>(op_), "]");

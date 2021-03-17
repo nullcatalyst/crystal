@@ -13,11 +13,11 @@ public:
 
   virtual ~IntegerExpression() = default;
 
-  virtual output::PrintLambda to_glsl() const override {
+  virtual output::PrintLambda to_glsl(const output::glsl::Options opts) const override {
     return output::PrintLambda{[=](std::ostream& out) { out << value_; }};
   }
 
-  virtual output::PrintLambda to_metal() const override {
+  virtual output::PrintLambda to_metal(const output::metal::Options opts) const override {
     return output::PrintLambda{[=](std::ostream& out) { out << value_; }};
   }
 };

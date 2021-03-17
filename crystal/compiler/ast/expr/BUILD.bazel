@@ -13,6 +13,8 @@ cc_library(
     ],
     deps = [
         "//crystal/compiler/ast/output",
+        "//util/memory",
+        "//util/msg",
     ],
 )
 

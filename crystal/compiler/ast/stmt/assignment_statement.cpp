@@ -6,11 +6,13 @@
 
 namespace crystal::compiler::ast::stmt {
 
-output::PrintLambda AssignmentStatement::to_glsl() const {
+output::PrintLambda AssignmentStatement::to_glsl(const output::glsl::Options opts) const {
   switch (op_) {
     case AssignmentOp::Set:
-      return output::PrintLambda{
-          [=](std::ostream& out) { out << var_->to_glsl() << "=" << value_->to_glsl() << ";"; }};
+      return output::PrintLambda{[=](std::ostream& out) {
+        out << output::glsl::indent{opts.indent} << var_->to_glsl(opts)
+            << (opts.pretty ? " = " : "=") << value_->to_glsl(opts) << (opts.pretty ? ";\n" : ";");
+      }};
 
     default:
       util::msg::fatal("unhandled assignment operator [", static_cast<uint32_t>(op_), "]");
@@ -18,12 +20,12 @@ output::PrintLambda AssignmentStatement::to_glsl() const {
   }
 }
 
-output::PrintLambda AssignmentStatement::to_pretty_glsl(uint32_t indent) const {
+output::PrintLambda AssignmentStatement::to_metal(const output::metal::Options opts) const {
   switch (op_) {
     case AssignmentOp::Set:
       return output::PrintLambda{[=](std::ostream& out) {
-        out << output::glsl::indent{indent} << var_->to_glsl() << " = " << value_->to_glsl()
-            << ";\n";
+        out << output::metal::indent{opts.indent} << var_->to_metal(opts) << " = "
+            << value_->to_metal(opts) << ";\n";
       }};
 
     default:

@@ -222,10 +222,6 @@ void Module::to_crystallib(std::ostream& out, const CrystallibOutputOptions& opt
     auto       air_file_name      = tmp_dir + "/a.air";
     auto       metallib_file_name = tmp_dir + "/a.metallib";
 
-    std::cout << "metal_file_name=" << metal_file_name << std::endl;
-    std::cout << "air_file_name=" << air_file_name << std::endl;
-    std::cout << "metallib_file_name=" << metallib_file_name << std::endl;
-
     {
       std::ofstream output_file(metal_file_name, std::ios::out);
       to_metal(output_file, MetalOutputOptions{});
@@ -235,18 +231,18 @@ void Module::to_crystallib(std::ostream& out, const CrystallibOutputOptions& opt
       std::stringstream cmd;
       cmd << "xcrun -sdk macosx metal -c " << metal_file_name << " -o " << air_file_name;
       std::system(cmd.str().c_str());
-      // std::remove(metal_file_name.c_str());
+      std::remove(metal_file_name.c_str());
     }
 
     {
       std::stringstream cmd;
       cmd << "xcrun -sdk macosx metallib " << air_file_name << " -o " << metallib_file_name;
       std::system(cmd.str().c_str());
-      // std::remove(air_file_name.c_str());
+      std::remove(air_file_name.c_str());
     }
 
     const auto matallib_contents = util::fs::read_file_binary(metallib_file_name);
-    // std::remove(metallib_file_name.c_str());
+    std::remove(metallib_file_name.c_str());
 
     common::proto::Metal* metal_pb = lib_pb.mutable_metal();
     metal_pb->set_library(matallib_contents.data(), matallib_contents.size());

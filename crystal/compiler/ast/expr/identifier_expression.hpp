@@ -15,11 +15,11 @@ public:
 
   virtual ~IdentifierExpression() = default;
 
-  virtual output::PrintLambda to_glsl() const override {
+  virtual output::PrintLambda to_glsl(const output::glsl::Options opts) const override {
     return output::PrintLambda{[=](std::ostream& out) { out << output::glsl::mangle_name{name_}; }};
   }
 
-  virtual output::PrintLambda to_metal() const override {
+  virtual output::PrintLambda to_metal(const output::metal::Options opts) const override {
     return output::PrintLambda{
         [=](std::ostream& out) { out << output::metal::mangle_name{name_}; }};
   }

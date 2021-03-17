@@ -31,11 +31,7 @@ int main(const int argc, const char* const argv[]) {
       std::ofstream output_file(output_file_name);
       util::msg::debug("outputting vertex file [", output_file_name, "]");
 
-      if (pretty) {
-        vertex_function->to_pretty_glsl(output_file, mod);
-      } else {
-        vertex_function->to_glsl(output_file, mod);
-      }
+      vertex_function->to_glsl(output_file, mod, pretty);
     }
 
     for (auto& fragment_function : mod.fragment_functions()) {
@@ -44,11 +40,7 @@ int main(const int argc, const char* const argv[]) {
       std::ofstream output_file(output_file_name);
       util::msg::debug("outputting fragment file [", output_file_name, "]");
 
-      if (pretty) {
-        fragment_function->to_pretty_glsl(output_file, mod);
-      } else {
-        fragment_function->to_glsl(output_file, mod);
-      }
+      fragment_function->to_glsl(output_file, mod, pretty);
     }
   });
   // }

@@ -66,19 +66,14 @@ Pipeline::Pipeline(OBJC(MTLDevice) device, Library& library, RenderPass& render_
   std::string vertex_name;
   std::string fragment_name;
   const auto& metal_pb = library.lib_pb_.metal();
-  std::cout << "metal_pipelines=" << metal_pb.pipelines_size() << std::endl;
   for (int i = 0; i < metal_pb.pipelines_size(); ++i) {
     const auto& pipeline_pb = metal_pb.pipelines(i);
-    std::cout << "pipeline_name=" << pipeline_pb.name() << std::endl;
     if (pipeline_pb.name() != desc.name) {
       continue;
     }
 
     vertex_name   = pipeline_pb.vertex_name();
     fragment_name = pipeline_pb.fragment_name();
-
-    std::cout << "vertex_name=" << vertex_name << std::endl;
-    std::cout << "fragment_name=" << fragment_name << std::endl;
 
     // Initialize the uniforms.
     // uniforms_ = {};

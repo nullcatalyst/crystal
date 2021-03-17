@@ -16,13 +16,14 @@ public:
 
   virtual ~PropertyExpression() = default;
 
-  virtual output::PrintLambda to_glsl() const override {
-    return output::PrintLambda{[=](std::ostream& out) { out << expr_->to_glsl() << "." << name_; }};
+  virtual output::PrintLambda to_glsl(const output::glsl::Options opts) const override {
+    return output::PrintLambda{
+        [=](std::ostream& out) { out << expr_->to_glsl(opts) << "." << name_; }};
   }
 
-  virtual output::PrintLambda to_metal() const override {
+  virtual output::PrintLambda to_metal(const output::metal::Options opts) const override {
     return output::PrintLambda{
-        [=](std::ostream& out) { out << expr_->to_metal() << "." << name_; }};
+        [=](std::ostream& out) { out << expr_->to_metal(opts) << "." << name_; }};
   }
 };
 

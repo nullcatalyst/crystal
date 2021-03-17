@@ -88,10 +88,12 @@ void Context::change_resolution(uint32_t width, uint32_t height) {
 
 void Context::set_clear_color(RenderPass& render_pass, uint32_t attachment,
                               ClearValue clear_value) {
-  // if (attachment >= render_pass.attachment_count_) {
-  //   util::msg::fatal("setting clear color for out of bounds attachment [", attachment, "]");
-  // }
-  // render_pass.clear_colors_[attachment].clear_value = clear_value;
+  if (attachment >= render_pass.color_count_) {
+    util::msg::fatal("setting clear color for out of bounds attachment [", attachment, "]");
+  }
+  [render_pass.render_pass_desc_ colorAttachments][attachment].clearColor =
+      MTLClearColorMake(clear_value.color.red, clear_value.color.green, clear_value.color.blue,
+                        clear_value.color.alpha);
 }
 
 void Context::set_clear_depth(RenderPass& render_pass, ClearValue clear_value) {

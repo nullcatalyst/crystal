@@ -3,9 +3,45 @@
 #include <iostream>
 #include <string_view>
 
+namespace crystal::compiler::ast {
+
+class Module;
+
+}  // namespace crystal::compiler::ast
+
+namespace crystal::compiler::ast::decl {
+
+class VertexDeclaration;
+class FragmentDeclaration;
+
+}  // namespace crystal::compiler::ast::decl
+
 namespace crystal::compiler::ast::output::glsl {
 
 constexpr std::string_view HDR = "#version 410 core\n";
+
+struct Options {
+  const Module&                    mod;
+  const decl::VertexDeclaration*   vertex;
+  const decl::FragmentDeclaration* fragment;
+  const uint32_t                   indent;
+  const bool                       pretty;
+  const bool                       vulkan;
+
+  constexpr Options(const Module& mod, const decl::VertexDeclaration* vertex,
+                    const decl::FragmentDeclaration* fragment, const uint32_t indent,
+                    const bool pretty, const bool vulkan)
+      : mod(mod),
+        vertex(vertex),
+        fragment(fragment),
+        indent(indent),
+        pretty(pretty),
+        vulkan(vulkan) {}
+
+  constexpr Options incr_indent() const {
+    return Options{mod, vertex, fragment, indent + (pretty ? 1 : 0), pretty, vulkan};
+  }
+};
 
 struct indent {
   uint32_t indent;
