@@ -53,7 +53,7 @@ spv_stage = rule(
         "entry": attr.string(default = "main"),
         "defines": attr.string_list(),
         "_compiler": attr.label(
-            default = Label("@org_khronos_glslang//:glslangValidator"),
+            default = Label("@org_khronos_glslang//:glslangValidator_opt"),
             allow_single_file = True,
             executable = True,
             cfg = "host",

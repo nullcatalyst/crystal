@@ -18,7 +18,8 @@ class FragmentDeclaration;
 
 namespace crystal::compiler::ast::output::glsl {
 
-constexpr std::string_view HDR = "#version 410 core\n";
+constexpr std::string_view GL_HDR = "#version 410 core\n";
+constexpr std::string_view VK_HDR = "#version 420 core\n";
 
 struct Options {
   const Module&                    mod;

@@ -8,11 +8,12 @@
 
 namespace crystal::compiler::ast::decl {
 
-void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod, bool pretty) const {
-  const output::glsl::Options opts{mod, this, nullptr, 0, pretty, false};
+void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod, bool pretty,
+                                bool vulkan) const {
+  const output::glsl::Options opts{mod, this, nullptr, 0, pretty, vulkan};
 
   // Output the version header. This must come first.
-  out << output::glsl::HDR;
+  out << (opts.vulkan ? output::glsl::VK_HDR : output::glsl::GL_HDR);
   if (opts.pretty) {
     out << "\n";
   }

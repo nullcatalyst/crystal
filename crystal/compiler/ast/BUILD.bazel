@@ -32,6 +32,7 @@ cc_library(
         "//crystal/compiler/ast/type",
         "//util/fs",
         "//util/memory",
+        "//util/proc",
         "@com_google_absl//absl/container:flat_hash_map",
     ],
 )

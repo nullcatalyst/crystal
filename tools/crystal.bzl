@@ -7,10 +7,16 @@ def _crystal_library_impl(ctx):
     args.add("lib")
     args.add("-i", src.path)
     args.add("-o", lib.path)
+    args.add("--glslang_validator", ctx.executable._glslangValidator.path)
+    args.add("--spirv_link", ctx.executable._spirvLink.path)
 
     ctx.actions.run(
         outputs = [lib],
-        inputs = [src],
+        inputs = [
+            src,
+            ctx.executable._glslangValidator,
+            ctx.executable._spirvLink,
+        ],
         executable = ctx.executable._compiler,
         arguments = [args],
     )
@@ -43,6 +49,18 @@ crystal_library = rule(
         "src": attr.label(allow_single_file = True),
         "_compiler": attr.label(
             default = Label("//crystal/compiler/cli"),
+            allow_single_file = True,
+            executable = True,
+            cfg = "host",
+        ),
+        "_glslangValidator": attr.label(
+            default = Label("@org_khronos_glslang//:glslangValidator_opt"),
+            allow_single_file = True,
+            executable = True,
+            cfg = "host",
+        ),
+        "_spirvLink": attr.label(
+            default = Label("@spirv_tools//:spirv-link"),
             allow_single_file = True,
             executable = True,
             cfg = "host",

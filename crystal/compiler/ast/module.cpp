@@ -8,7 +8,9 @@
 #include "crystal/compiler/ast/output/metal.hpp"
 #include "crystal/compiler/ast/type/all.hpp"
 #include "util/fs/file.hpp"
+#include "util/fs/tmp.hpp"
 #include "util/msg/msg.hpp"
+#include "util/proc/proc.hpp"
 
 namespace crystal::compiler::ast {
 
@@ -178,57 +180,122 @@ void Module::to_metal(std::ostream& out, const MetalOutputOptions& opts) const {
 void Module::to_crystallib(std::ostream& out, const CrystallibOutputOptions& opts) const {
   crystal::common::proto::Library lib_pb;
 
-  {  // OpenGL.
+  if (opts.opengl) {
     for (const auto& pipeline : pipeline_list_) {
-      pipeline->to_crystallib(*lib_pb.mutable_opengl()->add_pipelines(), *this);
+      pipeline->make_opengl_crystallib(*lib_pb.mutable_opengl()->add_pipelines(), *this);
     }
   }
 
-  {  // Metal.
-    char       buffer[]           = "/var/tmp/crystal_XXXXXX";
-    const auto tmp_dir            = std::string(mkdtemp(buffer));
-    auto       metal_file_name    = tmp_dir + "/a.metal";
-    auto       air_file_name      = tmp_dir + "/a.air";
-    auto       metallib_file_name = tmp_dir + "/a.metallib";
+  if (opts.vulkan) {
+    make_vulkan_crystallib_(*lib_pb.mutable_vulkan(), opts.glslang_validator_exe,
+                            opts.spirv_link_exe);
+  }
 
-    {
-      std::ofstream output_file(metal_file_name, std::ios::out);
-      to_metal(output_file, MetalOutputOptions{});
-    }
-
-    {
-      std::stringstream cmd;
-      cmd << "xcrun -sdk macosx metal -c " << metal_file_name << " -o " << air_file_name;
-      std::system(cmd.str().c_str());
-      std::remove(metal_file_name.c_str());
-    }
-
-    {
-      std::stringstream cmd;
-      cmd << "xcrun -sdk macosx metallib " << air_file_name << " -o " << metallib_file_name;
-      std::system(cmd.str().c_str());
-      std::remove(air_file_name.c_str());
-    }
-
-    const auto matallib_contents = util::fs::read_file_binary(metallib_file_name);
-    std::remove(metallib_file_name.c_str());
-
-    common::proto::Metal* metal_pb = lib_pb.mutable_metal();
-    metal_pb->set_library(matallib_contents.data(), matallib_contents.size());
-
-    for (const auto& pipeline : pipeline_list_) {
-      common::proto::MTLPipeline* pipeline_pb = metal_pb->add_pipelines();
-
-      pipeline_pb->set_name(pipeline->name());
-      pipeline_pb->set_vertex_name(pipeline->vertex_function()->name());
-      if (pipeline->fragment_function() != nullptr) {
-        pipeline_pb->set_fragment_name(pipeline->fragment_function()->name());
-      }
-    }
+  if (opts.metal) {
+    make_metal_crystallib_(*lib_pb.mutable_metal());
   }
 
   if (!lib_pb.SerializeToOstream(&out)) {
     util::msg::fatal("serializing library to file");
+  }
+}
+
+void Module::make_vulkan_crystallib_(crystal::common::proto::Vulkan& vulkan_pb,
+                                     const std::string_view          glslang_validator_exe,
+                                     const std::string_view          spirv_link_exe) const {
+  const auto tmp_dir                    = util::fs::TemporaryDirectory();
+  const auto glslang_validator_exe_path = std::filesystem::path{glslang_validator_exe};
+  const auto spirv_link_exe_path        = std::filesystem::path{spirv_link_exe};
+
+  std::vector<std::filesystem::path> spv_partials;
+  for (const auto& pipeline : pipeline_list_) {
+    {  // Vertex shader.
+      const auto src_path = tmp_dir.path() / (pipeline->name() + ".vert.glsl");
+      const auto spv_path = tmp_dir.path() / (pipeline->name() + ".vert.spv");
+
+      {  // Wrap output file in additional scope to close file before running command on it.
+        std::ofstream out(src_path);
+        pipeline->vertex_function()->to_glsl(out, *this, true, true);
+      }
+
+      std::stringstream cmd;
+      cmd << glslang_validator_exe_path << " -Os -V -S vert -e " << pipeline->name()
+          << " --source-entrypoint main -o " << spv_path << " " << src_path;
+      std::cout << "VERT_CMD=" << cmd.str() << std::endl;
+      util::proc::run_command(cmd.str().c_str());
+
+      spv_partials.push_back(spv_path.string());
+    }
+
+    {  // Fragment shader.
+      const auto src_path = tmp_dir.path() / (pipeline->name() + ".frag.glsl");
+      const auto spv_path = tmp_dir.path() / (pipeline->name() + ".frag.spv");
+
+      {  // Wrap output file in additional scope to close file before running command on it.
+        std::ofstream out(src_path);
+        pipeline->fragment_function()->to_glsl(out, *this, true, true);
+      }
+
+      std::stringstream cmd;
+      cmd << glslang_validator_exe_path << " -Os -V -S frag -e " << pipeline->name()
+          << " --source-entrypoint main -o " << spv_path << " " << src_path;
+      std::cout << "FRAG_CMD=" << cmd.str() << std::endl;
+      util::proc::run_command(cmd.str().c_str());
+
+      spv_partials.push_back(spv_path);
+    }
+  }
+
+  {  // Link partial spv files together.
+    const auto out_path = tmp_dir.path() / "_.spv";
+
+    std::stringstream cmd;
+    cmd << spirv_link_exe_path << " -o " << out_path;
+    for (const auto& spv : spv_partials) {
+      cmd << " " << spv;
+    }
+    std::cout << "LINK_CMD=" << cmd.str() << std::endl;
+    util::proc::run_command(cmd.str().c_str());
+
+    const auto spv_contents = util::fs::read_file_binary(out_path.string());
+    vulkan_pb.set_library(spv_contents.data(), spv_contents.size());
+  }
+}
+
+void Module::make_metal_crystallib_(crystal::common::proto::Metal& metal_pb) const {
+  const auto tmp_dir            = util::fs::TemporaryDirectory();
+  auto       metal_file_name    = tmp_dir.path() / "tmp.metal";
+  auto       air_file_name      = tmp_dir.path() / "tmp.air";
+  auto       metallib_file_name = tmp_dir.path() / "tmp.metallib";
+
+  {
+    std::ofstream output_file(metal_file_name, std::ios::out);
+    to_metal(output_file, MetalOutputOptions{});
+  }
+
+  {
+    std::stringstream cmd;
+    cmd << "xcrun -sdk macosx metal -c " << metal_file_name << " -o " << air_file_name;
+    std::system(cmd.str().c_str());
+  }
+
+  {
+    std::stringstream cmd;
+    cmd << "xcrun -sdk macosx metallib " << air_file_name << " -o " << metallib_file_name;
+    std::system(cmd.str().c_str());
+  }
+
+  const auto matallib_contents = util::fs::read_file_binary(metallib_file_name.string());
+  metal_pb.set_library(matallib_contents.data(), matallib_contents.size());
+
+  for (const auto& pipeline : pipeline_list_) {
+    common::proto::MTLPipeline* pipeline_pb = metal_pb.add_pipelines();
+
+    pipeline_pb->set_name(pipeline->name());
+    pipeline_pb->set_vertex_name(pipeline->vertex_function()->name());
+    if (pipeline->fragment_function() != nullptr) {
+      pipeline_pb->set_fragment_name(pipeline->fragment_function()->name());
+    }
   }
 }
 

@@ -11,8 +11,8 @@ class Scene {
 public:
   virtual ~Scene() = default;
 
-  virtual void tick(Controller& ctrl)  = 0;
-  virtual void frame(Controller& ctrl) = 0;
+  virtual void frame(Controller& ctrl)           = 0;
+  virtual void tick(Controller& ctrl, double dt) = 0;
 
   virtual void key_down(Controller& ctrl, int scancode) {}
   virtual void key_up(Controller& ctrl, int scancode) {}

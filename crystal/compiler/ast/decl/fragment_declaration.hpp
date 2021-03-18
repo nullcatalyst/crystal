@@ -64,7 +64,7 @@ public:
     inputs_.emplace_back(name, type, FragmentInputType::Texture, index);
   }
 
-  void to_glsl(std::ostream& out, const Module& mod, bool pretty) const;
+  void to_glsl(std::ostream& out, const Module& mod, bool pretty, bool vulkan) const;
   void to_metal(std::ostream& out, const Module& mod) const;
 };
 

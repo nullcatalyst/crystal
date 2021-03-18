@@ -20,11 +20,15 @@ struct CppOutputOptions {
 struct MetalOutputOptions {};
 
 struct CrystallibOutputOptions {
+  bool opengl;
+  bool vulkan;
+  bool metal;
+
   // Path to the glslangValidator executable that will be used to convert glsl to spv.
-  std::string_view glslang_validator_path;
+  std::string_view glslang_validator_exe;
   // Path to the spirv-link executable that will be used to merge the individual spv files into a
   // single monolithic library.
-  std::string_view spirv_link_path;
+  std::string_view spirv_link_exe;
 };
 
 class Module {
@@ -93,6 +97,12 @@ public:
   void to_cpphdr(std::ostream& out, const CppOutputOptions& opts) const;
   void to_metal(std::ostream& out, const MetalOutputOptions& opts) const;
   void to_crystallib(std::ostream& out, const CrystallibOutputOptions& opts) const;
+
+private:
+  void make_vulkan_crystallib_(crystal::common::proto::Vulkan& vulkan_pb,
+                               const std::string_view          glslang_validator_exe,
+                               const std::string_view          spirv_link_exe) const;
+  void make_metal_crystallib_(crystal::common::proto::Metal& metal_pb) const;
 };
 
 }  // namespace crystal::compiler::ast

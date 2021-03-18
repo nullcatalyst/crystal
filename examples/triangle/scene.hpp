@@ -15,7 +15,9 @@ class Scene : public engine::Scene {
 public:
   virtual void destroy_graphics() override { view_ = nullptr; }
 
-  virtual void tick(engine::Controller& ctrl) override { state_.angle += glm::radians(1.0f); }
+  virtual void tick(engine::Controller& ctrl, double dt) override {
+    state_.angle += dt * glm::radians(90.0f);
+  }
 
   virtual void frame(engine::Controller& ctrl) override {
     if (view_ != nullptr) {

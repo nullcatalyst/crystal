@@ -58,7 +58,9 @@ public:
 
   void to_cpphdr(std::ostream& out, const Module& mod) const;
   void to_metal(std::ostream& out, const Module& mod) const;
-  void to_crystallib(crystal::common::proto::GLPipeline& pipeline_pb, const Module& mod) const;
+
+  void make_opengl_crystallib(crystal::common::proto::GLPipeline& pipeline_pb,
+                              const Module&                       mod) const;
 };
 
 }  // namespace crystal::compiler::ast::decl

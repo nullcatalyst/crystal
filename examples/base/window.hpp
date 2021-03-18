@@ -49,7 +49,10 @@ static Window create_window(const char* title, uint32_t width, uint32_t height) 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-    SDL_GL_SetSwapInterval(0);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 2);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+    SDL_GL_SetSwapInterval(1);
   }
   // if constexpr (std::is_same<Ctx, crystal::opengles::Context>::value) {
   //   flags |= SDL_WINDOW_OPENGL;
@@ -67,6 +70,8 @@ static Window create_window(const char* title, uint32_t width, uint32_t height) 
   if (window == nullptr) {
     util::msg::fatal("opening SDL window: ", SDL_GetError());
   }
+
+  SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
 
   return window;
 }

@@ -144,13 +144,22 @@ def crystal_dependencies():
     )
 
     # GLSL Validator
+    # _maybe(
+    #     http_archive,
+    #     name = "org_khronos_glslang",
+    #     sha256 = "d5cbcd69289da85a775d6a03cedffbe8555e1977610cba04824753db69b0c6e8",
+    #     strip_prefix = "glslang-66daa75f9494fd096856e0989249c6d439c472ad",
+    #     urls = [
+    #         "https://github.com/KhronosGroup/glslang/archive/66daa75f9494fd096856e0989249c6d439c472ad.tar.gz",
+    #     ],
+    # )
     _maybe(
         http_archive,
         name = "org_khronos_glslang",
-        sha256 = "d5cbcd69289da85a775d6a03cedffbe8555e1977610cba04824753db69b0c6e8",
-        strip_prefix = "glslang-66daa75f9494fd096856e0989249c6d439c472ad",
+        sha256 = "76e2fd748c8d35ff5ae616d3a6a89b2d582998ce24f11e0aca935b7f5a0b6674",
+        strip_prefix = "glslang-1012b6c3dd073882cd77d3adcce944c4dd25fc27",
         urls = [
-            "https://github.com/KhronosGroup/glslang/archive/66daa75f9494fd096856e0989249c6d439c472ad.tar.gz",
+            "https://github.com/nullcatalyst/glslang/archive/1012b6c3dd073882cd77d3adcce944c4dd25fc27.tar.gz",
         ],
     )
 
