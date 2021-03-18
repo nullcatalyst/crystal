@@ -184,48 +184,48 @@ void Module::to_crystallib(std::ostream& out, const CrystallibOutputOptions& opt
     }
   }
 
-  // {  // Metal.
-  //   char       buffer[]           = "/var/tmp/crystal_XXXXXX";
-  //   const auto tmp_dir            = std::string(mkdtemp(buffer));
-  //   auto       metal_file_name    = tmp_dir + "/a.metal";
-  //   auto       air_file_name      = tmp_dir + "/a.air";
-  //   auto       metallib_file_name = tmp_dir + "/a.metallib";
+  {  // Metal.
+    char       buffer[]           = "/var/tmp/crystal_XXXXXX";
+    const auto tmp_dir            = std::string(mkdtemp(buffer));
+    auto       metal_file_name    = tmp_dir + "/a.metal";
+    auto       air_file_name      = tmp_dir + "/a.air";
+    auto       metallib_file_name = tmp_dir + "/a.metallib";
 
-  //   {
-  //     std::ofstream output_file(metal_file_name, std::ios::out);
-  //     to_metal(output_file, MetalOutputOptions{});
-  //   }
+    {
+      std::ofstream output_file(metal_file_name, std::ios::out);
+      to_metal(output_file, MetalOutputOptions{});
+    }
 
-  //   {
-  //     std::stringstream cmd;
-  //     cmd << "xcrun -sdk macosx metal -c " << metal_file_name << " -o " << air_file_name;
-  //     std::system(cmd.str().c_str());
-  //     std::remove(metal_file_name.c_str());
-  //   }
+    {
+      std::stringstream cmd;
+      cmd << "xcrun -sdk macosx metal -c " << metal_file_name << " -o " << air_file_name;
+      std::system(cmd.str().c_str());
+      std::remove(metal_file_name.c_str());
+    }
 
-  //   {
-  //     std::stringstream cmd;
-  //     cmd << "xcrun -sdk macosx metallib " << air_file_name << " -o " << metallib_file_name;
-  //     std::system(cmd.str().c_str());
-  //     std::remove(air_file_name.c_str());
-  //   }
+    {
+      std::stringstream cmd;
+      cmd << "xcrun -sdk macosx metallib " << air_file_name << " -o " << metallib_file_name;
+      std::system(cmd.str().c_str());
+      std::remove(air_file_name.c_str());
+    }
 
-  //   const auto matallib_contents = util::fs::read_file_binary(metallib_file_name);
-  //   std::remove(metallib_file_name.c_str());
+    const auto matallib_contents = util::fs::read_file_binary(metallib_file_name);
+    std::remove(metallib_file_name.c_str());
 
-  //   common::proto::Metal* metal_pb = lib_pb.mutable_metal();
-  //   metal_pb->set_library(matallib_contents.data(), matallib_contents.size());
+    common::proto::Metal* metal_pb = lib_pb.mutable_metal();
+    metal_pb->set_library(matallib_contents.data(), matallib_contents.size());
 
-  //   for (const auto& pipeline : pipeline_list_) {
-  //     common::proto::MTLPipeline* pipeline_pb = metal_pb->add_pipelines();
+    for (const auto& pipeline : pipeline_list_) {
+      common::proto::MTLPipeline* pipeline_pb = metal_pb->add_pipelines();
 
-  //     pipeline_pb->set_name(pipeline->name());
-  //     pipeline_pb->set_vertex_name(pipeline->vertex_function()->name());
-  //     if (pipeline->fragment_function() != nullptr) {
-  //       pipeline_pb->set_fragment_name(pipeline->fragment_function()->name());
-  //     }
-  //   }
-  // }
+      pipeline_pb->set_name(pipeline->name());
+      pipeline_pb->set_vertex_name(pipeline->vertex_function()->name());
+      if (pipeline->fragment_function() != nullptr) {
+        pipeline_pb->set_fragment_name(pipeline->fragment_function()->name());
+      }
+    }
+  }
 
   if (!lib_pb.SerializeToOstream(&out)) {
     util::msg::fatal("serializing library to file");
