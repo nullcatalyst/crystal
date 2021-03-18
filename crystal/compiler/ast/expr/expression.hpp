@@ -10,6 +10,8 @@ class Expression {
 public:
   virtual ~Expression() = default;
 
+  [[nodiscard]] virtual bool is_identifier() const { return false; }
+
   virtual output::PrintLambda to_glsl(const output::glsl::Options opts) const   = 0;
   virtual output::PrintLambda to_metal(const output::metal::Options opts) const = 0;
 };

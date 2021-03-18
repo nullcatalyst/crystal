@@ -32,17 +32,21 @@ public:
   [[nodiscard]] constexpr uint32_t tick() const { return tick_; }
 
   void change_engine(std::unique_ptr<engine::Engine>&& engine) {
+    engine_->set_active();
     scene_->destroy_graphics();
     engine_ = nullptr;
     engine_ = std::move(engine);
+    engine_->set_active();
     engine_->init_graphics(*this, *scene_);
   }
 
   template <typename Engine, typename... EngineArgs>
   void change_engine(EngineArgs&&... engine_args) {
+    engine_->set_active();
     scene_->destroy_graphics();
     engine_ = nullptr;
     engine_ = std::make_unique<Engine>(std::forward<EngineArgs>(engine_args)...);
+    engine_->set_active();
     engine_->init_graphics(*this, *scene_);
   }
 

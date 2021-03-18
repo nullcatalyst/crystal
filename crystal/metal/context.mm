@@ -9,7 +9,7 @@ namespace crystal::metal {
 #ifdef CRYSTAL_USE_SDL2
 
 Context::Context(const Context::Desc& desc) : window_(desc.window) {
-  const MTLPixelFormat PIXEL_FORMAT = MTLPixelFormatBGRA8Unorm;
+  const MTLPixelFormat PIXEL_FORMAT = MTLPixelFormatBGRA8Unorm_sRGB;
 
   SDL_SysWMinfo window_info = {};
   if (!SDL_GetWindowWMInfo(desc.window, &window_info)) {

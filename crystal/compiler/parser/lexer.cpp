@@ -76,7 +76,7 @@ Token Lexer::next() {
         // It most likely results in a more accurate floating point value to take the parsed
         // integer and multiplying by the appropriate power of 10, rather than accumulating error
         // by repeatedly multiplying by `0.1`.
-        static const std::array<long double, 32> FRACTIONALS{
+        static const std::array<double, 32> FRACTIONALS{
             0.0,     1.0e-1,  1.0e-2,  1.0e-3,  1.0e-4,  1.0e-5,  1.0e-6,  1.0e-7,
             1.0e-8,  1.0e-9,  1.0e-10, 1.0e-11, 1.0e-12, 1.0e-13, 1.0e-14, 1.0e-15,
             1.0e-16, 1.0e-17, 1.0e-18, 1.0e-19, 1.0e-20, 1.0e-21, 1.0e-22, 1.0e-23,
@@ -92,7 +92,7 @@ Token Lexer::next() {
           abort();
         }
 
-        return Token{TOK_LIT_FLOAT, (long double)value + frac_value * FRACTIONALS[digits]};
+        return Token{TOK_LIT_FLOAT, static_cast<double>(value) + frac_value * FRACTIONALS[digits]};
       }  // ^^^ Parse float fractional component, eg: ".123".
 
       return Token{TOK_LIT_INT, value};

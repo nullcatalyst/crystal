@@ -162,43 +162,7 @@ void Module::to_metal(std::ostream& out, const MetalOutputOptions& opts) const {
       }
       out << ";\n";
     }
-    out << "};\n";
-
-    // {  // Uniform type.
-    //   out << "struct " << type->name() << "_u {\n";
-    //   const util::memory::Ref<type::StructType> struct_type = type;
-    //   for (auto& prop : struct_type->properties()) {
-    //     out << output::metal::indent{1} << prop.type->metal_name() << " " << prop.name << ";\n";
-    //   }
-    //   out << "};\n";
-    // }
-    // {
-    //   // Varying type.
-    //   out << "struct " << type->name() << "_v {\n";
-    //   const util::memory::Ref<type::StructType> struct_type = type;
-    //   for (auto& prop : struct_type->properties()) {
-    //     out << output::metal::indent{1} << prop.type->metal_name() << " " << prop.name;
-    //     if (prop.index == 0) {
-    //       out << " [[ position ]]";
-    //     }
-    //     out << ";\n";
-    //   }
-    //   out << "};\n";
-    // }
-    // {  // Output type.
-    //   out << "struct " << type->name() << "_o {\n";
-    //   const util::memory::Ref<type::StructType> struct_type = type;
-    //   for (auto& prop : struct_type->properties()) {
-    //     if (prop.index < 0) {
-    //       continue;
-    //     }
-    //     out << output::metal::indent{1} << prop.type->metal_name() << " " << prop.name
-    //         << " [[ color(" << prop.index << ") ]];\n";
-    //   }
-    //   out << "};\n";
-    // }
-
-    out << "\n";
+    out << "};\n\n";
   }
 
   for (const auto& pipeline : pipeline_list_) {

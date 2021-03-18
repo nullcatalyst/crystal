@@ -46,37 +46,34 @@ namespace(ret)      ::= namespace(prefix) OP_COLONCOLON LIT_IDEN(name).         
 namespace(ret)      ::= LIT_IDEN(name).                                         { ret = std::vector<std::string>{std::string{name.string_value}}; }
 
 decl(ret)           ::= KW_STRUCT LIT_IDEN(name)
-                        OP_LCRLBRACKET struct_prop_list(props) OP_RCRLBRACKET
-                        .                                                       {
+                        OP_LCRLBRACKET struct_prop_list(props) OP_RCRLBRACKET.  {
                             const auto type = Ref<type::StructType>::make(name.string_value, false, std::move(props));
                             ret = Ref<decl::StructDeclaration>::make(type);
                             mod->add_type(type);
                         }
 decl(ret)           ::= KW_PIPELINE LIT_IDEN(name)
-                        OP_LCRLBRACKET pipe_prop_list(settings) OP_RCRLBRACKET
-                        .                                                       {
+                        OP_LCRLBRACKET pipe_prop_list(settings) OP_RCRLBRACKET. {
                             const auto pipeline = Ref<decl::PipelineDeclaration>::make(name.string_value, settings);
                             mod->add_pipeline(pipeline);
                             ret = pipeline;
                         }
 
 struct_prop_list(ret)  ::= struct_prop_list(list)
-                        type(type) LIT_IDEN(name) OP_COLON LIT_INT(index) OP_SEMICOLON
-                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, static_cast<int32_t>(index.int_value)); }
+                        type(type) LIT_IDEN(name)
+                        OP_COLON LIT_INT(index) OP_SEMICOLON.                   { ret = std::move(list); ret.emplace_back(name.string_value, type, static_cast<int32_t>(index.int_value)); }
 struct_prop_list(ret)  ::= struct_prop_list(list)
-                        type(type) LIT_IDEN(name) OP_SEMICOLON
-                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type); }
+                        type(type) LIT_IDEN(name) OP_SEMICOLON.                 { ret = std::move(list); ret.emplace_back(name.string_value, type); }
 struct_prop_list(ret)  ::= .                                                    { ret = std::vector<type::StructProperty>(); }
 
 vert_arg_list(ret)  ::= vert_arg_list(list) OP_COMMA
-                        type(type) LIT_IDEN(name) OP_COLON LIT_INT(index)
-                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputType::Vertex, static_cast<int32_t>(index.int_value)); }
+                        type(type) LIT_IDEN(name)
+                        OP_COLON LIT_INT(index).                                { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputType::Vertex, static_cast<int32_t>(index.int_value)); }
 vert_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON LIT_INT(index).      { ret = std::vector<decl::VertexInput>{decl::VertexInput{name.string_value, type, decl::VertexInputType::Vertex, static_cast<int32_t>(index.int_value)}}; }
-vert_arg_list(ret)  ::= vert_arg_list(list) OP_COMMA
-                        type(type) LIT_IDEN(name) OP_COLON KW_INSTANCED LIT_INT(index)
-                        .                                                       { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputType::Instanced, static_cast<int32_t>(index.int_value)); }
-vert_arg_list(ret)  ::= type(type) LIT_IDEN(name) OP_COLON KW_INSTANCED LIT_INT(index)
-                        .                                                       { ret = std::vector<decl::VertexInput>{decl::VertexInput{name.string_value, type, decl::VertexInputType::Instanced, static_cast<int32_t>(index.int_value)}}; }
+vert_arg_list(ret)  ::= vert_arg_list(list)
+                        OP_COMMA type(type) LIT_IDEN(name)
+                        OP_COLON KW_INSTANCED LIT_INT(index).                   { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::VertexInputType::Instanced, static_cast<int32_t>(index.int_value)); }
+vert_arg_list(ret)  ::= type(type) LIT_IDEN(name)
+                        OP_COLON KW_INSTANCED LIT_INT(index).                   { ret = std::vector<decl::VertexInput>{decl::VertexInput{name.string_value, type, decl::VertexInputType::Instanced, static_cast<int32_t>(index.int_value)}}; }
 
 frag_arg_list(ret)  ::= frag_arg_list(list) OP_COMMA
                         type(type) LIT_IDEN(name).                              { ret = std::move(list); ret.emplace_back(name.string_value, type, decl::FragmentInputType::Varying, -1); }
@@ -84,40 +81,36 @@ frag_arg_list(ret)  ::= type(type) LIT_IDEN(name).                              
 
 
 pipe_prop_list(ret) ::= pipe_prop_list(list) KW_UNIFORM
-                        type(type) LIT_IDEN(name) OP_COLON LIT_INT(index) OP_SEMICOLON
-                        .                                                       {
+                        type(type) LIT_IDEN(name)
+                        OP_COLON LIT_INT(index) OP_SEMICOLON.                   {
                             ret = std::move(list);
                             ret.uniforms.emplace_back(type, std::string(name.string_value), static_cast<uint32_t>(index.int_value));
                         }
 pipe_prop_list(ret) ::= pipe_prop_list(list) KW_VERTEX
                         OP_LRNDBRACKET vert_arg_list(args) OP_RRNDBRACKET
                         OP_RARROW type(ret_type)
-                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
-                        .                                                       {
+                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET.          {
                             ret = std::move(list);
                             ret.vertex_function = Ref<decl::VertexDeclaration>::make(ret_type, std::move(args), std::move(impl));
                         }
 pipe_prop_list(ret) ::= pipe_prop_list(list) KW_VERTEX
                         OP_LRNDBRACKET vert_arg_list(args) OP_COMMA OP_RRNDBRACKET
                         OP_RARROW type(ret_type)
-                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
-                        .                                                       {
+                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET.          {
                             ret = std::move(list);
                             ret.vertex_function = Ref<decl::VertexDeclaration>::make(ret_type, std::move(args), std::move(impl));
                         }
 pipe_prop_list(ret) ::= pipe_prop_list(list) KW_FRAGMENT
                         OP_LRNDBRACKET frag_arg_list(args) OP_RRNDBRACKET
                         OP_RARROW type(ret_type)
-                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
-                        .                                                       {
+                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET.          {
                             ret = std::move(list);
                             ret.fragment_function = Ref<decl::FragmentDeclaration>::make(ret_type, std::move(args), std::move(impl));
                         }
 pipe_prop_list(ret) ::= pipe_prop_list(list) KW_FRAGMENT
                         OP_LRNDBRACKET frag_arg_list(args) OP_COMMA OP_RRNDBRACKET
                         OP_RARROW type(ret_type)
-                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET
-                        .                                                       {
+                        OP_LCRLBRACKET stmt_list(impl) OP_RCRLBRACKET.          {
                             ret = std::move(list);
                             ret.fragment_function = Ref<decl::FragmentDeclaration>::make(ret_type, std::move(args), std::move(impl));
                         }
@@ -155,27 +148,23 @@ expr_mul            ::= expr_prefix.
 
 expr_prefix(ret)    ::= OP_PLUS expr_atom(rhs).                                 { ret = Ref<expr::UnOpExpression>::make(rhs, expr::UnOp::Pos); }
 expr_prefix(ret)    ::= OP_MINUS expr_atom(rhs).                                { ret = Ref<expr::UnOpExpression>::make(rhs, expr::UnOp::Neg); }
-expr_prefix         ::= expr_call.
-
-expr_call(ret)      ::= expr_var(func) OP_PERIOD
-                        OP_LPAREN OP_RPAREN
-                        .                                                       { ret = Ref<expr::CallExpression>::make(func); }
-expr_call(ret)      ::= expr_var(func) OP_PERIOD
-                        OP_LPAREN call_arg_list(list) OP_RPAREN
-                        .                                                       { ret = Ref<expr::CallExpression>::make(func, list); }
-expr_call(ret)      ::= expr_var(func) OP_PERIOD
-                        OP_LPAREN call_arg_list(list) OP_COMMA OP_RPAREN
-                        .                                                       { ret = Ref<expr::CallExpression>::make(func, list); }
-expr_call           ::= expr_atom.
+expr_prefix         ::= expr_atom.
 
 expr_atom(ret)      ::= LIT_INT(val).                                           { ret = Ref<expr::IntegerExpression>::make(val.int_value); }
 expr_atom(ret)      ::= LIT_FLOAT(val).                                         { ret = Ref<expr::FloatExpression>::make(val.float_value); }
-expr_atom           ::= expr_var.
+expr_atom           ::= expr_call.
 expr_atom           ::= expr_paren.
 
 expr_var(ret)       ::= expr_var(expr_) OP_PERIOD LIT_IDEN(name).               { ret = Ref<expr::PropertyExpression>::make(expr_, name.string_value); }
 expr_var(ret)       ::= expr_paren(expr_) OP_PERIOD LIT_IDEN(name).             { ret = Ref<expr::PropertyExpression>::make(expr_, name.string_value); }
 expr_var(ret)       ::= LIT_IDEN(name).                                         { ret = Ref<expr::IdentifierExpression>::make(name.string_value); }
+
+expr_call(ret)      ::= LIT_IDEN(name) OP_LRNDBRACKET OP_RRNDBRACKET.           { ret = Ref<expr::CallExpression>::make(name.string_value); }
+expr_call(ret)      ::= LIT_IDEN(name)
+                        OP_LRNDBRACKET call_arg_list(list) OP_RRNDBRACKET.      { ret = Ref<expr::CallExpression>::make(name.string_value, list); }
+expr_call(ret)      ::= LIT_IDEN(name) OP_LRNDBRACKET call_arg_list(list)
+                        OP_COMMA OP_RRNDBRACKET.                                { ret = Ref<expr::CallExpression>::make(name.string_value, list); }
+expr_call           ::= expr_var.
 
 expr_paren(ret)     ::= OP_LRNDBRACKET expr(expr_) OP_RRNDBRACKET.              { ret = Ref<expr::ParenthesisExpression>::make(expr_); }
 

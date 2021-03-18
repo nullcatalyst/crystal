@@ -79,11 +79,11 @@ public:
   [[nodiscard]] constexpr uint32_t    screen_height() const { return screen_render_pass_.height(); }
   [[nodiscard]] constexpr RenderPass& screen_render_pass() { return screen_render_pass_; }
 
-  void change_resolution(uint32_t width, uint32_t height);
-
-  void wait();
-
+  void          set_active();
+  void          wait();
   CommandBuffer next_frame();
+
+  void change_resolution(uint32_t width, uint32_t height);
 
   Texture create_texture(const TextureDesc& desc);
 
@@ -171,6 +171,8 @@ private:
   friend UniformBuffer;
   friend VertexBuffer;
 };
+
+inline void Context::set_active() {}
 
 inline void Context::wait() {}
 

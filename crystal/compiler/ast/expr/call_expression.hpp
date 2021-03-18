@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+#include <string_view>
 #include <vector>
 
 #include "crystal/compiler/ast/expr/expression.hpp"
@@ -10,14 +12,14 @@
 namespace crystal::compiler::ast::expr {
 
 class CallExpression : public Expression {
-  util::memory::Ref<expr::Expression>              function_;
+  std::string                                      name_;
   std::vector<util::memory::Ref<expr::Expression>> arguments_;
 
 public:
-  CallExpression(util::memory::Ref<expr::Expression> function) : function_(function) {}
-  CallExpression(util::memory::Ref<expr::Expression>              function,
+  CallExpression(const std::string_view name) : name_(name) {}
+  CallExpression(const std::string_view                           name,
                  std::vector<util::memory::Ref<expr::Expression>> arguments)
-      : function_(function), arguments_(arguments) {}
+      : name_(name), arguments_(arguments) {}
 
   virtual ~CallExpression() = default;
 

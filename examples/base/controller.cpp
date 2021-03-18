@@ -40,20 +40,20 @@ void Controller::run() {
         return;
       }
 
-      scene_->tick(*this);
       scene_->frame(*this);
+      scene_->tick(*this);
     }
 
     ++tick_;
 
-    // const auto now = clock::now();
-    // if (now < curr_frame_start_time + MICROSECS_PER_FRAME) {
-    //   // Sleep for 1/60 second (one frame).
-    //   std::this_thread::sleep_until(curr_frame_start_time + MICROSECS_PER_FRAME);
-    // } else {
-    //   // This frame took too long.
-    //   prev_frame_start_time = now - MICROSECS_PER_FRAME;
-    // }
+    const auto now = clock::now();
+    if (now < curr_frame_start_time + MICROSECS_PER_FRAME) {
+      // Sleep for 1/60 second (one frame).
+      std::this_thread::sleep_until(curr_frame_start_time + MICROSECS_PER_FRAME);
+    } else {
+      // This frame took too long.
+      prev_frame_start_time = now - MICROSECS_PER_FRAME;
+    }
 
     // Sleep for 1/60 second (one frame).
     std::this_thread::sleep_until(curr_frame_start_time + MICROSECS_PER_FRAME);

@@ -31,6 +31,7 @@ public:
 
   [[nodiscard]] constexpr operator SDL_Window*() const { return sdl_; }
 
+  void show() { SDL_ShowWindow(sdl_); }
   void update(Controller& ctrl);
 };
 
@@ -43,6 +44,7 @@ static Window create_window(const char* title, uint32_t width, uint32_t height) 
   uint32_t flags = 0;  // SDL_WINDOW_HIDDEN;
   if constexpr (std::is_same<Ctx, crystal::opengl::Context>::value) {
     flags |= SDL_WINDOW_OPENGL;
+    SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);

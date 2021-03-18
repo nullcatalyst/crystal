@@ -5,6 +5,8 @@
 #include <new>
 #include <utility>
 
+#include "util/msg/msg.hpp"
+
 namespace util::memory {
 
 template <typename T>
@@ -119,8 +121,22 @@ public:
   [[nodiscard]] constexpr bool operator==(const Ref& other) const { return ref_ == other.ref_; }
   [[nodiscard]] constexpr bool operator!=(const Ref& other) const { return ref_ != other.ref_; }
 
-  [[nodiscard]] constexpr    operator T&() { return *ref_->ptr(); }
-  [[nodiscard]] constexpr T* operator->() { return ref_->ptr(); }
+  [[nodiscard]] constexpr operator T&() {
+#ifndef NDEBUG
+    if (ref_ == nullptr) {
+      util::msg::fatal("dereferencing null reference");
+    }
+#endif  // ^^^ !defined(NDEBUG)
+    return *ref_->ptr();
+  }
+  [[nodiscard]] constexpr T* operator->() {
+#ifndef NDEBUG
+    if (ref_ == nullptr) {
+      util::msg::fatal("dereferencing null reference");
+    }
+#endif  // ^^^ !defined(NDEBUG)
+    return ref_->ptr();
+  }
 
   [[nodiscard]] constexpr          operator const T&() const { return *ref_->ptr(); }
   [[nodiscard]] constexpr const T* operator->() const { return ref_->ptr(); }

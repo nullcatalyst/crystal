@@ -18,6 +18,7 @@ class Engine {
 public:
   virtual ~Engine() = default;
 
+  virtual void set_active()                                  = 0;
   virtual void init_graphics(Controller& ctrl, Scene& scene) = 0;
   virtual void update(Controller& ctrl)                      = 0;
 };
@@ -37,9 +38,16 @@ public:
 
   virtual ~EngineImpl() { ctx_.wait(); }
 
-  void init_graphics(Controller& ctrl, Scene& scene) override { scene.init_graphics(ctrl, ctx_); }
+  virtual void set_active() override { ctx_.set_active(); }
 
-  void update(Controller& ctrl) override { window_.update(ctrl); }
+  virtual void init_graphics(Controller& ctrl, Scene& scene) override {
+    ctx_.set_active();
+    scene.init_graphics(ctrl, ctx_);
+    scene.frame(ctrl);
+    window_.show();
+  }
+
+  virtual void update(Controller& ctrl) override { window_.update(ctrl); }
 };
 
 template <typename Ctx>

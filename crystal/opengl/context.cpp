@@ -21,6 +21,7 @@ Context::Context(const Context::Desc& desc) : window_(desc.window), screen_rende
   }
 
   change_resolution(width, height);
+  glEnable(GL_FRAMEBUFFER_SRGB);
 }
 
 Context::~Context() {
@@ -39,6 +40,8 @@ Context::~Context() {
   SDL_GL_DeleteContext(context_);
 }
 
+void Context::set_active() { SDL_GL_MakeCurrent(window_, context_); }
+
 CommandBuffer Context::next_frame() {
   SDL_GL_MakeCurrent(window_, context_);
   return CommandBuffer(window_);
@@ -56,6 +59,8 @@ Context::~Context() {
                      " remaining), leaking memory");
   }
 }
+
+void Context::set_active() {}
 
 CommandBuffer Context::next_frame() { return CommandBuffer(); }
 

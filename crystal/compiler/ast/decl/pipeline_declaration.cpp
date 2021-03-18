@@ -133,14 +133,14 @@ void PipelineDeclaration::to_crystallib(crystal::common::proto::GLPipeline& pipe
 
   {  // Vertex shader.
     std::ostringstream out;
-    vertex_function_->to_glsl(out, mod, false);
+    vertex_function_->to_glsl(out, mod, true);
     pipeline_pb.set_vertex_source(out.str());
     std::cout << "vertex =\n" << out.str() << std::endl;
   }
 
   {  // Fragment shader.
     std::ostringstream out;
-    fragment_function_->to_glsl(out, mod, false);
+    fragment_function_->to_glsl(out, mod, true);
     pipeline_pb.set_fragment_source(out.str());
     std::cout << "fragment =\n" << out.str() << std::endl;
   }

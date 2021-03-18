@@ -15,6 +15,10 @@ public:
 
   virtual ~IdentifierExpression() = default;
 
+  [[nodiscard]] virtual bool is_identifier() const override { return true; }
+
+  constexpr const std::string& name() const { return name_; }
+
   virtual output::PrintLambda to_glsl(const output::glsl::Options opts) const override {
     return output::PrintLambda{[=](std::ostream& out) { out << output::glsl::mangle_name{name_}; }};
   }
