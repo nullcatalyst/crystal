@@ -1,0 +1,87 @@
+namespace examples::render_to_texture;
+
+struct Uniform {
+    mat4 cube_matrix;
+    mat4 quad_matrix;
+}
+
+struct CubeVertex {
+    vec4 position : 0;
+    vec4 color    : 1;
+}
+
+struct CubeVaryings {
+    vec4 position : 0;
+    vec4 color    : 1;
+}
+
+struct CubeOut {
+    vec4 color : 0;
+}
+
+pipeline cube {
+    uniform Uniform u : 1;
+
+    cull = "back";
+    // winding = "ccw";
+    // depth_test = true;
+    // depth_write = true;
+    // blend_src = "one";
+    // blend_dst = "zero";
+
+    vertex (
+        CubeVertex in : 0,
+    ) -> CubeVaryings {
+        CubeVaryings out;
+        out.position = u.cube_matrix * in.position;
+        out.color    = in.color;
+        return out;
+    }
+
+    fragment (CubeVaryings in) -> CubeOut {
+        CubeOut out;
+        out.color = in.color;
+        return out;
+    }
+}
+
+struct QuadVertex {
+    vec4 position  : 0;
+    vec4 tex_coord : 1;
+}
+
+struct QuadVaryings {
+    vec4 position  : 0;
+    vec4 tex_coord : 1;
+}
+
+struct QuadOut {
+    vec4 color : 0;
+}
+
+pipeline quad {
+    uniform Uniform u : 1;
+    texture Texture2D t : 0;
+
+    // cull = "back";
+    // winding = "ccw";
+    // depth_test = true;
+    // depth_write = true;
+    // blend_src = "one";
+    // blend_dst = "zero";
+
+    vertex (
+        QuadVertex in : 0,
+    ) -> QuadVaryings {
+        QuadVaryings out;
+        out.position  = u.quad_matrix * in.position;
+        out.tex_coord = in.tex_coord;
+        return out;
+    }
+
+    fragment (QuadVaryings in) -> QuadOut {
+        QuadOut out;
+        out.color = t.sample(in.tex_coord.xy);
+        return out;
+    }
+}

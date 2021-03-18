@@ -25,7 +25,6 @@ cc_binary(
 crystal_library(
     name = "shader",
     src = "shader.crystal",
-    tags = ["no-sandbox"],
     visibility = [
         "//examples/triangle:__subpackages__",
     ],

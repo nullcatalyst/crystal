@@ -6,6 +6,17 @@
 namespace crystal::compiler::ast::expr {
 
 output::PrintLambda CallExpression::to_glsl(const output::glsl::Options opts) const {
+  // TODO: Typecheck to determine that the callee is a texture.
+  if (expr_ != nullptr && name_ == "sample") {
+    return output::PrintLambda{[=](std::ostream& out) {
+      out << "texture(" << expr_->to_glsl(opts);
+      for (const auto& arg : arguments_) {
+        out << ", " << arg->to_glsl(opts);
+      }
+      out << ")";
+    }};
+  }
+
   const auto type = opts.mod.find_type(name_);
   if (type.has_value()) {
     return output::PrintLambda{[=](std::ostream& out) {

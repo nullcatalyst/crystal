@@ -25,8 +25,6 @@ struct CrystallibOutputOptions {
   // Path to the spirv-link executable that will be used to merge the individual spv files into a
   // single monolithic library.
   std::string_view spirv_link_path;
-
-  std::string_view tmp;
 };
 
 class Module {

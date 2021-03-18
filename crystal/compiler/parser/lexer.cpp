@@ -11,11 +11,10 @@ namespace crystal::compiler::parser {
 namespace {
 
 static const absl::flat_hash_map<std::string, int> KEYWORDS{
-    {"namespace", TOK_KW_NAMESPACE}, {"struct", TOK_KW_STRUCT},     {"vertex", TOK_KW_VERTEX},
-    {"fragment", TOK_KW_FRAGMENT},   {"pipeline", TOK_KW_PIPELINE}, {"uniform", TOK_KW_UNIFORM},
-    {"instanced", TOK_KW_INSTANCED}, {"return", TOK_KW_RETURN},
-    // {"if", TOK_KW_IF},
-    // {"else", TOK_KW_ELSE},
+    {"namespace", TOK_KW_NAMESPACE}, {"struct", TOK_KW_STRUCT},       {"vertex", TOK_KW_VERTEX},
+    {"fragment", TOK_KW_FRAGMENT},   {"pipeline", TOK_KW_PIPELINE},   {"uniform", TOK_KW_UNIFORM},
+    {"texture", TOK_KW_TEXTURE},     {"instanced", TOK_KW_INSTANCED}, {"return", TOK_KW_RETURN},
+    {"cull", TOK_KW_CULL},
 };
 
 inline std::tuple<unsigned long long /* value */, int /* digits */,
@@ -64,6 +63,20 @@ Token Lexer::next() {
         ++next_;
       }
       continue;
+    }
+
+    // "[^"]*"
+    if (c == '\"') {
+      ++next_;
+      const auto start = next_;
+      while (next_ != end && *next_ != '\"') {
+        ++next_;
+      }
+      const std::string_view iden(&*start, next_ - start);
+      if (next_ != end) {
+        ++next_;
+      }
+      return Token{TOK_LIT_STR, iden};
     }
 
     // [0-9]+(\.[0-9]+)?

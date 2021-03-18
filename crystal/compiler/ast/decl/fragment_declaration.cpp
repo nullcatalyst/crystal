@@ -63,6 +63,26 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod, bool pre
     out << "\n";
   }
 
+  // Output the textures.
+  for (const auto& input : inputs_) {
+    if (input.input_type != decl::FragmentInputType::Texture) {
+      continue;
+    }
+
+    {
+      out << output::glsl::indent{opts.indent};
+      // if (opts.vulkan) {
+      //   out << "layout(set=0, binding=" << input.index << (opts.pretty ? ") " : ")");
+      // }
+      out << "uniform " << input.type->glsl_name() << " " << output::glsl::mangle_name{input.name}
+          << (opts.pretty ? ";\n" : ";");
+    }
+  }
+
+  if (opts.pretty) {
+    out << "\n";
+  }
+
   // Output the varyings.
   for (const auto& input : inputs_) {
     if (input.input_type != decl::FragmentInputType::Varying) {

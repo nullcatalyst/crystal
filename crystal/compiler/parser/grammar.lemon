@@ -80,11 +80,30 @@ frag_arg_list(ret)  ::= frag_arg_list(list) OP_COMMA
 frag_arg_list(ret)  ::= type(type) LIT_IDEN(name).                              { ret = std::vector<decl::FragmentInput>{decl::FragmentInput{name.string_value, type, decl::FragmentInputType::Varying, -1}}; }
 
 
+pipe_prop_list(ret) ::= pipe_prop_list(list)
+                        KW_CULL OP_EQUAL LIT_STR(value) OP_SEMICOLON.           { ret = std::move(list); ret.cull = value.string_value; }
+// pipe_prop_list(ret) ::= pipe_prop_list(list)
+//                         KW_WINDING OP_EQUAL LIT_STR(value).                     {  }
+// pipe_prop_list(ret) ::= pipe_prop_list(list)
+//                         KW_DEPTH_TEST OP_EQUAL LIT_BOOL(value).                 {  }
+// pipe_prop_list(ret) ::= pipe_prop_list(list)
+//                         KW_DEPTH_WRITE OP_EQUAL LIT_BOOL(value).                {  }
+// pipe_prop_list(ret) ::= pipe_prop_list(list)
+//                         KW_BLEND_SRC OP_EQUAL LIT_STR(value).                   {  }
+// pipe_prop_list(ret) ::= pipe_prop_list(list)
+//                         KW_BLEND_DST OP_EQUAL LIT_STR(value).                   {  }
+
 pipe_prop_list(ret) ::= pipe_prop_list(list) KW_UNIFORM
                         type(type) LIT_IDEN(name)
                         OP_COLON LIT_INT(index) OP_SEMICOLON.                   {
                             ret = std::move(list);
                             ret.uniforms.emplace_back(type, std::string(name.string_value), static_cast<uint32_t>(index.int_value));
+                        }
+pipe_prop_list(ret) ::= pipe_prop_list(list) KW_TEXTURE
+                        type(type) LIT_IDEN(name)
+                        OP_COLON LIT_INT(index) OP_SEMICOLON.                   {
+                            ret = std::move(list);
+                            ret.textures.emplace_back(type, std::string(name.string_value), static_cast<uint32_t>(index.int_value));
                         }
 pipe_prop_list(ret) ::= pipe_prop_list(list) KW_VERTEX
                         OP_LRNDBRACKET vert_arg_list(args) OP_RRNDBRACKET
@@ -153,6 +172,7 @@ expr_prefix         ::= expr_atom.
 expr_atom(ret)      ::= LIT_INT(val).                                           { ret = Ref<expr::IntegerExpression>::make(val.int_value); }
 expr_atom(ret)      ::= LIT_FLOAT(val).                                         { ret = Ref<expr::FloatExpression>::make(val.float_value); }
 expr_atom           ::= expr_call.
+expr_atom           ::= expr_var.
 expr_atom           ::= expr_paren.
 
 expr_var(ret)       ::= expr_var(expr_) OP_PERIOD LIT_IDEN(name).               { ret = Ref<expr::PropertyExpression>::make(expr_, name.string_value); }
@@ -164,7 +184,14 @@ expr_call(ret)      ::= LIT_IDEN(name)
                         OP_LRNDBRACKET call_arg_list(list) OP_RRNDBRACKET.      { ret = Ref<expr::CallExpression>::make(name.string_value, list); }
 expr_call(ret)      ::= LIT_IDEN(name) OP_LRNDBRACKET call_arg_list(list)
                         OP_COMMA OP_RRNDBRACKET.                                { ret = Ref<expr::CallExpression>::make(name.string_value, list); }
-expr_call           ::= expr_var.
+
+expr_call(ret)      ::= expr_var(expr_) OP_PERIOD
+                        LIT_IDEN(name) OP_LRNDBRACKET OP_RRNDBRACKET.           { ret = Ref<expr::CallExpression>::make(expr_, name.string_value); }
+expr_call(ret)      ::= expr_var(expr_) OP_PERIOD LIT_IDEN(name)
+                        OP_LRNDBRACKET call_arg_list(list) OP_RRNDBRACKET.      { ret = Ref<expr::CallExpression>::make(expr_, name.string_value, list); }
+expr_call(ret)      ::= expr_var(expr_) OP_PERIOD
+                        LIT_IDEN(name) OP_LRNDBRACKET call_arg_list(list)
+                        OP_COMMA OP_RRNDBRACKET.                                { ret = Ref<expr::CallExpression>::make(expr_, name.string_value, list); }
 
 expr_paren(ret)     ::= OP_LRNDBRACKET expr(expr_) OP_RRNDBRACKET.              { ret = Ref<expr::ParenthesisExpression>::make(expr_); }
 

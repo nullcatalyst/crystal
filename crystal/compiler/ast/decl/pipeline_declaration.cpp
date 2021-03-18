@@ -16,7 +16,8 @@ PipelineDeclaration::PipelineDeclaration(std::string_view name, const PipelineSe
     : Declaration(name),
       vertex_function_(settings.vertex_function),
       fragment_function_(settings.fragment_function),
-      uniforms_(settings.uniforms) {
+      uniforms_(settings.uniforms),
+      textures_(settings.textures) {
   if (vertex_function_ != nullptr) {
     vertex_function_->set_name(std::string(name) + "_vert");
     for (const auto& [type, name, index] : settings.uniforms) {
@@ -29,6 +30,17 @@ PipelineDeclaration::PipelineDeclaration(std::string_view name, const PipelineSe
     for (const auto& [type, name, index] : settings.uniforms) {
       fragment_function_->add_uniform(type, name, index);
     }
+    for (const auto& [type, name, index] : settings.textures) {
+      fragment_function_->add_texture(type, name, index);
+    }
+  }
+
+  if (settings.cull == "back") {
+    cull_mode_ = CullMode::Back;
+  } else if (settings.cull == "front") {
+    cull_mode_ = CullMode::Front;
+  } else {
+    cull_mode_ = CullMode::None;
   }
 }
 
@@ -73,10 +85,23 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
     }
   }
 
+  std::string cull_out;
+  switch (cull_mode_) {
+    case CullMode::None:
+      cull_out = "None";
+      break;
+    case CullMode::Back:
+      cull_out = "Back";
+      break;
+    case CullMode::Front:
+      cull_out = "Front";
+      break;
+  }
+
   // clang-format off
   out << "const crystal::PipelineDesc " << name() << "_desc{\n"
       << "    /* .name              = */ \"" << name() << "\",\n"
-      << "    /* .cull_mode         = */ crystal::CullMode::None,\n"
+      << "    /* .cull_mode         = */ crystal::CullMode::" << cull_out << ",\n"
       << "    /* .winding           = */ crystal::Winding::CounterClockwise,\n"
       << "    /* .depth_test        = */ crystal::DepthTest::Always,\n"
       << "    /* .depth_write       = */ crystal::DepthWrite::Disable,\n"

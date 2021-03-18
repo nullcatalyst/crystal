@@ -5,6 +5,7 @@
 #include <tuple>
 #include <vector>
 
+#include "crystal/common/pipeline_desc.hpp"
 #include "crystal/common/proto/proto.hpp"
 #include "crystal/compiler/ast/decl/declaration.hpp"
 #include "util/memory/ref_count.hpp"
@@ -30,12 +31,18 @@ struct PipelineSettings {
   util::memory::Ref<VertexDeclaration>                                          vertex_function;
   util::memory::Ref<FragmentDeclaration>                                        fragment_function;
   std::vector<std::tuple<util::memory::Ref<type::Type>, std::string, uint32_t>> uniforms;
+  std::vector<std::tuple<util::memory::Ref<type::Type>, std::string, uint32_t>> textures;
+
+  std::string cull;
 };
 
 class PipelineDeclaration : public Declaration {
   util::memory::Ref<VertexDeclaration>                                          vertex_function_;
   util::memory::Ref<FragmentDeclaration>                                        fragment_function_;
   std::vector<std::tuple<util::memory::Ref<type::Type>, std::string, uint32_t>> uniforms_;
+  std::vector<std::tuple<util::memory::Ref<type::Type>, std::string, uint32_t>> textures_;
+
+  CullMode cull_mode_;
 
 public:
   PipelineDeclaration(std::string_view name, const PipelineSettings& settings);

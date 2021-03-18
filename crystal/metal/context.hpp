@@ -152,7 +152,7 @@ public:
   template <typename Container>
   IndexBuffer create_index_buffer(const Container& container) {
     static_assert(std::is_same<decltype(container.data()[0]), uint16_t>::value,
-                  "index buffer type must be [uint16_t]");
+                  "index buffer type must be uint16_t");
     return create_index_buffer(container.data(), sizeof(container.data()[0]) * container.size());
   }
 

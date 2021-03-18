@@ -1,55 +1,31 @@
 load("//tools:cc.bzl", "cc_binary")
+load("//tools:crystal.bzl", "crystal_library")
 
 cc_binary(
-    name = "opengl",
+    name = "render_to_texture",
     srcs = [
         "main.cpp",
+        "scene.hpp",
+        "state.hpp",
         "view.hpp",
+        ":shader.hpp",
     ],
     data = [
-        "//examples/render_to_texture/shaders:glsl",
+        ":shader.crystallib",
     ],
     deps = [
         "//crystal:include",
-        "//crystal/opengl:opengl_sdl2",
+        "//examples/base",
         "@glm",
         "@sdl2",
         "@sdl2//:sdl2_main",
     ],
 )
 
-cc_binary(
-    name = "vulkan",
-    srcs = [
-        "main.cpp",
-        "view.hpp",
-    ],
-    data = [
-        "//examples/render_to_texture/shaders:shader.spv",
-    ],
-    deps = [
-        "//crystal:include",
-        "//crystal/vulkan:vulkan_sdl2",
-        "@glm",
-        "@sdl2",
-        "@sdl2//:sdl2_main",
-    ],
-)
-
-cc_binary(
-    name = "metal",
-    srcs = [
-        "main.cpp",
-        "view.hpp",
-    ],
-    data = [
-        "//examples/render_to_texture/shaders:shader.metallib",
-    ],
-    deps = [
-        "//crystal:include",
-        "//crystal/metal:metal_sdl2",
-        "@glm",
-        "@sdl2",
-        "@sdl2//:sdl2_main",
+crystal_library(
+    name = "shader",
+    src = "shader.crystal",
+    visibility = [
+        "//examples/triangle:__subpackages__",
     ],
 )
