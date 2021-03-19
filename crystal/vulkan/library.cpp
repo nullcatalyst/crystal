@@ -1,10 +1,15 @@
 #include "crystal/vulkan/library.hpp"
 
+#include <fstream>
+
 #include "util/fs/file.hpp"
 
 namespace crystal::vulkan {
 
-Library::Library(Library&& other) : device_(other.device_), shader_module_(other.shader_module_) {
+Library::Library(Library&& other)
+    : device_(other.device_),
+      shader_module_(other.shader_module_),
+      lib_pb_(std::move(other.lib_pb_)) {
   other.device_        = VK_NULL_HANDLE;
   other.shader_module_ = VK_NULL_HANDLE;
 }
@@ -12,8 +17,9 @@ Library::Library(Library&& other) : device_(other.device_), shader_module_(other
 Library& Library::operator=(Library&& other) {
   destroy();
 
-  other.device_        = device_;
-  other.shader_module_ = shader_module_;
+  device_        = other.device_;
+  shader_module_ = other.shader_module_;
+  lib_pb_        = std::move(other.lib_pb_);
 
   other.device_        = VK_NULL_HANDLE;
   other.shader_module_ = VK_NULL_HANDLE;
@@ -34,15 +40,20 @@ void Library::destroy() noexcept {
   shader_module_ = VK_NULL_HANDLE;
 }
 
-Library::Library(const VkDevice device, const std::string& spv_path) : device_(device) {
-  const auto contents = util::fs::read_file_binary(spv_path);
-  // util::msg::debug("file contents size=", contents.size());
+Library::Library(const VkDevice device, const std::string_view file_path) : device_(device) {
+  std::ifstream input_file(std::string(file_path), std::ios::in | std::ios::binary);
+  if (!lib_pb_.ParseFromIstream(&input_file)) {
+    util::msg::fatal("parsing crystal library from file [", file_path, "]");
+  }
+
+  const std::string& spv = lib_pb_.vulkan().library();
+
   const VkShaderModuleCreateInfo create_info = {
       /* .sType = */ VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
       /* .pNext    = */ nullptr,
       /* .flags    = */ 0,
-      /* .codeSize = */ contents.size(),
-      /* .pCode    = */ reinterpret_cast<const uint32_t*>(contents.data()),
+      /* .codeSize = */ spv.size(),
+      /* .pCode    = */ reinterpret_cast<const uint32_t*>(spv.data()),
   };
 
   VK_ASSERT(vkCreateShaderModule(device_, &create_info, nullptr, &shader_module_),

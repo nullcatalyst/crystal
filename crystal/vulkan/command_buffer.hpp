@@ -46,7 +46,6 @@ public:
   void use_render_pass(RenderPass& render_pass);
   void use_pipeline(Pipeline& pipeline);
   void use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t binding);
-  void use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t location, uint32_t binding);
 
   void draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count);
 

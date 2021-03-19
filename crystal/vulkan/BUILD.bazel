@@ -25,6 +25,7 @@ cc_library(
     ],
     deps = [
         "//crystal/common",
+        "//crystal/common/proto",
         "//third_party/vulkan_memory_allocator",
         "//util/fs",
         "//util/memory",
@@ -62,6 +63,7 @@ cc_library(
     ],
     deps = [
         "//crystal/common",
+        "//crystal/common/proto",
         "//third_party/vulkan_memory_allocator",
         "//util/fs",
         "//util/memory",

@@ -13,8 +13,9 @@ const std::array<const char* const, 1> INSTANCE_LAYERS{
     "VK_LAYER_KHRONOS_validation",  // Someday... :sigh:
 };
 
-const std::array<const char* const, 1> DEVICE_EXTENSIONS = {
+const std::array<const char* const, 2> DEVICE_EXTENSIONS = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    VK_KHR_MAINTENANCE1_EXTENSION_NAME,
 };
 
 }  // namespace
@@ -294,6 +295,27 @@ void Context::change_resolution(uint32_t width, uint32_t height) {
   // an old image view from the old swapchain.
 }
 
+void Context::set_clear_color(RenderPass& render_pass, uint32_t attachment,
+                              ClearValue clear_value) {
+  if (attachment >= render_pass.attachment_count_) {
+    util::msg::fatal("setting clear color for out of bounds attachment [", attachment, "]");
+  }
+  render_pass.clear_values_[attachment].color = {
+      clear_value.color.red,
+      clear_value.color.green,
+      clear_value.color.blue,
+      clear_value.color.alpha,
+  };
+}
+
+void Context::set_clear_depth(RenderPass& render_pass, ClearValue clear_value) {
+  // if (!render_pass.has_depth_) {
+  //   util::msg::fatal(
+  //       "setting clear depth for render pass that does not contain a depth attachment");
+  // }
+  // render_pass.clear_depth_.clear_value = clear_value;
+}
+
 CommandBuffer Context::next_frame() {
   frame_index_                   = (frame_index_ + 1) & 3;
   auto&           frame          = frames_[frame_index_];
@@ -326,23 +348,23 @@ void Context::add_buffer_(VkBuffer buffer, VmaAllocation allocation) noexcept {
 
 void Context::retain_buffer_(VkBuffer buffer) noexcept {
   auto it = std::find_if(buffers_.begin(), buffers_.end(),
-                         [buffer](auto& value) { return value->buffer == buffer; });
+                         [buffer](const auto& value) { return value.buffer == buffer; });
   if (it == buffers_.end()) {
     util::msg::fatal("retaining buffer that does not exist");
   }
 
-  it->retain();
+  ++it->ref_count;
 }
 
 void Context::release_buffer_(VkBuffer buffer) noexcept {
   auto it = std::find_if(buffers_.begin(), buffers_.end(),
-                         [buffer](auto& value) { return value->buffer == buffer; });
+                         [buffer](const auto& value) { return value.buffer == buffer; });
   if (it == buffers_.end()) {
     return;
   }
 
-  if (it->release()) {
-    vmaDestroyBuffer(memory_allocator_, (*it)->buffer, (*it)->allocation);
+  if (--it->ref_count == 0) {
+    vmaDestroyBuffer(memory_allocator_, it->buffer, it->allocation);
     buffers_.erase(it);
   }
 }

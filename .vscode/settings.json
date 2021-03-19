@@ -13,7 +13,7 @@
         100
     ],
     "files.exclude": {
-        "bazel-*": true,
+        // "bazel-*": true,
     },
     "files.associations": {
         "*.inc": "cpp",

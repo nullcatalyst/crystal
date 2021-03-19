@@ -1,5 +1,6 @@
 #include "crystal/vulkan/pipeline.hpp"
 
+#include "crystal/common/proto/proto.hpp"
 #include "crystal/vulkan/context.hpp"
 #include "crystal/vulkan/library.hpp"
 #include "crystal/vulkan/render_pass.hpp"
@@ -70,25 +71,40 @@ Pipeline::Pipeline(Context& ctx, Library& library, RenderPass& render_pass,
     : device_(ctx.device_),
       descriptor_pool_(ctx.descriptor_pool_),
       render_pass_(render_pass.render_pass_) {
+  const crystal::common::proto::VKPipeline* pipeline_pb = nullptr;
+  const auto&                               vulkan_pb   = library.lib_pb_.vulkan();
+  for (int i = 0; i < vulkan_pb.pipelines_size(); ++i) {
+    const auto& check_pipeline_pb = vulkan_pb.pipelines(i);
+    if (check_pipeline_pb.name() != desc.name) {
+      continue;
+    }
+
+    pipeline_pb = &check_pipeline_pb;
+    break;
+  }
+
+  if (pipeline_pb == nullptr) {
+    util::msg::fatal("could not find pipeline [", desc.name, "]");
+  }
+
   {  // Create descriptor set layout.
-    std::vector<VkDescriptorSetLayoutBinding> bindings(desc.uniform_bindings.size());
-    std::transform(
-        desc.uniform_bindings.begin(), desc.uniform_bindings.end(), bindings.begin(),
-        [](const auto binding) {
-          return VkDescriptorSetLayoutBinding{
-              /* binding            = */ binding.id,
-              /* descriptorType     = */ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-              /* descriptorCount    = */ 1,
-              /* stageFlags         = */ VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-              /* pImmutableSamplers = */ nullptr,
-          };
-        });
+    std::vector<VkDescriptorSetLayoutBinding> bindings(pipeline_pb->uniforms_size());
+    for (int i = 0; i < pipeline_pb->uniforms_size(); ++i) {
+      const auto& uniform_pb = pipeline_pb->uniforms(i);
+      bindings[i]            = VkDescriptorSetLayoutBinding{
+          /* binding            = */ uniform_pb.binding(),
+          /* descriptorType     = */ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+          /* descriptorCount    = */ 1,
+          /* stageFlags         = */ VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+          /* pImmutableSamplers = */ nullptr,
+      };
+    }
 
     const VkDescriptorSetLayoutCreateInfo create_info = {
         /* sType = */ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
         /* pNext        = */ nullptr,
         /* flags        = */ 0,
-        /* bindingCount = */ static_cast<uint32_t>(desc.uniform_bindings.size()),
+        /* bindingCount = */ static_cast<uint32_t>(pipeline_pb->uniforms_size()),
         /* pBindings    = */ bindings.data(),
     };
 
@@ -131,7 +147,9 @@ Pipeline::Pipeline(Context& ctx, Library& library, RenderPass& render_pass,
   }
 
   {  // Create pipeline.
-    const uint32_t shader_stage_create_info_count = 1 + (desc.fragment != nullptr);
+    const std::string name(desc.name);
+
+    const uint32_t shader_stage_create_info_count                     = 1 + pipeline_pb->fragment();
     const VkPipelineShaderStageCreateInfo shader_stage_create_infos[] = {
         {
             /* .sType = */ VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -139,7 +157,7 @@ Pipeline::Pipeline(Context& ctx, Library& library, RenderPass& render_pass,
             /* .flags               = */ 0,
             /* .stage               = */ VK_SHADER_STAGE_VERTEX_BIT,
             /* .module              = */ library.shader_module_,
-            /* .pName               = */ desc.vertex,
+            /* .pName               = */ name.c_str(),
             /* .pSpecializationInfo = */ nullptr,
         },
         {
@@ -148,7 +166,7 @@ Pipeline::Pipeline(Context& ctx, Library& library, RenderPass& render_pass,
             /* .flags               = */ 0,
             /* .stage               = */ VK_SHADER_STAGE_FRAGMENT_BIT,
             /* .module              = */ library.shader_module_,
-            /* .pName               = */ desc.fragment,
+            /* .pName               = */ name.c_str(),
             /* .pSpecializationInfo = */ nullptr,
         },
     };

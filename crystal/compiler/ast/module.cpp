@@ -221,7 +221,7 @@ void Module::make_vulkan_crystallib_(crystal::common::proto::Vulkan& vulkan_pb,
       std::stringstream cmd;
       cmd << glslang_validator_exe_path << " -Os -V -S vert -e " << pipeline->name()
           << " --source-entrypoint main -o " << spv_path << " " << src_path;
-      std::cout << "VERT_CMD=" << cmd.str() << std::endl;
+      // std::cout << "VERT_CMD=" << cmd.str() << std::endl;
       util::proc::run_command(cmd.str().c_str());
 
       spv_partials.push_back(spv_path.string());
@@ -239,7 +239,7 @@ void Module::make_vulkan_crystallib_(crystal::common::proto::Vulkan& vulkan_pb,
       std::stringstream cmd;
       cmd << glslang_validator_exe_path << " -Os -V -S frag -e " << pipeline->name()
           << " --source-entrypoint main -o " << spv_path << " " << src_path;
-      std::cout << "FRAG_CMD=" << cmd.str() << std::endl;
+      // std::cout << "FRAG_CMD=" << cmd.str() << std::endl;
       util::proc::run_command(cmd.str().c_str());
 
       spv_partials.push_back(spv_path);
@@ -254,11 +254,25 @@ void Module::make_vulkan_crystallib_(crystal::common::proto::Vulkan& vulkan_pb,
     for (const auto& spv : spv_partials) {
       cmd << " " << spv;
     }
-    std::cout << "LINK_CMD=" << cmd.str() << std::endl;
+    // std::cout << "LINK_CMD=" << cmd.str() << std::endl;
     util::proc::run_command(cmd.str().c_str());
 
     const auto spv_contents = util::fs::read_file_binary(out_path.string());
     vulkan_pb.set_library(spv_contents.data(), spv_contents.size());
+  }
+
+  for (const auto& pipeline : pipeline_list_) {
+    common::proto::VKPipeline* pipeline_pb = vulkan_pb.add_pipelines();
+
+    pipeline_pb->set_name(pipeline->name());
+    if (pipeline->fragment_function() != nullptr) {
+      pipeline_pb->set_fragment(true);
+    }
+
+    for (const auto& [type, name, binding] : pipeline->uniforms()) {
+      common::proto::VKUniform* uniform_pb = pipeline_pb->add_uniforms();
+      uniform_pb->set_binding(binding);
+    }
   }
 }
 

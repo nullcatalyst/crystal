@@ -99,9 +99,9 @@ void CommandBuffer::use_render_pass(RenderPass& render_pass) {
     // Update dynamic viewport state.
     const VkViewport viewport = {
         /* .x        = */ 0.0f,
-        /* .y        = */ 0.0f,
+        /* .y        = */ static_cast<float>(extent.height),
         /* .width    = */ static_cast<float>(extent.width),
-        /* .height   = */ static_cast<float>(extent.height),
+        /* .height   = */ -static_cast<float>(extent.height),
         /* .minDepth = */ 0.0f,
         /* .maxDepth = */ 1.0f,
     };
@@ -125,8 +125,7 @@ void CommandBuffer::use_pipeline(Pipeline& pipeline) {
   descriptor_set_  = pipeline.descriptor_sets_[frame_index_];
 }
 
-void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t location,
-                                       uint32_t binding) {
+void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t binding) {
   {  // Update the descriptor set.
     const VkDescriptorBufferInfo buffer_info = {
         /* .buffer = */ uniform_buffer.buffer_,
@@ -137,7 +136,7 @@ void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t l
         /* .sType = */ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
         /* .pNext            = */ nullptr,
         /* .dstSet           = */ descriptor_set_,
-        /* .dstBinding       = */ location,
+        /* .dstBinding       = */ binding,
         /* .dstArrayElement  = */ 0,
         /* .descriptorCount  = */ 1,
         /* .descriptorType   = */ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,

@@ -91,14 +91,32 @@ void Swapchain::create() {
       sharing_mode             = VK_SHARING_MODE_CONCURRENT;
     }
 
+    uint32_t surface_format_index = 0;
+    for (int i = 0; i < surface_formats.size(); ++i) {
+      // util::msg::info("surface_format.format=", surface_format.format);
+      // util::msg::info("surface_format.colorSpace=", surface_format.colorSpace);
+      if (surface_formats[i].format == VK_FORMAT_B8G8R8A8_SRGB) {
+        surface_format_index = i;
+        break;
+      }
+    }
+
+    uint32_t present_mode_index = 0;
+    for (int i = 0; i < present_modes.size(); ++i) {
+      if (present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
+        present_mode_index = i;
+        break;
+      }
+    }
+
     create_info_ = {
         /* .sType = */ VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         /* .pNext                 = */ nullptr,
         /* .flags                 = */ 0,
         /* .surface               = */ surface_,
         /* .minImageCount         = */ 2,
-        /* .imageFormat           = */ surface_formats[0].format,
-        /* .imageColorSpace       = */ surface_formats[0].colorSpace,
+        /* .imageFormat           = */ surface_formats[surface_format_index].format,
+        /* .imageColorSpace       = */ surface_formats[surface_format_index].colorSpace,
         /* .imageExtent           = */ surface_capabilities.currentExtent,
         /* .imageArrayLayers      = */ 1,
         /* .imageUsage            = */ VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
@@ -107,8 +125,7 @@ void Swapchain::create() {
         /* .pQueueFamilyIndices   = */ queue_family_indices,
         /* .preTransform          = */ surface_capabilities.currentTransform,
         /* .compositeAlpha        = */ VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-        /* .presentMode           = */ present_modes[0],  //< TODO: choose a better present mode
-                                                          // than just using the first option.
+        /* .presentMode           = */ present_modes[present_mode_index],
         /* .clipped               = */ VK_TRUE,
         /* .oldSwapchain          = */ swapchain_,
     };

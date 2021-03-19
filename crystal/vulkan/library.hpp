@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
+#include <string_view>
 
+#include "crystal/common/proto/proto.hpp"
 #include "crystal/vulkan/vk.hpp"
 
 namespace crystal::vulkan {
@@ -11,11 +12,12 @@ class Shader;
 class Pipeline;
 
 class Library {
-  VkDevice device_ = VK_NULL_HANDLE;
-  VkShaderModule shader_module_ = VK_NULL_HANDLE;
+  VkDevice               device_        = VK_NULL_HANDLE;
+  VkShaderModule         shader_module_ = VK_NULL_HANDLE;
+  common::proto::Library lib_pb_;
 
 public:
-  constexpr Library() = default;
+  Library() = default;
 
   Library(const Library&) = delete;
   Library& operator=(const Library&) = delete;
@@ -32,7 +34,7 @@ private:
   friend class ::crystal::vulkan::Shader;
   friend class ::crystal::vulkan::Pipeline;
 
-  Library(const VkDevice device, const std::string& spv_path);
+  Library(VkDevice device, const std::string_view file_path);
 };
 
 }  // namespace crystal::vulkan

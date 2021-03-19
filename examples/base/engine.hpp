@@ -61,12 +61,10 @@ std::unique_ptr<EngineImpl<Ctx>> create_engine(const std::string_view title) {
     cust_title += " (opengl)";
   }
   if constexpr (std::is_same<Ctx, crystal::vulkan::Context>::value) {
-    desc = {
-        /* .application_name         = */ orig_title.c_str(),
-        /* .max_descriptor_set_count = */ 16,
-        /* .buffer_descriptor_count  = */ 16,
-        /* .texture_descriptor_count = */ 16,
-    };
+    desc.application_name         = orig_title.c_str();
+    desc.max_descriptor_set_count = 16;
+    desc.buffer_descriptor_count  = 16;
+    desc.texture_descriptor_count = 16;
     cust_title += " (vulkan)";
   }
   if constexpr (std::is_same<Ctx, crystal::metal::Context>::value) {

@@ -2,6 +2,9 @@ syntax = "proto3";
 
 package crystal.common.proto;
 
+////////////////////////////////////////////////////////////////
+// OpenGL
+
 message GLUniform {
     string name = 1;
     uint32 binding = 2;
@@ -24,9 +27,26 @@ message OpenGL {
     repeated GLPipeline pipelines = 1;
 }
 
+////////////////////////////////////////////////////////////////
+// Vulkan
+
+message VKUniform {
+    uint32 binding = 1;
+}
+
+message VKPipeline {
+    string name = 1;
+    bool fragment = 2;
+    repeated VKUniform uniforms = 3;
+}
+
 message Vulkan {
     bytes library = 1;
+    repeated VKPipeline pipelines = 2;
 }
+
+////////////////////////////////////////////////////////////////
+// Metal
 
 message MTLUniform {
     string binding = 1;
@@ -44,6 +64,9 @@ message Metal {
     bytes library = 1;
     repeated MTLPipeline pipelines = 2;
 }
+
+////////////////////////////////////////////////////////////////
+// Crystal
 
 message Library {
     OpenGL opengl = 1;

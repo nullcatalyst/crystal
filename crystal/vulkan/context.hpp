@@ -72,11 +72,12 @@ public:
 
 private:
   struct Buffer {
+    uint32_t      ref_count;
     VkBuffer      buffer;
     VmaAllocation allocation;
 
     constexpr Buffer(VkBuffer buffer, VmaAllocation allocation)
-        : buffer(buffer), allocation(allocation) {}
+        : ref_count(1), buffer(buffer), allocation(allocation) {}
   };
 
   VkInstance       instance_         = VK_NULL_HANDLE;
@@ -87,12 +88,12 @@ private:
   VkCommandPool    command_pool_     = VK_NULL_HANDLE;
   VkDescriptorPool descriptor_pool_  = VK_NULL_HANDLE;
 
-  Texture                                     screen_depth_texture_;
-  internal::Swapchain                         swapchain_;
-  RenderPass                                  screen_render_pass_;
-  uint32_t                                    frame_index_ = 0;
-  std::array<internal::Frame, 4>              frames_;
-  std::vector<util::memory::RefCount<Buffer>> buffers_;
+  Texture                        screen_depth_texture_;
+  internal::Swapchain            swapchain_;
+  RenderPass                     screen_render_pass_;
+  uint32_t                       frame_index_ = 0;
+  std::array<internal::Frame, 4> frames_;
+  std::vector<Buffer>            buffers_;
 
 public:
   Context() = delete;
@@ -110,14 +111,16 @@ public:
   [[nodiscard]] constexpr uint32_t    screen_height() const { return screen_render_pass_.height(); }
   [[nodiscard]] constexpr RenderPass& screen_render_pass() { return screen_render_pass_; }
 
-  void change_resolution(uint32_t width, uint32_t height);
-
-  void wait();
-
+  void          set_active();
+  void          wait();
   CommandBuffer next_frame();
+
+  void change_resolution(uint32_t width, uint32_t height);
 
   // TODO:
   // RenderPass create_render_pass(const RenderPassDesc& desc);
+  void set_clear_color(RenderPass& render_pass, uint32_t attachment, ClearValue clear_value);
+  void set_clear_depth(RenderPass& render_pass, ClearValue clear_value);
 
   Library  create_library(const std::string_view base_path);
   Pipeline create_pipeline(Library& library, RenderPass& render_pass, const PipelineDesc& desc);
@@ -141,6 +144,49 @@ public:
   Mesh create_mesh(const std::initializer_list<std::tuple<uint32_t, const VertexBuffer&>> bindings,
                    const IndexBuffer& index_buffer);
 
+  // Templated convenience helpers.
+
+  template <typename T>
+  UniformBuffer create_uniform_buffer(const T& value) {
+    return create_uniform_buffer(&value, sizeof(T));
+  }
+
+  template <typename T>
+  void update_uniform_buffer(UniformBuffer& uniform_buffer, const T& value) {
+    return update_uniform_buffer(uniform_buffer, &value, sizeof(T));
+  }
+
+  template <typename T>
+  VertexBuffer create_vertex_buffer(const std::initializer_list<T> list) {
+    return create_vertex_buffer(list.begin(), sizeof(list.begin()[0]) * list.size());
+  }
+
+  template <typename Container>
+  VertexBuffer create_vertex_buffer(const Container& container) {
+    return create_vertex_buffer(container.data(), sizeof(container.data()[0]) * container.size());
+  }
+
+  template <typename T>
+  void update_vertex_buffer(VertexBuffer& vertex_buffer, const std::initializer_list<T> list) {
+    return update_vertex_buffer(list.begin(), sizeof(list.begin()[0]) * list.size());
+  }
+
+  template <typename Container>
+  void update_vertex_buffer(VertexBuffer& vertex_buffer, const Container& container) {
+    return create_vertex_buffer(container.data(), sizeof(container.data()[0]) * container.size());
+  }
+
+  template <typename Container>
+  IndexBuffer create_index_buffer(const Container& container) {
+    static_assert(std::is_same<decltype(container.data()[0]), uint16_t>::value,
+                  "index buffer type must be [uint16_t]");
+    return create_index_buffer(container.data(), sizeof(container.data()[0]) * container.size());
+  }
+
+  void update_index_buffer(IndexBuffer& index_buffer, const std::initializer_list<uint16_t> list) {
+    return update_index_buffer(index_buffer, list.begin(), sizeof(list.begin()[0]) * list.size());
+  }
+
 private:
   friend CommandBuffer;
   friend IndexBuffer;
@@ -160,10 +206,12 @@ private:
   void release_buffer_(VkBuffer buffer) noexcept;
 };
 
+inline void Context::set_active() {}
+
 inline void Context::wait() { vkDeviceWaitIdle(device_); }
 
 inline Library Context::create_library(const std::string_view spv_path) {
-  return Library(device_, std::string(spv_path));
+  return Library(device_, spv_path);
 }
 
 // inline RenderPass Context::create_render_pass(const RenderPassDesc& desc) {

@@ -21,16 +21,10 @@ void Controller::run() {
 
   engine_->init_graphics(*this, *scene_);
 
-  using clock = std::chrono::high_resolution_clock;
-  // auto prev_frame_start_time = clock::now();
+  using clock                = std::chrono::high_resolution_clock;
+  auto prev_frame_start_time = clock::now();
 
   for (;;) {
-    // const auto curr_frame_start_time = prev_frame_start_time + MICROSECS_PER_FRAME;
-
-    // const auto                          curr_frame_start_time = clock::now();
-    // const std::chrono::duration<double> dt = curr_frame_start_time - prev_frame_start_time;
-    // prev_frame_start_time                  = curr_frame_start_time;
-
     {  // Update the window.
       if (engine_ == nullptr) {
         return;
@@ -51,17 +45,10 @@ void Controller::run() {
 
     ++tick_;
 
-    // const auto now = clock::now();
-    // if (now < curr_frame_start_time + MICROSECS_PER_FRAME) {
-    //   // Sleep for 1/60 second (one frame).
-    //   std::this_thread::sleep_until(curr_frame_start_time + MICROSECS_PER_FRAME);
-    // } else {
-    //   // This frame took too long.
-    //   prev_frame_start_time = now - MICROSECS_PER_FRAME;
-    // }
-
-    // // Sleep for 1/60 second (one frame).
-    // std::this_thread::sleep_until(curr_frame_start_time + MICROSECS_PER_FRAME);
+    // Sleep for 1/60 second (one frame).
+    const auto curr_frame_start_time = prev_frame_start_time + MICROSECS_PER_FRAME;
+    std::this_thread::sleep_until(curr_frame_start_time);
+    prev_frame_start_time = curr_frame_start_time;
   }
 }
 

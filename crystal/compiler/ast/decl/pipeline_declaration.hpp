@@ -56,6 +56,15 @@ public:
     return fragment_function_;
   }
 
+  [[nodiscard]] const std::vector<std::tuple<util::memory::Ref<type::Type>, std::string, uint32_t>>&
+  uniforms() const {
+    return uniforms_;
+  }
+  [[nodiscard]] const std::vector<std::tuple<util::memory::Ref<type::Type>, std::string, uint32_t>>&
+  textures() const {
+    return textures_;
+  }
+
   void to_cpphdr(std::ostream& out, const Module& mod) const;
   void to_metal(std::ostream& out, const Module& mod) const;
 
