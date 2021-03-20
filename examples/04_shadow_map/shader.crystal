@@ -17,32 +17,45 @@ struct Instance {
     vec4 color  : 3;
 }
 
-//struct ShadowVaryings {
-//    vec4 position : 0;
-//}
-//
-//pipeline shadow {
-//    cull = "none";
-//    winding = "ccw";
-//    depth_test = "less";
-//    depth_write = true;
-//
-//    uniform Uniform u : 1;
-//
-//    vertex (
-//        Vertex in : 0,
-//        Instance inst : instanced 1,
-//    ) -> ShadowVaryings {
-//        ShadowVaryings out;
-//        out.position = u.shadow_matrix * (u.rotation_matrix * in.position + u.orbit_matrix * inst.offset);
-//        return out;
-//    }
-//}
+struct ShadowVaryings {
+    vec4 position : 0;
+}
+
+struct ShadowOut {
+    vec4 color : 0;
+}
+
+pipeline shadow {
+    cull = "none";
+    winding = "ccw";
+    depth_test = "less";
+    depth_write = true;
+
+    uniform Uniform u : 2;
+
+    vertex (
+        Vertex in : 0,
+        Instance inst : instanced 1,
+    ) -> ShadowVaryings {
+        vec4 pos = mix(in.position, u.rotation_matrix * in.position, inst.offset.w) + u.orbit_matrix * vec4(inst.offset.xyz, 0.0);
+
+        ShadowVaryings out;
+        out.position = u.shadow_matrix * pos;
+        return out;
+    }
+
+    fragment (ShadowVaryings in) -> ShadowOut {
+        ShadowOut out;
+        out.color = vec4(1.0);
+        return out;
+    }
+}
 
 struct CombineVaryings {
     vec4 position        : 0;
     vec4 shadow_position : 1;
-    vec4 color           : 2;
+    vec4 normal          : 2;
+    vec4 color           : 3;
 }
 
 struct CombineOut {
@@ -55,26 +68,31 @@ pipeline combine {
     depth_test = "less";
     depth_write = true;
 
-    uniform Uniform u : 1;
+    uniform Uniform u : 2;
     texture Texture2D t : 0;
 
     vertex (
         Vertex in : 0,
         Instance inst : instanced 1,
     ) -> CombineVaryings {
-        vec4 pos = u.rotation_matrix * in.position + u.orbit_matrix * inst.offset;
+        vec4 position = mix(in.position, u.rotation_matrix * in.position, inst.offset.w) + u.orbit_matrix * vec4(inst.offset.xyz, 0.0);
+        vec4 normal = mix(in.normal, u.rotation_matrix * in.normal, inst.offset.w);
 
         CombineVaryings out;
-        out.position = u.projection_matrix * pos;
-        out.shadow_position = u.shadow_matrix * pos;
-        out.color = inst.color * (0.25 + 0.75 * dot((u.rotation_matrix * in.normal).xyz, vec3(0.0, 0.0, 1.0)));
+        out.position = u.projection_matrix * position;
+        out.shadow_position = u.shadow_matrix * position;
+        out.normal = normal;
+        out.color = inst.color;
         return out;
     }
 
     fragment (CombineVaryings in) -> CombineOut {
+        vec3 shadow_coord = 0.5 + 0.5 * in.shadow_position.xyz;
+        float shadow_depth = t.sample(shadow_coord.xy).x;
+        float diffuse = dot(in.normal, u.shadow_matrix * vec4(0.0, 0.0, -1.0, 0.0));
+
         CombineOut out;
-        out.color = vec4(vec3(0.5 + 0.5 * pow(in.position.z, 2.0)), 1.0);
-        //out.color = in.color;
+        out.color = (0.25 + mix(0.0, 0.75 * diffuse, shadow_depth + 0.0001 > shadow_coord.z)) * in.color;
         return out;
     }
 }

@@ -13,6 +13,12 @@ enum class BinOp {
   Sub,
   Mul,
   Div,
+  Eq,
+  Ne,
+  Lt,
+  Le,
+  Gt,
+  Ge,
 };
 
 class BinOpExpression : public Expression {
@@ -49,6 +55,36 @@ public:
           out << lhs_->to_glsl(opts) << (opts.pretty ? " / " : "/") << rhs_->to_glsl(opts);
         }};
 
+      case BinOp::Eq:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_glsl(opts) << (opts.pretty ? " == " : "==") << rhs_->to_glsl(opts);
+        }};
+
+      case BinOp::Ne:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_glsl(opts) << (opts.pretty ? " != " : "!=") << rhs_->to_glsl(opts);
+        }};
+
+      case BinOp::Lt:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_glsl(opts) << (opts.pretty ? " < " : "<") << rhs_->to_glsl(opts);
+        }};
+
+      case BinOp::Le:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_glsl(opts) << (opts.pretty ? " <= " : "<=") << rhs_->to_glsl(opts);
+        }};
+
+      case BinOp::Gt:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_glsl(opts) << (opts.pretty ? " > " : ">") << rhs_->to_glsl(opts);
+        }};
+
+      case BinOp::Ge:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_glsl(opts) << (opts.pretty ? " >= " : ">=") << rhs_->to_glsl(opts);
+        }};
+
       default:
         util::msg::fatal("unhandled binary operator [", static_cast<uint32_t>(op_), "]");
         break;
@@ -75,6 +111,36 @@ public:
       case BinOp::Div:
         return output::PrintLambda{[=](std::ostream& out) {
           out << lhs_->to_metal(opts) << " / " << rhs_->to_metal(opts);
+        }};
+
+      case BinOp::Eq:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_metal(opts) << " == " << rhs_->to_metal(opts);
+        }};
+
+      case BinOp::Ne:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_metal(opts) << " != " << rhs_->to_metal(opts);
+        }};
+
+      case BinOp::Lt:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_metal(opts) << " < " << rhs_->to_metal(opts);
+        }};
+
+      case BinOp::Le:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_metal(opts) << " <= " << rhs_->to_metal(opts);
+        }};
+
+      case BinOp::Gt:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_metal(opts) << " > " << rhs_->to_metal(opts);
+        }};
+
+      case BinOp::Ge:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_metal(opts) << " >= " << rhs_->to_metal(opts);
         }};
 
       default:

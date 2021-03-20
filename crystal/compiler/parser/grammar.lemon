@@ -149,7 +149,15 @@ stmt(ret)           ::= expr_var(var) OP_MINUSEQUAL expr(expr) OP_SEMICOLON.    
 stmt(ret)           ::= expr_var(var) OP_STAREQUAL expr(expr) OP_SEMICOLON.     { ret = Ref<stmt::AssignmentStatement>::make(std::move(var), std::move(expr), stmt::AssignmentOp::Mul); }
 stmt(ret)           ::= expr_var(var) OP_SLASHEQUAL expr(expr) OP_SEMICOLON.    { ret = Ref<stmt::AssignmentStatement>::make(std::move(var), std::move(expr), stmt::AssignmentOp::Div); }
 
-expr                ::= expr_add.
+expr                ::= expr_cmp.
+
+expr_cmp(ret)       ::= expr_cmp(lhs) OP_EQUALEQUAL expr_add(rhs).              { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Eq); }
+expr_cmp(ret)       ::= expr_cmp(lhs) OP_EXCLAIMEQUAL expr_add(rhs).            { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Ne); }
+expr_cmp(ret)       ::= expr_cmp(lhs) OP_LESS expr_add(rhs).                    { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Lt); }
+expr_cmp(ret)       ::= expr_cmp(lhs) OP_LESSEQUAL expr_add(rhs).               { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Le); }
+expr_cmp(ret)       ::= expr_cmp(lhs) OP_GREATER expr_add(rhs).                 { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Gt); }
+expr_cmp(ret)       ::= expr_cmp(lhs) OP_GREATEREQUAL expr_add(rhs).            { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Ge); }
+expr_cmp            ::= expr_add.
 
 expr_add(ret)       ::= expr_add(lhs) OP_PLUS expr_mul(rhs).                    { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Add); }
 expr_add(ret)       ::= expr_add(lhs) OP_MINUS expr_mul(rhs).                   { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Sub); }

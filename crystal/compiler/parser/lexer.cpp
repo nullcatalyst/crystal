@@ -157,12 +157,37 @@ Token Lexer::next() {
         return Token{TOK_OP_COMMA};
 
       case '=':
-        // if ((next_ + 1) != end && *(next_ + 1) == '=') {
-        //   next_ += 2;
-        //   return Token{TOK_OP_EQUALEQUAL};
-        // }
+        if ((next_ + 1) != end && *(next_ + 1) == '=') {
+          next_ += 2;
+          return Token{TOK_OP_EQUALEQUAL};
+        }
         ++next_;
         return Token{TOK_OP_EQUAL};
+
+      case '!':
+        if ((next_ + 1) != end && *(next_ + 1) == '=') {
+          next_ += 2;
+          return Token{TOK_OP_EXCLAIMEQUAL};
+        }
+        break;
+        // ++next_;
+        // return Token{TOK_OP_GREATER};
+
+      case '<':
+        if ((next_ + 1) != end && *(next_ + 1) == '=') {
+          next_ += 2;
+          return Token{TOK_OP_LESSEQUAL};
+        }
+        ++next_;
+        return Token{TOK_OP_LESS};
+
+      case '>':
+        if ((next_ + 1) != end && *(next_ + 1) == '=') {
+          next_ += 2;
+          return Token{TOK_OP_GREATEREQUAL};
+        }
+        ++next_;
+        return Token{TOK_OP_GREATER};
 
       case '+':
         if ((next_ + 1) != end && *(next_ + 1) == '=') {
@@ -217,9 +242,11 @@ Token Lexer::next() {
         return Token{TOK_OP_RCRLBRACKET};
 
       default:
-        fprintf(stderr, "unexpected token %c [%d]\n", c, c);
-        abort();
+        break;
     }
+
+    fprintf(stderr, "unexpected token %c [%d]\n", c, c);
+    abort();
   }
 
   return Token{0};

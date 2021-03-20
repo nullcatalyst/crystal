@@ -17,6 +17,7 @@
                 "_UNICODE",
                 "CRYSTAL_USE_SDL2",
                 "CRYSTAL_USE_OPENGL",
+                "CRYSTAL_USE_VULKAN"
             ],
             "windowsSdkVersion": "10.0.18362.0",
             "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.27.29110/bin/Hostx64/x64/cl.exe",
@@ -38,6 +39,7 @@
             "defines": [
                 "CRYSTAL_USE_SDL2",
                 "CRYSTAL_USE_OPENGL",
+                "CRYSTAL_USE_METAL"
             ],
             "macFrameworkPath": [],
             "compilerPath": "/usr/local/opt/llvm/bin/clang",
