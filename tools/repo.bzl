@@ -156,10 +156,10 @@ def crystal_dependencies():
     _maybe(
         http_archive,
         name = "org_khronos_glslang",
-        sha256 = "416849c4d80861f393549cfd5714745a2c87b4887168f7574e3d32a827d67408",
-        strip_prefix = "glslang-965f80725657369f80a8203bfe3c0f5359325bc5",
+        sha256 = "5d4add9babc73bf7499ff53b268281eab237233d5c08fcd7f7dd95e67c0ee18f",
+        strip_prefix = "glslang-701d46d3496df266413749efa79c2b093c241cd2",
         urls = [
-            "https://github.com/nullcatalyst/glslang/archive/965f80725657369f80a8203bfe3c0f5359325bc5.tar.gz",
+            "https://github.com/nullcatalyst/glslang/archive/701d46d3496df266413749efa79c2b093c241cd2.tar.gz",
         ],
     )
 

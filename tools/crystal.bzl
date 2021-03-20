@@ -39,7 +39,9 @@ def _crystal_library_impl(ctx):
                 lib,
                 hpp,
             ]),
-            runfiles = ctx.runfiles(files = [lib]),
+            runfiles = ctx.runfiles(files = [
+                lib,
+            ]),
         ),
     ]
 

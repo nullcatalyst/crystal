@@ -76,7 +76,7 @@ public:
 
     quad_pipeline_ = ctx.create_pipeline(library, ctx.screen_render_pass(), quad_desc);
 
-    const std::array<CubeVertex, 24> cube_vertices{
+    auto cube_vertex_buffer = ctx.create_vertex_buffer({
         // clang-format off
         // -x
         CubeVertex{glm::vec4(-0.5f,  0.5f, -0.5f, 1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 1.0f)},
@@ -109,8 +109,8 @@ public:
         CubeVertex{glm::vec4(-0.5f,  0.5f,  0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)},
         CubeVertex{glm::vec4( 0.5f,  0.5f,  0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)},
         // clang-format on
-    };
-    const std::array<uint16_t, 34> cube_indices{
+    });
+    auto cube_index_buffer = ctx.create_index_buffer({
         // clang-format off
              0,  1,  2,  3,  3,
          4,  4,  5,  6,  7,  7,
@@ -119,26 +119,22 @@ public:
         16, 16, 17, 18, 19, 19,
         20, 20, 21, 22, 23,
         // clang-format on
-    };
-    auto cube_vertex_buffer = ctx.create_vertex_buffer(cube_vertices);
-    auto cube_index_buffer =
-        ctx.create_index_buffer(cube_indices.data(), sizeof(uint16_t) * cube_indices.size());
+    });
     cube_mesh_ = ctx.create_mesh(
         {
             std::make_tuple(0, std::ref(cube_vertex_buffer)),
         },
         cube_index_buffer);
 
-    const std::array<QuadVertex, 4> quad_vertices{
+    auto quad_vertex_buffer = ctx.create_vertex_buffer({
         // clang-format off
         QuadVertex{glm::vec4(-0.75f, -0.75f, 0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)},
         QuadVertex{glm::vec4( 0.75f, -0.75f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)},
         QuadVertex{glm::vec4(-0.75f,  0.75f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)},
         QuadVertex{glm::vec4( 0.75f,  0.75f, 0.0f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)},
         // clang-format on
-    };
-    auto quad_vertex_buffer = ctx.create_vertex_buffer(quad_vertices);
-    quad_mesh_              = ctx.create_mesh({
+    });
+    quad_mesh_ = ctx.create_mesh({
         std::make_tuple(0, std::ref(quad_vertex_buffer)),
     });
   }

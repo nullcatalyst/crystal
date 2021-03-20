@@ -26,6 +26,6 @@ crystal_library(
     name = "shader",
     src = "shader.crystal",
     visibility = [
-        "//examples/triangle:__subpackages__",
+        "//examples/render_to_texture:__subpackages__",
     ],
 )

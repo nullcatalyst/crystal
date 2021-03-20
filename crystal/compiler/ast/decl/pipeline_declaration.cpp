@@ -12,6 +12,92 @@
 
 namespace crystal::compiler::ast::decl {
 
+void PipelineSettings::set_property(const std::string_view name, const std::string_view value) {
+  if (name == "cull") {
+    if (value == "back") {
+      cull_mode = CullMode::Back;
+    } else if (value == "front") {
+      cull_mode = CullMode::Front;
+    } else if (value == "none") {
+      cull_mode = CullMode::None;
+    }
+  } else if (name == "winding") {
+    if (value == "cw" || value == "clockwise") {
+      winding = Winding::Clockwise;
+    } else if (value == "ccw" || value == "counterclockwise") {
+      winding = Winding::CounterClockwise;
+    }
+  } else if (name == "depth_test") {
+    if (value == "never") {
+      depth_test = DepthTest::Never;
+    } else if (value == "less") {
+      depth_test = DepthTest::Less;
+    } else if (value == "equal") {
+      depth_test = DepthTest::Equal;
+    } else if (value == "lequal") {
+      depth_test = DepthTest::LessEqual;
+    } else if (value == "greater") {
+      depth_test = DepthTest::Greater;
+    } else if (value == "nequal") {
+      depth_test = DepthTest::NotEqual;
+    } else if (value == "gequal") {
+      depth_test = DepthTest::GreaterEqual;
+    } else if (value == "always") {
+      depth_test = DepthTest::Always;
+    }
+  } else if (name == "blend_src") {
+    if (value == "zero") {
+      blend_src = AlphaBlend::Zero;
+    } else if (value == "one") {
+      blend_src = AlphaBlend::One;
+    } else if (value == "src_color") {
+      blend_src = AlphaBlend::SrcColor;
+    } else if (value == "one_minus_src_color") {
+      blend_src = AlphaBlend::OneMinusSrcColor;
+    } else if (value == "dst_color") {
+      blend_src = AlphaBlend::DstColor;
+    } else if (value == "one_minus_dst_color") {
+      blend_src = AlphaBlend::OneMinusDstColor;
+    } else if (value == "src_alpha") {
+      blend_src = AlphaBlend::SrcAlpha;
+    } else if (value == "one_minus_src_alpha") {
+      blend_src = AlphaBlend::OneMinusSrcAlpha;
+    } else if (value == "dst_alpha") {
+      blend_src = AlphaBlend::DstAlpha;
+    } else if (value == "one_minus_dst_alpha") {
+      blend_src = AlphaBlend::OneMinusDstAlpha;
+    }
+  } else if (name == "blend_dst") {
+    if (value == "zero") {
+      blend_dst = AlphaBlend::Zero;
+    } else if (value == "one") {
+      blend_dst = AlphaBlend::One;
+    } else if (value == "src_color") {
+      blend_dst = AlphaBlend::SrcColor;
+    } else if (value == "one_minus_src_color") {
+      blend_dst = AlphaBlend::OneMinusSrcColor;
+    } else if (value == "dst_color") {
+      blend_dst = AlphaBlend::DstColor;
+    } else if (value == "one_minus_dst_color") {
+      blend_dst = AlphaBlend::OneMinusDstColor;
+    } else if (value == "src_alpha") {
+      blend_dst = AlphaBlend::SrcAlpha;
+    } else if (value == "one_minus_src_alpha") {
+      blend_dst = AlphaBlend::OneMinusSrcAlpha;
+    } else if (value == "dst_alpha") {
+      blend_dst = AlphaBlend::DstAlpha;
+    } else if (value == "one_minus_dst_alpha") {
+      blend_dst = AlphaBlend::OneMinusDstAlpha;
+    }
+  }
+}
+
+void PipelineSettings::set_property(const std::string_view name, const bool value) {
+  if (name == "depth_write") {
+    depth_write = (value ? DepthWrite::Enable : DepthWrite::Disable);
+  }
+}
+
 PipelineDeclaration::PipelineDeclaration(std::string_view name, const PipelineSettings& settings)
     : Declaration(name),
       vertex_function_(settings.vertex_function),
@@ -35,13 +121,12 @@ PipelineDeclaration::PipelineDeclaration(std::string_view name, const PipelineSe
     }
   }
 
-  if (settings.cull == "back") {
-    cull_mode_ = CullMode::Back;
-  } else if (settings.cull == "front") {
-    cull_mode_ = CullMode::Front;
-  } else {
-    cull_mode_ = CullMode::None;
-  }
+  cull_mode_   = settings.cull_mode;
+  winding_     = settings.winding;
+  depth_test_  = settings.depth_test;
+  depth_write_ = settings.depth_write;
+  blend_src_   = settings.blend_src;
+  blend_dst_   = settings.blend_dst;
 }
 
 void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const {
@@ -98,15 +183,65 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
       break;
   }
 
-  // clang-format off
+  std::string winding_out;
+  switch (winding_) {
+    case Winding::Clockwise:
+      winding_out = "Clockwise";
+      break;
+    case Winding::CounterClockwise:
+      winding_out = "CounterClockwise";
+      break;
+  }
+
+  std::string depth_test_out;
+  switch (depth_test_) {
+    case DepthTest::Never:
+      depth_test_out = "Never";
+      break;
+    case DepthTest::Less:
+      depth_test_out = "Less";
+      break;
+    case DepthTest::Equal:
+      depth_test_out = "Equal";
+      break;
+    case DepthTest::LessEqual:
+      depth_test_out = "LessEqual";
+      break;
+    case DepthTest::Greater:
+      depth_test_out = "Greater";
+      break;
+    case DepthTest::NotEqual:
+      depth_test_out = "NotEqual";
+      break;
+    case DepthTest::GreaterEqual:
+      depth_test_out = "GreaterEqual";
+      break;
+    case DepthTest::Always:
+      depth_test_out = "Always";
+      break;
+  }
+
+  std::string depth_write_out;
+  switch (depth_write_) {
+    case DepthWrite::Disable:
+      depth_write_out = "Disable";
+      break;
+    case DepthWrite::Enable:
+      depth_write_out = "Enable";
+      break;
+  }
+
+  std::string blend_src_out = "One";
+  std::string blend_dst_out = "Zero";
+
   out << "const crystal::PipelineDesc " << name() << "_desc{\n"
       << "    /* .name              = */ \"" << name() << "\",\n"
       << "    /* .cull_mode         = */ crystal::CullMode::" << cull_out << ",\n"
-      << "    /* .winding           = */ crystal::Winding::CounterClockwise,\n"
-      << "    /* .depth_test        = */ crystal::DepthTest::Always,\n"
-      << "    /* .depth_write       = */ crystal::DepthWrite::Disable,\n"
-      << "    /* .blend_src         = */ crystal::AlphaBlend::One,\n"
-      << "    /* .blend_dst         = */ crystal::AlphaBlend::Zero,\n";
+      << "    /* .winding           = */ crystal::Winding::" << winding_out << ",\n"
+      << "    /* .depth_test        = */ crystal::DepthTest::" << depth_test_out << ",\n"
+      << "    /* .depth_write       = */ crystal::DepthWrite::" << depth_write_out << ",\n"
+      << "    /* .blend_src         = */ crystal::AlphaBlend::" << blend_src_out << ",\n"
+      << "    /* .blend_dst         = */ crystal::AlphaBlend::" << blend_dst_out << ",\n";
 
   out << "    /* .vertex_attributes = */";
   if (vertex_attributes.size() == 0) {
@@ -134,14 +269,14 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
       out << "        crystal::VertexBufferDesc{\n"
           << "            /* .buffer_index  = */ " << buffer_index << ",\n"
           << "            /* .stride        = */ sizeof(" << type << "),\n"
-          << "            /*. step_function = */ crystal::StepFunction::" << (instanced ? "PerInstance" : "PerVertex") << ",\n"
+          << "            /*. step_function = */ crystal::StepFunction::"
+          << (instanced ? "PerInstance" : "PerVertex") << ",\n"
           << "        },\n";
     }
     out << "    },\n";
   }
 
   out << "};\n\n";
-  // clang-format on
 }
 
 void PipelineDeclaration::to_metal(std::ostream& out, const Module& mod) const {

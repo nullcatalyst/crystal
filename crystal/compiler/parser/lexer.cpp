@@ -14,7 +14,6 @@ static const absl::flat_hash_map<std::string, int> KEYWORDS{
     {"namespace", TOK_KW_NAMESPACE}, {"struct", TOK_KW_STRUCT},       {"vertex", TOK_KW_VERTEX},
     {"fragment", TOK_KW_FRAGMENT},   {"pipeline", TOK_KW_PIPELINE},   {"uniform", TOK_KW_UNIFORM},
     {"texture", TOK_KW_TEXTURE},     {"instanced", TOK_KW_INSTANCED}, {"return", TOK_KW_RETURN},
-    {"cull", TOK_KW_CULL},
 };
 
 inline std::tuple<unsigned long long /* value */, int /* digits */,
@@ -121,7 +120,14 @@ Token Lexer::next() {
                 (*next_ >= 'A' && *next_ <= 'Z') || (*next_ >= '0' && *next_ <= '9')));
 
       const std::string_view iden(&*start, next_ - start);
-      const auto             it = KEYWORDS.find(iden);
+
+      if (iden == "false") {
+        return Token{TOK_LIT_BOOL, false};
+      } else if (iden == "true") {
+        return Token{TOK_LIT_BOOL, true};
+      }
+
+      const auto it = KEYWORDS.find(iden);
       if (it != KEYWORDS.cend()) {
         return Token{it->second};
       }

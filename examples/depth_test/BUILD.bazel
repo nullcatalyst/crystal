@@ -1,55 +1,31 @@
 load("//tools:cc.bzl", "cc_binary")
+load("//tools:crystal.bzl", "crystal_library")
 
 cc_binary(
-    name = "opengl",
+    name = "depth_test",
     srcs = [
-        "depth_test_view.hpp",
         "main.cpp",
+        "scene.hpp",
+        "state.hpp",
+        "view.hpp",
+        ":shader.hpp",
     ],
     data = [
-        "//examples/depth_test_view/shaders:glsl",
+        ":shader.crystallib",
     ],
     deps = [
         "//crystal:include",
-        "//crystal/opengl:opengl_sdl2",
+        "//examples/base",
         "@glm",
         "@sdl2",
         "@sdl2//:sdl2_main",
     ],
 )
 
-cc_binary(
-    name = "vulkan",
-    srcs = [
-        "depth_test_view.hpp",
-        "main.cpp",
-    ],
-    data = [
-        "//examples/depth_test/shaders:shader.spv",
-    ],
-    deps = [
-        "//crystal:include",
-        "//crystal/vulkan:vulkan_sdl2",
-        "@glm",
-        "@sdl2",
-        "@sdl2//:sdl2_main",
-    ],
-)
-
-cc_binary(
-    name = "metal",
-    srcs = [
-        "depth_test_view.hpp",
-        "main.cpp",
-    ],
-    data = [
-        "//examples/depth_test/shaders:shader.metallib",
-    ],
-    deps = [
-        "//crystal:include",
-        "//crystal/metal:metal_sdl2",
-        "@glm",
-        "@sdl2",
-        "@sdl2//:sdl2_main",
+crystal_library(
+    name = "shader",
+    src = "shader.crystal",
+    visibility = [
+        "//examples/depth_test:__subpackages__",
     ],
 )

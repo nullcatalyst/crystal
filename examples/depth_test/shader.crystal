@@ -1,0 +1,44 @@
+namespace examples::depth_test;
+
+struct Uniform {
+    mat4 matrix;
+}
+
+struct Vertex {
+    vec4 position : 0;
+    vec4 color    : 1;
+}
+
+struct Varyings {
+    vec4 position : 0;
+    vec4 color    : 1;
+}
+
+struct Out {
+    vec4 color : 0;
+}
+
+pipeline cube {
+    uniform Uniform u : 1;
+
+    // Disable culling to force depth testing to do some work.
+    cull = "none";
+    winding = "ccw";
+    depth_test = "less";
+    depth_write = true;
+
+    vertex (
+        Vertex in : 0,
+    ) -> Varyings {
+        Varyings out;
+        out.position = u.matrix * in.position;
+        out.color    = in.color;
+        return out;
+    }
+
+    fragment (Varyings in) -> Out {
+        Out out;
+        out.color = in.color;
+        return out;
+    }
+}

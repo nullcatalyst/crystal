@@ -81,17 +81,9 @@ frag_arg_list(ret)  ::= type(type) LIT_IDEN(name).                              
 
 
 pipe_prop_list(ret) ::= pipe_prop_list(list)
-                        KW_CULL OP_EQUAL LIT_STR(value) OP_SEMICOLON.           { ret = std::move(list); ret.cull = value.string_value; }
-// pipe_prop_list(ret) ::= pipe_prop_list(list)
-//                         KW_WINDING OP_EQUAL LIT_STR(value).                     {  }
-// pipe_prop_list(ret) ::= pipe_prop_list(list)
-//                         KW_DEPTH_TEST OP_EQUAL LIT_BOOL(value).                 {  }
-// pipe_prop_list(ret) ::= pipe_prop_list(list)
-//                         KW_DEPTH_WRITE OP_EQUAL LIT_BOOL(value).                {  }
-// pipe_prop_list(ret) ::= pipe_prop_list(list)
-//                         KW_BLEND_SRC OP_EQUAL LIT_STR(value).                   {  }
-// pipe_prop_list(ret) ::= pipe_prop_list(list)
-//                         KW_BLEND_DST OP_EQUAL LIT_STR(value).                   {  }
+                        LIT_IDEN(name) OP_EQUAL LIT_STR(value) OP_SEMICOLON.    { ret = std::move(list); ret.set_property(name.string_value, value.string_value); }
+pipe_prop_list(ret) ::= pipe_prop_list(list)
+                        LIT_IDEN(name) OP_EQUAL LIT_BOOL(value) OP_SEMICOLON.   { ret = std::move(list); ret.set_property(name.string_value, value.bool_value); }
 
 pipe_prop_list(ret) ::= pipe_prop_list(list) KW_UNIFORM
                         type(type) LIT_IDEN(name)

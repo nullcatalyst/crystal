@@ -72,9 +72,9 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod, bool pre
 
     {
       out << output::glsl::indent{opts.indent};
-      // if (opts.vulkan) {
-      //   out << "layout(set=0, binding=" << input.index << (opts.pretty ? ") " : ")");
-      // }
+      if (opts.vulkan) {
+        out << "layout(set=1, binding=" << input.index << (opts.pretty ? ") " : ")");
+      }
       out << "uniform " << input.type->glsl_name() << " " << output::glsl::mangle_name{input.name}
           << (opts.pretty ? ";\n" : ";");
     }

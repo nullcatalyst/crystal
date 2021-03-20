@@ -33,7 +33,15 @@ struct PipelineSettings {
   std::vector<std::tuple<util::memory::Ref<type::Type>, std::string, uint32_t>> uniforms;
   std::vector<std::tuple<util::memory::Ref<type::Type>, std::string, uint32_t>> textures;
 
-  std::string cull;
+  CullMode   cull_mode   = CullMode::None;
+  Winding    winding     = Winding::Clockwise;
+  DepthTest  depth_test  = DepthTest::Always;
+  DepthWrite depth_write = DepthWrite::Disable;
+  AlphaBlend blend_src   = AlphaBlend::One;
+  AlphaBlend blend_dst   = AlphaBlend::Zero;
+
+  void set_property(const std::string_view name, const std::string_view value);
+  void set_property(const std::string_view name, const bool value);
 };
 
 class PipelineDeclaration : public Declaration {
@@ -42,7 +50,12 @@ class PipelineDeclaration : public Declaration {
   std::vector<std::tuple<util::memory::Ref<type::Type>, std::string, uint32_t>> uniforms_;
   std::vector<std::tuple<util::memory::Ref<type::Type>, std::string, uint32_t>> textures_;
 
-  CullMode cull_mode_;
+  CullMode   cull_mode_;
+  Winding    winding_;
+  DepthTest  depth_test_;
+  DepthWrite depth_write_;
+  AlphaBlend blend_src_;
+  AlphaBlend blend_dst_;
 
 public:
   PipelineDeclaration(std::string_view name, const PipelineSettings& settings);
