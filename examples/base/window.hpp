@@ -71,7 +71,7 @@ static Window create_window(const char* title, uint32_t width, uint32_t height) 
     util::msg::fatal("opening SDL window: ", SDL_GetError());
   }
 
-  SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
+  // SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
 
   return window;
 }

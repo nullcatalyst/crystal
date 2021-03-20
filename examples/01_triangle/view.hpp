@@ -1,8 +1,8 @@
 #pragma once
 
 #include "crystal/crystal.hpp"
-#include "examples/triangle/shader.hpp"
-#include "examples/triangle/state.hpp"
+#include "examples/01_triangle/shader.hpp"
+#include "examples/01_triangle/state.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -34,7 +34,7 @@ public:
                     glm::vec3(0.0f, 0.0f, 1.0f)),
     });
 
-    auto library = ctx.create_library("examples/triangle/shader.crystallib");
+    auto library = ctx.create_library("examples/01_triangle/shader.crystallib");
     pipeline_    = ctx.create_pipeline(library, ctx.screen_render_pass(), triangle_desc);
 
     auto vertex_buffer = ctx.create_vertex_buffer({

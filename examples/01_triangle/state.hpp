@@ -3,7 +3,7 @@
 namespace examples::triangle {
 
 struct State {
-  float angle;
+  float angle = 0.0f;
 };
 
 }  // namespace examples::triangle

@@ -2,7 +2,7 @@ load("//tools:cc.bzl", "cc_binary")
 load("//tools:crystal.bzl", "crystal_library")
 
 cc_binary(
-    name = "triangle",
+    name = "04_shadow_map",
     srcs = [
         "main.cpp",
         "scene.hpp",
@@ -26,6 +26,6 @@ crystal_library(
     name = "shader",
     src = "shader.crystal",
     visibility = [
-        "//examples/triangle:__subpackages__",
+        "//examples/04_shadow_map:__subpackages__",
     ],
 )

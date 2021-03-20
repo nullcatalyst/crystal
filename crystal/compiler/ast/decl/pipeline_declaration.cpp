@@ -295,14 +295,14 @@ void PipelineDeclaration::make_opengl_crystallib(crystal::common::proto::GLPipel
     std::ostringstream out;
     vertex_function_->to_glsl(out, mod, false, false);
     pipeline_pb.set_vertex_source(out.str());
-    // std::cout << "vertex =\n" << out.str() << std::endl;
+    // std::cout << "vertex=\n" << out.str() << std::endl;
   }
 
   {  // Fragment shader.
     std::ostringstream out;
     fragment_function_->to_glsl(out, mod, false, false);
     pipeline_pb.set_fragment_source(out.str());
-    // std::cout << "fragment =\n" << out.str() << std::endl;
+    // std::cout << "fragment=\n" << out.str() << std::endl;
   }
 
   {  // Uniforms.

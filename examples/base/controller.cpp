@@ -39,7 +39,6 @@ void Controller::run() {
       }
 
       scene_->frame(*this);
-      // scene_->tick(*this, dt.count());
       scene_->tick(*this, 1.0 / 60.0);
     }
 

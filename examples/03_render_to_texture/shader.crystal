@@ -20,14 +20,14 @@ struct CubeOut {
 }
 
 pipeline cube {
-    uniform Uniform u : 1;
-
     cull = "back";
     // winding = "ccw";
-    // depth_test = true;
-    // depth_write = true;
+    // depth_test = "always";
+    // depth_write = false;
     // blend_src = "one";
     // blend_dst = "zero";
+
+    uniform Uniform u : 1;
 
     vertex (
         CubeVertex in : 0,
@@ -62,13 +62,6 @@ struct QuadOut {
 pipeline quad {
     uniform Uniform u : 1;
     texture Texture2D t : 0;
-
-    // cull = "back";
-    // winding = "ccw";
-    // depth_test = true;
-    // depth_write = true;
-    // blend_src = "one";
-    // blend_dst = "zero";
 
     vertex (
         QuadVertex in : 0,

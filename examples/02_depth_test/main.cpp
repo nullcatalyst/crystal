@@ -1,6 +1,6 @@
+#include "examples/02_depth_test/scene.hpp"
 #include "examples/base/controller.hpp"
 #include "examples/base/engine.hpp"
-#include "examples/render_to_texture/scene.hpp"
 #include "util/msg/msg.hpp"
 
 int main(int argc, char* argv[]) {
@@ -19,8 +19,8 @@ int main(int argc, char* argv[]) {
 #endif  // ^^^ !CRYSTAL_USE_OPENGL && !CRYSTAL_USE_VULKAN && !CRYSTAL_USE_METAL
 
   {
-    engine::Controller ctrl(engine::create_engine<Ctx>("render to texture"),
-                            std::make_unique<examples::render_to_texture::Scene>());
+    engine::Controller ctrl(engine::create_engine<Ctx>("depth test"),
+                            std::make_unique<examples::depth_test::Scene>());
     ctrl.run();
   }
 

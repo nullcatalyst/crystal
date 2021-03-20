@@ -8,7 +8,7 @@ cc_library(
     deps = select({
         "@//:windows": [
             "//crystal/opengl:opengl_sdl2",
-            "//crystal/vulkan:vulkan_sdl2",
+            # "//crystal/vulkan:vulkan_sdl2",
         ],
         "@//:macos": [
             "//crystal/opengl:opengl_sdl2",

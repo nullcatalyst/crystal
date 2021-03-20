@@ -139,6 +139,8 @@ stmt_list(ret)      ::= stmt_list(list) stmt(stmt).                             
 stmt_list(ret)      ::= .                                                       { ret = std::vector<Ref<stmt::Statement>>{}; }
 
 stmt(ret)           ::= type(type) LIT_IDEN(name) OP_SEMICOLON.                 { ret = Ref<stmt::VariableStatement>::make(name.string_value, type); }
+stmt(ret)           ::= type(type) LIT_IDEN(name)
+                        OP_EQUAL expr(expr) OP_SEMICOLON.                       { ret = Ref<stmt::VariableStatement>::make(name.string_value, type, expr); }
 stmt(ret)           ::= expr(expr) OP_SEMICOLON.                                { ret = Ref<stmt::ExpressionStatement>::make(std::move(expr)); }
 stmt(ret)           ::= KW_RETURN expr(expr) OP_SEMICOLON.                      { ret = Ref<stmt::ReturnStatement>::make(std::move(expr)); }
 stmt(ret)           ::= expr_var(var) OP_EQUAL expr(expr) OP_SEMICOLON.         { ret = Ref<stmt::AssignmentStatement>::make(std::move(var), std::move(expr), stmt::AssignmentOp::Set); }
@@ -167,9 +169,8 @@ expr_atom           ::= expr_call.
 expr_atom           ::= expr_var.
 expr_atom           ::= expr_paren.
 
-expr_var(ret)       ::= expr_var(expr_) OP_PERIOD LIT_IDEN(name).               { ret = Ref<expr::PropertyExpression>::make(expr_, name.string_value); }
-expr_var(ret)       ::= expr_paren(expr_) OP_PERIOD LIT_IDEN(name).             { ret = Ref<expr::PropertyExpression>::make(expr_, name.string_value); }
-expr_var(ret)       ::= LIT_IDEN(name).                                         { ret = Ref<expr::IdentifierExpression>::make(name.string_value); }
+expr_var(ret)       ::= expr_atom(expr_) OP_PERIOD LIT_IDEN(name).              { ret = Ref<expr::PropertyExpression>::make(expr_, name.string_value); }
+expr_var(ret)       ::= LIT_IDEN(name).                                          { ret = Ref<expr::IdentifierExpression>::make(name.string_value); }
 
 expr_call(ret)      ::= LIT_IDEN(name) OP_LRNDBRACKET OP_RRNDBRACKET.           { ret = Ref<expr::CallExpression>::make(name.string_value); }
 expr_call(ret)      ::= LIT_IDEN(name)
@@ -177,11 +178,11 @@ expr_call(ret)      ::= LIT_IDEN(name)
 expr_call(ret)      ::= LIT_IDEN(name) OP_LRNDBRACKET call_arg_list(list)
                         OP_COMMA OP_RRNDBRACKET.                                { ret = Ref<expr::CallExpression>::make(name.string_value, list); }
 
-expr_call(ret)      ::= expr_var(expr_) OP_PERIOD
+expr_call(ret)      ::= expr_atom(expr_) OP_PERIOD
                         LIT_IDEN(name) OP_LRNDBRACKET OP_RRNDBRACKET.           { ret = Ref<expr::CallExpression>::make(expr_, name.string_value); }
-expr_call(ret)      ::= expr_var(expr_) OP_PERIOD LIT_IDEN(name)
+expr_call(ret)      ::= expr_atom(expr_) OP_PERIOD LIT_IDEN(name)
                         OP_LRNDBRACKET call_arg_list(list) OP_RRNDBRACKET.      { ret = Ref<expr::CallExpression>::make(expr_, name.string_value, list); }
-expr_call(ret)      ::= expr_var(expr_) OP_PERIOD
+expr_call(ret)      ::= expr_atom(expr_) OP_PERIOD
                         LIT_IDEN(name) OP_LRNDBRACKET call_arg_list(list)
                         OP_COMMA OP_RRNDBRACKET.                                { ret = Ref<expr::CallExpression>::make(expr_, name.string_value, list); }
 

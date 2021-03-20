@@ -1,0 +1,79 @@
+namespace examples::shadow_map;
+
+struct Uniform {
+    mat4 shadow_matrix;
+    mat4 projection_matrix;
+    mat4 rotation_matrix;
+    mat4 orbit_matrix;
+}
+
+struct Vertex {
+    vec4 position : 0;
+    vec4 normal   : 1;
+}
+
+struct Instance {
+    vec4 offset : 2;
+    vec4 color  : 3;
+}
+
+//struct ShadowVaryings {
+//    vec4 position : 0;
+//}
+//
+//pipeline shadow {
+//    cull = "none";
+//    winding = "ccw";
+//    depth_test = "less";
+//    depth_write = true;
+//
+//    uniform Uniform u : 1;
+//
+//    vertex (
+//        Vertex in : 0,
+//        Instance inst : instanced 1,
+//    ) -> ShadowVaryings {
+//        ShadowVaryings out;
+//        out.position = u.shadow_matrix * (u.rotation_matrix * in.position + u.orbit_matrix * inst.offset);
+//        return out;
+//    }
+//}
+
+struct CombineVaryings {
+    vec4 position        : 0;
+    vec4 shadow_position : 1;
+    vec4 color           : 2;
+}
+
+struct CombineOut {
+    vec4 color : 0;
+}
+
+pipeline combine {
+    cull = "none";
+    winding = "ccw";
+    depth_test = "less";
+    depth_write = true;
+
+    uniform Uniform u : 1;
+    texture Texture2D t : 0;
+
+    vertex (
+        Vertex in : 0,
+        Instance inst : instanced 1,
+    ) -> CombineVaryings {
+        vec4 pos = u.rotation_matrix * in.position + u.orbit_matrix * inst.offset;
+
+        CombineVaryings out;
+        out.position = u.projection_matrix * pos;
+        out.shadow_position = u.shadow_matrix * pos;
+        out.color = inst.color * (0.25 + 0.75 * dot((u.rotation_matrix * in.normal).xyz, vec3(0.0, 0.0, 1.0)));
+        return out;
+    }
+
+    fragment (CombineVaryings in) -> CombineOut {
+        CombineOut out;
+        out.color = vec4(vec3(0.5 + 0.5 * in.shadow_position.z), 1.0);
+        return out;
+    }
+}

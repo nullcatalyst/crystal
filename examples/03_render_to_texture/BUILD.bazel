@@ -2,7 +2,7 @@ load("//tools:cc.bzl", "cc_binary")
 load("//tools:crystal.bzl", "crystal_library")
 
 cc_binary(
-    name = "depth_test",
+    name = "03_render_to_texture",
     srcs = [
         "main.cpp",
         "scene.hpp",
@@ -26,6 +26,6 @@ crystal_library(
     name = "shader",
     src = "shader.crystal",
     visibility = [
-        "//examples/depth_test:__subpackages__",
+        "//examples/03_render_to_texture:__subpackages__",
     ],
 )

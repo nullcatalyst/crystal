@@ -19,14 +19,14 @@ struct Out {
 }
 
 pipeline triangle {
-    uniform Uniform u : 1;
-
-    // cull = "back";
+    // cull = "none";
     // winding = "ccw";
-    // depth_test = true;
-    // depth_write = true;
+    // depth_test = "always";
+    // depth_write = false;
     // blend_src = "one";
     // blend_dst = "zero";
+
+    uniform Uniform u : 1;
 
     vertex (
         Vertex in : 0,
