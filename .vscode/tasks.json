@@ -3,7 +3,7 @@
     "tasks": [
         {
             "label": "Build triangle",
-            "command": "bazel build //examples/triangle:opengl -c dbg",
+            "command": "bazel build //examples/01_triangle:01_triangle -c dbg",
             "type": "shell",
             "args": [],
             "problemMatcher": [

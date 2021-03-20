@@ -122,7 +122,8 @@ Pipeline::Pipeline(Pipeline&& other)
       depth_write_(other.depth_write_),
       blend_src_(other.blend_src_),
       blend_dst_(other.blend_dst_),
-      attributes_(std::move(other.attributes_)) {
+      attributes_(std::move(other.attributes_)),
+      uniforms_(std::move(other.uniforms_)) {
   other.ctx_         = nullptr;
   other.id_          = 0;
   other.program_     = 0;
@@ -131,6 +132,8 @@ Pipeline::Pipeline(Pipeline&& other)
   other.depth_write_ = DepthWrite::Disable;
   other.blend_src_   = AlphaBlend::Zero;
   other.blend_dst_   = AlphaBlend::Zero;
+  other.attributes_  = {};
+  other.uniforms_    = {};
 }
 
 Pipeline& Pipeline::operator=(Pipeline&& other) {
@@ -145,6 +148,7 @@ Pipeline& Pipeline::operator=(Pipeline&& other) {
   blend_src_   = other.blend_src_;
   blend_dst_   = other.blend_dst_;
   attributes_  = std::move(other.attributes_);
+  uniforms_    = std::move(other.uniforms_);
 
   other.ctx_         = nullptr;
   other.id_          = 0;
@@ -154,6 +158,8 @@ Pipeline& Pipeline::operator=(Pipeline&& other) {
   other.depth_write_ = DepthWrite::Disable;
   other.blend_src_   = AlphaBlend::Zero;
   other.blend_dst_   = AlphaBlend::Zero;
+  other.attributes_  = {};
+  other.uniforms_    = {};
 
   return *this;
 }
@@ -175,7 +181,8 @@ void Pipeline::destroy() noexcept {
   depth_write_ = DepthWrite::Disable;
   blend_src_   = AlphaBlend::Zero;
   blend_dst_   = AlphaBlend::Zero;
-  attributes_.resize(0);
+  attributes_  = {};
+  uniforms_    = {};
 }
 
 Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
@@ -217,20 +224,26 @@ Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
     util::msg::fatal("pipeline named [", desc.name, "] not found");
   }
 
+  if (desc.vertex_attributes.size() > MAX_VERTEX_ATTRIBUTES) {
+    util::msg::fatal("too many vertex attributes");
+  }
+
   // Initialize the vertex attributes.
-  attributes_.resize(desc.vertex_attributes.size());
-  std::transform(
-      desc.vertex_attributes.begin(), desc.vertex_attributes.end(), attributes_.begin(),
-      [&desc](const auto& attribute) {
-        return Binding{
-            /* .id            = */ attribute.id,
-            /* .offset        = */ attribute.offset,
-            /* .buffer_index  = */ attribute.buffer_index,
-            /* .stride        = */ desc.vertex_buffers.begin()[attribute.buffer_index].stride,
-            /* .step_function = */
-            desc.vertex_buffers.begin()[attribute.buffer_index].step_function,
-        };
-      });
+  for (const auto& attribute : desc.vertex_attributes) {
+    for (const auto& buffer : desc.vertex_buffers) {
+      if (attribute.buffer_index != buffer.buffer_index) {
+        continue;
+      }
+
+      attributes_[attribute.id] = Binding{
+          /* .active        = */ true,
+          /* .offset        = */ attribute.offset,
+          /* .buffer_index  = */ attribute.buffer_index,
+          /* .stride        = */ buffer.stride,
+          /* .step_function = */ buffer.step_function,
+      };
+    }
+  }
 }
 
 }  // namespace crystal::opengl

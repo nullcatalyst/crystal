@@ -143,7 +143,12 @@ void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t in
     GL_ASSERT(glGenVertexArrays(1, &vao), "generating vertex array");
     GL_ASSERT(glBindVertexArray(vao), "binding vertex array");
 
-    for (const auto binding : pipeline_->attributes_) {
+    for (int attribute = 0; attribute < MAX_VERTEX_ATTRIBUTES; ++attribute) {
+      const auto binding = pipeline_->attributes_[attribute];
+      if (!binding.active) {
+        continue;
+      }
+
       const auto it = std::find_if(mesh.bindings_.begin(), mesh.bindings_.end(),
                                    [=, buffer_index = binding.buffer_index](auto binding) {
                                      return binding.buffer_index == buffer_index;
@@ -154,12 +159,12 @@ void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t in
 
       GL_ASSERT(glBindBuffer(GL_ARRAY_BUFFER, it->vertex_buffer),
                 "binding array buffer to vertex array");
-      GL_ASSERT(glEnableVertexAttribArray(binding.id), "enabling vertex attribute array");
+      GL_ASSERT(glEnableVertexAttribArray(attribute), "enabling vertex attribute array");
       GL_ASSERT(
-          glVertexAttribPointer(binding.id, 4, GL_FLOAT, GL_FALSE, binding.stride,
+          glVertexAttribPointer(attribute, 4, GL_FLOAT, GL_FALSE, binding.stride,
                                 reinterpret_cast<void*>(static_cast<uintptr_t>(binding.offset))),
           "setting vertex attribute pointer");
-      GL_ASSERT(glVertexAttribDivisor(binding.id,
+      GL_ASSERT(glVertexAttribDivisor(attribute,
                                       binding.step_function == StepFunction::PerInstance ? 1 : 0),
                 "setting vertex attribute divisor");
     }

@@ -3,7 +3,6 @@
 #include <array>
 #include <cstdint>
 
-#include "absl/container/inlined_vector.h"
 #include "crystal/common/pipeline_desc.hpp"
 #include "crystal/config.hpp"
 #include "crystal/opengl/gl.hpp"
@@ -18,25 +17,25 @@ class RenderPass;
 
 class Pipeline {
   struct Binding {
-    uint32_t     id;
-    uint32_t     offset;
-    uint32_t     buffer_index;
-    uint32_t     stride;
-    StepFunction step_function;
+    bool         active        = false;
+    uint32_t     offset        = 0;
+    uint32_t     buffer_index  = 0;
+    uint32_t     stride        = 0;
+    StepFunction step_function = StepFunction::PerVertex;
   };
 
   static uint32_t next_id_;
 
-  Context*                                ctx_         = nullptr;
-  uint32_t                                id_          = 0;
-  GLuint                                  program_     = 0;
-  CullMode                                cull_mode_   = CullMode::None;
-  DepthTest                               depth_test_  = DepthTest::Never;
-  DepthWrite                              depth_write_ = DepthWrite::Disable;
-  AlphaBlend                              blend_src_   = AlphaBlend::Zero;
-  AlphaBlend                              blend_dst_   = AlphaBlend::Zero;
-  absl::InlinedVector<Binding, 16>        attributes_  = {};
-  std::array<GLuint, MAX_UNIFORM_BUFFERS> uniforms_    = {};
+  Context*                                   ctx_         = nullptr;
+  uint32_t                                   id_          = 0;
+  GLuint                                     program_     = 0;
+  CullMode                                   cull_mode_   = CullMode::None;
+  DepthTest                                  depth_test_  = DepthTest::Never;
+  DepthWrite                                 depth_write_ = DepthWrite::Disable;
+  AlphaBlend                                 blend_src_   = AlphaBlend::Zero;
+  AlphaBlend                                 blend_dst_   = AlphaBlend::Zero;
+  std::array<Binding, MAX_VERTEX_ATTRIBUTES> attributes_  = {};
+  std::array<GLuint, MAX_UNIFORM_BUFFERS>    uniforms_    = {};
 
 public:
   constexpr Pipeline() = default;

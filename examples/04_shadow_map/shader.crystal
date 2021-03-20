@@ -50,7 +50,7 @@ struct CombineOut {
 }
 
 pipeline combine {
-    cull = "none";
+    cull = "back";
     winding = "ccw";
     depth_test = "less";
     depth_write = true;
@@ -73,7 +73,8 @@ pipeline combine {
 
     fragment (CombineVaryings in) -> CombineOut {
         CombineOut out;
-        out.color = vec4(vec3(0.5 + 0.5 * in.shadow_position.z), 1.0);
+        out.color = vec4(vec3(0.5 + 0.5 * pow(in.position.z, 2.0)), 1.0);
+        //out.color = in.color;
         return out;
     }
 }
