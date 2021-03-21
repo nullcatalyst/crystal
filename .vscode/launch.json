@@ -14,7 +14,7 @@
             "cwd": "${workspaceFolder}/bazel-bin/examples/01_triangle/01_triangle.exe.runfiles/crystal",
             "environment": [],
             "console": "integratedTerminal",
-            "preLaunchTask": "Build triangle"
+            "preLaunchTask": "01_triangle"
         },
         {
             "name": "(win) 03 render to texture",
@@ -26,6 +26,7 @@
             "cwd": "${workspaceFolder}/bazel-bin/examples/03_render_to_texture/03_render_to_texture.exe.runfiles/crystal",
             "environment": [],
             "console": "integratedTerminal",
+            "preLaunchTask": "03_render_to_texture"
         },
         {
             "name": "(win) 04 shadow map",
@@ -37,6 +38,7 @@
             "cwd": "${workspaceFolder}/bazel-bin/examples/04_shadow_map/04_shadow_map.exe.runfiles/crystal",
             "environment": [],
             "console": "integratedTerminal",
+            "preLaunchTask": "04_shadow_map"
         },
         {
             "name": "(mac) triangle",

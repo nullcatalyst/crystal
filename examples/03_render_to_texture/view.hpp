@@ -10,11 +10,11 @@ namespace examples::render_to_texture {
 
 Uniform create_uniform(float aspect, State state) {
   return Uniform{
-      /* .cube_matrix = */ glm::orthoRH_NO(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f) *
+      /* .cube_matrix = */ glm::orthoRH_ZO(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f) *
           glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(-30.0f),
                                   glm::vec3(1.0f, 0.0f, 0.0f)),
                       state.cube_angle, glm::vec3(0.0f, 1.0f, 0.0f)),
-      /* .quad_matrix = */ glm::orthoRH_NO(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f) *
+      /* .quad_matrix = */ glm::orthoRH_ZO(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f) *
           glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(-30.0f),
                                   glm::vec3(1.0f, 0.0f, 0.0f)),
                       state.quad_angle, glm::vec3(0.0f, 1.0f, 0.0f)),
@@ -157,7 +157,7 @@ public:
 
     cmd.use_render_pass(ctx_.screen_render_pass());
     cmd.use_pipeline(quad_pipeline_);
-    cmd.use_uniform_buffer(uniform_buffer_, 0);
+    cmd.use_uniform_buffer(uniform_buffer_, 1);
     cmd.use_texture(cube_texture_, 0);
     cmd.draw(quad_mesh_, 4, 1);
   }

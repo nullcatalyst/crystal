@@ -2,8 +2,34 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build triangle",
-            "command": "bazel build //examples/01_triangle:01_triangle -c dbg",
+            "label": "01_triangle",
+            "command": "bazel build //examples/01_triangle -c dbg",
+            "type": "shell",
+            "args": [],
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "presentation": {
+                "reveal": "always"
+            },
+            "group": "build"
+        },
+        {
+            "label": "03_render_to_texture",
+            "command": "bazel build //examples/03_render_to_texture -c dbg",
+            "type": "shell",
+            "args": [],
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "presentation": {
+                "reveal": "always"
+            },
+            "group": "build"
+        },
+        {
+            "label": "04_shadow_map",
+            "command": "bazel build //examples/04_shadow_map -c dbg",
             "type": "shell",
             "args": [],
             "problemMatcher": [

@@ -11,35 +11,43 @@ Pipeline::Pipeline(Pipeline&& other)
     : device_(other.device_),
       descriptor_pool_(other.descriptor_pool_),
       render_pass_(other.render_pass_),
-      descriptor_set_layout_(other.descriptor_set_layout_),
-      descriptor_sets_(std::move(other.descriptor_sets_)),
+      uniform_descriptor_set_layout_(other.uniform_descriptor_set_layout_),
+      uniform_descriptor_sets_(std::move(other.uniform_descriptor_sets_)),
+      texture_descriptor_set_layout_(other.texture_descriptor_set_layout_),
+      texture_descriptor_sets_(std::move(other.texture_descriptor_sets_)),
       pipeline_layout_(other.pipeline_layout_),
       pipeline_(other.pipeline_) {
-  other.device_                = VK_NULL_HANDLE;
-  other.descriptor_pool_       = VK_NULL_HANDLE;
-  other.render_pass_           = VK_NULL_HANDLE;
-  other.descriptor_set_layout_ = VK_NULL_HANDLE;
-  other.pipeline_layout_       = VK_NULL_HANDLE;
-  other.pipeline_              = VK_NULL_HANDLE;
+  other.device_                        = VK_NULL_HANDLE;
+  other.descriptor_pool_               = VK_NULL_HANDLE;
+  other.render_pass_                   = VK_NULL_HANDLE;
+  other.uniform_descriptor_set_layout_ = VK_NULL_HANDLE;
+  other.texture_descriptor_set_layout_ = VK_NULL_HANDLE;
+  other.pipeline_layout_               = VK_NULL_HANDLE;
+  other.pipeline_                      = VK_NULL_HANDLE;
 }
 
 Pipeline& Pipeline::operator=(Pipeline&& other) {
   destroy();
 
-  device_                = other.device_;
-  descriptor_pool_       = other.descriptor_pool_;
-  render_pass_           = other.render_pass_;
-  descriptor_set_layout_ = other.descriptor_set_layout_;
-  descriptor_sets_       = std::move(other.descriptor_sets_);
-  pipeline_layout_       = other.pipeline_layout_;
-  pipeline_              = other.pipeline_;
+  device_                        = other.device_;
+  descriptor_pool_               = other.descriptor_pool_;
+  render_pass_                   = other.render_pass_;
+  uniform_descriptor_set_layout_ = other.uniform_descriptor_set_layout_;
+  uniform_descriptor_sets_       = std::move(other.uniform_descriptor_sets_);
+  texture_descriptor_set_layout_ = other.texture_descriptor_set_layout_;
+  texture_descriptor_sets_       = std::move(other.texture_descriptor_sets_);
+  pipeline_layout_               = other.pipeline_layout_;
+  pipeline_                      = other.pipeline_;
 
-  other.device_                = VK_NULL_HANDLE;
-  other.descriptor_pool_       = VK_NULL_HANDLE;
-  other.render_pass_           = VK_NULL_HANDLE;
-  other.descriptor_set_layout_ = VK_NULL_HANDLE;
-  other.pipeline_layout_       = VK_NULL_HANDLE;
-  other.pipeline_              = VK_NULL_HANDLE;
+  other.device_                        = VK_NULL_HANDLE;
+  other.descriptor_pool_               = VK_NULL_HANDLE;
+  other.render_pass_                   = VK_NULL_HANDLE;
+  other.uniform_descriptor_set_layout_ = VK_NULL_HANDLE;
+  other.uniform_descriptor_sets_       = {};
+  other.texture_descriptor_set_layout_ = VK_NULL_HANDLE;
+  other.texture_descriptor_sets_       = {};
+  other.pipeline_layout_               = VK_NULL_HANDLE;
+  other.pipeline_                      = VK_NULL_HANDLE;
 
   return *this;
 }
@@ -51,26 +59,37 @@ void Pipeline::destroy() noexcept {
     return;
   }
 
-  VK_ASSERT(vkFreeDescriptorSets(device_, descriptor_pool_, descriptor_sets_.size(),
-                                 descriptor_sets_.data()),
-            "freeing descriptor sets");
-  vkDestroyDescriptorSetLayout(device_, descriptor_set_layout_, nullptr);
+  if (texture_descriptor_set_layout_ != VK_NULL_HANDLE) {
+    VK_ASSERT(vkFreeDescriptorSets(device_, descriptor_pool_, texture_descriptor_sets_.size(),
+                                   texture_descriptor_sets_.data()),
+              "freeing descriptor sets");
+    vkDestroyDescriptorSetLayout(device_, texture_descriptor_set_layout_, nullptr);
+  }
+  if (uniform_descriptor_set_layout_ != VK_NULL_HANDLE) {
+    VK_ASSERT(vkFreeDescriptorSets(device_, descriptor_pool_, uniform_descriptor_sets_.size(),
+                                   uniform_descriptor_sets_.data()),
+              "freeing descriptor sets");
+    vkDestroyDescriptorSetLayout(device_, uniform_descriptor_set_layout_, nullptr);
+  }
   vkDestroyPipeline(device_, pipeline_, nullptr);
   vkDestroyPipelineLayout(device_, pipeline_layout_, nullptr);
 
-  device_                = VK_NULL_HANDLE;
-  descriptor_pool_       = VK_NULL_HANDLE;
-  render_pass_           = VK_NULL_HANDLE;
-  descriptor_set_layout_ = VK_NULL_HANDLE;
-  pipeline_layout_       = VK_NULL_HANDLE;
-  pipeline_              = VK_NULL_HANDLE;
+  device_                        = VK_NULL_HANDLE;
+  descriptor_pool_               = VK_NULL_HANDLE;
+  render_pass_                   = VK_NULL_HANDLE;
+  uniform_descriptor_set_layout_ = VK_NULL_HANDLE;
+  texture_descriptor_set_layout_ = VK_NULL_HANDLE;
+  pipeline_layout_               = VK_NULL_HANDLE;
+  pipeline_                      = VK_NULL_HANDLE;
 }
 
 Pipeline::Pipeline(Context& ctx, Library& library, RenderPass& render_pass,
                    const PipelineDesc& desc)
     : device_(ctx.device_),
       descriptor_pool_(ctx.descriptor_pool_),
-      render_pass_(render_pass.render_pass_) {
+      render_pass_(render_pass.render_pass_),
+      uniform_descriptor_set_layout_(VK_NULL_HANDLE),
+      texture_descriptor_set_layout_(VK_NULL_HANDLE) {
   const crystal::common::proto::VKPipeline* pipeline_pb = nullptr;
   const auto&                               vulkan_pb   = library.lib_pb_.vulkan();
   for (int i = 0; i < vulkan_pb.pipelines_size(); ++i) {
@@ -87,63 +106,126 @@ Pipeline::Pipeline(Context& ctx, Library& library, RenderPass& render_pass,
     util::msg::fatal("could not find pipeline [", desc.name, "]");
   }
 
-  {  // Create descriptor set layout.
-    std::vector<VkDescriptorSetLayoutBinding> bindings(pipeline_pb->uniforms_size());
-    for (int i = 0; i < pipeline_pb->uniforms_size(); ++i) {
-      const auto& uniform_pb = pipeline_pb->uniforms(i);
-      bindings[i]            = VkDescriptorSetLayoutBinding{
-          /* binding            = */ uniform_pb.binding(),
-          /* descriptorType     = */ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-          /* descriptorCount    = */ 1,
-          /* stageFlags         = */ VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-          /* pImmutableSamplers = */ nullptr,
+  if (pipeline_pb->uniforms_size() > 0) {
+    {  // Create uniform descriptor set layout.
+      std::vector<VkDescriptorSetLayoutBinding> bindings(pipeline_pb->uniforms_size());
+      for (int i = 0; i < pipeline_pb->uniforms_size(); ++i) {
+        const auto& uniform_pb = pipeline_pb->uniforms(i);
+        bindings[i]            = VkDescriptorSetLayoutBinding{
+            /* binding            = */ uniform_pb.binding(),
+            /* descriptorType     = */ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            /* descriptorCount    = */ 1,
+            /* stageFlags         = */ VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            /* pImmutableSamplers = */ nullptr,
+        };
+      }
+
+      const VkDescriptorSetLayoutCreateInfo create_info = {
+          /* sType = */ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+          /* pNext        = */ nullptr,
+          /* flags        = */ 0,
+          /* bindingCount = */ static_cast<uint32_t>(bindings.size()),
+          /* pBindings    = */ bindings.data(),
       };
+
+      VK_ASSERT(vkCreateDescriptorSetLayout(device_, &create_info, nullptr,
+                                            &uniform_descriptor_set_layout_),
+                "creating uniform descriptor set layout");
     }
 
-    const VkDescriptorSetLayoutCreateInfo create_info = {
-        /* sType = */ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-        /* pNext        = */ nullptr,
-        /* flags        = */ 0,
-        /* bindingCount = */ static_cast<uint32_t>(pipeline_pb->uniforms_size()),
-        /* pBindings    = */ bindings.data(),
-    };
+    {  // Allocate uniform descriptor sets.
+      const std::array<VkDescriptorSetLayout, 4> descriptor_set_layouts{
+          uniform_descriptor_set_layout_,
+          uniform_descriptor_set_layout_,
+          uniform_descriptor_set_layout_,
+          uniform_descriptor_set_layout_,
+      };
+      const VkDescriptorSetAllocateInfo allocate_info = {
+          /* sType = */ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+          /* pNext              = */ nullptr,
+          /* descriptorPool     = */ ctx.descriptor_pool_,
+          /* descriptorSetCount = */ static_cast<uint32_t>(descriptor_set_layouts.size()),
+          /* pSetLayouts        = */ descriptor_set_layouts.data(),
+      };
 
-    VK_ASSERT(vkCreateDescriptorSetLayout(device_, &create_info, nullptr, &descriptor_set_layout_),
-              "creating descriptor set layout");
+      VK_ASSERT(vkAllocateDescriptorSets(device_, &allocate_info, uniform_descriptor_sets_.data()),
+                "allocating uniform descriptor sets");
+    }
   }
 
-  {  // Create descriptor set.
-    const std::array<VkDescriptorSetLayout, 4> descriptor_set_layouts{
-        descriptor_set_layout_,
-        descriptor_set_layout_,
-        descriptor_set_layout_,
-        descriptor_set_layout_,
-    };
-    const VkDescriptorSetAllocateInfo allocate_info = {
-        /* sType = */ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        /* pNext              = */ nullptr,
-        /* descriptorPool     = */ ctx.descriptor_pool_,
-        /* descriptorSetCount = */ static_cast<uint32_t>(descriptor_set_layouts.size()),
-        /* pSetLayouts        = */ descriptor_set_layouts.data(),
-    };
+  if (pipeline_pb->textures_size() > 0) {
+    {  // Create texture descriptor set layout.
+      std::vector<VkDescriptorSetLayoutBinding> bindings(pipeline_pb->textures_size());
+      for (int i = 0; i < pipeline_pb->textures_size(); ++i) {
+        const auto& texture_pb = pipeline_pb->textures(i);
+        bindings[i]            = VkDescriptorSetLayoutBinding{
+            /* binding            = */ texture_pb.binding(),
+            /* descriptorType     = */ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            /* descriptorCount    = */ 1,
+            /* stageFlags         = */ VK_SHADER_STAGE_FRAGMENT_BIT,
+            /* pImmutableSamplers = */ nullptr,
+        };
+      }
 
-    VK_ASSERT(vkAllocateDescriptorSets(device_, &allocate_info, descriptor_sets_.data()),
-              "allocating descriptor set");
+      const VkDescriptorSetLayoutCreateInfo create_info = {
+          /* sType = */ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+          /* pNext        = */ nullptr,
+          /* flags        = */ 0,
+          /* bindingCount = */ static_cast<uint32_t>(bindings.size()),
+          /* pBindings    = */ bindings.data(),
+      };
+
+      VK_ASSERT(vkCreateDescriptorSetLayout(device_, &create_info, nullptr,
+                                            &texture_descriptor_set_layout_),
+                "creating texture descriptor set layout");
+    }
+
+    {  // Allocate uniform descriptor sets.
+      const std::array<VkDescriptorSetLayout, 4> descriptor_set_layouts{
+          texture_descriptor_set_layout_,
+          texture_descriptor_set_layout_,
+          texture_descriptor_set_layout_,
+          texture_descriptor_set_layout_,
+      };
+      const VkDescriptorSetAllocateInfo allocate_info = {
+          /* sType = */ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+          /* pNext              = */ nullptr,
+          /* descriptorPool     = */ ctx.descriptor_pool_,
+          /* descriptorSetCount = */ static_cast<uint32_t>(descriptor_set_layouts.size()),
+          /* pSetLayouts        = */ descriptor_set_layouts.data(),
+      };
+
+      VK_ASSERT(vkAllocateDescriptorSets(device_, &allocate_info, texture_descriptor_sets_.data()),
+                "allocating texture descriptor sets");
+    }
   }
 
   {  // Create pipeline layout.
+    std::array<VkDescriptorSetLayout, 2> descriptor_set_layouts;
+    uint32_t                             descriptor_set_count = 0;
+
+    if (pipeline_pb->uniforms_size() > 0) {
+      descriptor_set_layouts[descriptor_set_count] = uniform_descriptor_set_layout_;
+      ++descriptor_set_count;
+    }
+    if (pipeline_pb->textures_size() > 0) {
+      descriptor_set_layouts[descriptor_set_count] = texture_descriptor_set_layout_;
+      ++descriptor_set_count;
+    }
+
     const VkPipelineLayoutCreateInfo create_info = {
         /* .sType = */ VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         /* .pNext                  = */ nullptr,
         /* .flags                  = */ 0,
-        /* .setLayoutCount         = */ 1,
-        /* .pSetLayouts            = */ &descriptor_set_layout_,
+        /* .setLayoutCount         = */ descriptor_set_count,
+        /* .pSetLayouts            = */ descriptor_set_layouts.data(),
         /* .pushConstantRangeCount = */ 0,
         /* .pPushConstantRanges    = */ nullptr,
     };
 
+    pipeline_layout_ = VK_NULL_HANDLE;
     VK_ASSERT(vkCreatePipelineLayout(device_, &create_info, nullptr, &pipeline_layout_),
-              "Failed to create pipeline layout");
+              "creating pipeline layout");
   }
 
   {  // Create pipeline.
@@ -252,14 +334,14 @@ Pipeline::Pipeline(Context& ctx, Library& library, RenderPass& render_pass,
         /* .sType = */ VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
         /* .pNext                 = */ nullptr,
         /* .flags                 = */ 0,
-        /* .depthTestEnable       = */ VK_TRUE,
+        /* .depthTestEnable       = */ desc.depth_test == DepthTest::Always ? VK_FALSE : VK_TRUE,
         /* .depthWriteEnable      = */ static_cast<VkBool32>(desc.depth_write),
         /* .depthCompareOp        = */ static_cast<VkCompareOp>(desc.depth_test),
         /* .depthBoundsTestEnable = */ false,
         /* .stencilTestEnable     = */ false,
         /* .front                 = */ {},
         /* .back                  = */ {},
-        /* .minDepthBounds        = */ 0.0f,
+        /* .minDepthBounds        = */ -1.0f,
         /* .maxDepthBounds        = */ 1.0f,
     };
 

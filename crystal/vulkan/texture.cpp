@@ -108,16 +108,43 @@ void Texture::destroy() {
   extent_           = {};
 }
 
-Texture::Texture(Context& ctx, const TextureDesc& desc) {
-  device_           = ctx.device_;
-  memory_allocator_ = ctx.memory_allocator_;
+Texture::Texture(Context& ctx, const TextureDesc& desc)
+    : device_(ctx.device_), memory_allocator_(ctx.memory_allocator_) {
+  bool depth = false;
 
   switch (desc.format) {
-    case TextureFormat::Undefined:
-      util::msg::fatal("undefined texture format");
+    case TextureFormat::R8u:
+      format_ = VK_FORMAT_R8_UNORM;
+      layout_ = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      break;
+
+    case TextureFormat::RG8u:
+      format_ = VK_FORMAT_R8G8_UNORM;
+      layout_ = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      break;
+
+    case TextureFormat::RGB8u:
+      format_ = VK_FORMAT_R8G8B8_UNORM;
+      layout_ = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      break;
 
     case TextureFormat::RGBA8u:
       format_ = VK_FORMAT_R8G8B8A8_UNORM;
+      layout_ = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      break;
+
+    case TextureFormat::R8s:
+      format_ = VK_FORMAT_R8_SNORM;
+      layout_ = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      break;
+
+    case TextureFormat::RG8s:
+      format_ = VK_FORMAT_R8G8_SNORM;
+      layout_ = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      break;
+
+    case TextureFormat::RGB8s:
+      format_ = VK_FORMAT_R8G8B8_SNORM;
       layout_ = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
       break;
 
@@ -127,9 +154,13 @@ Texture::Texture(Context& ctx, const TextureDesc& desc) {
       break;
 
     case TextureFormat::Depth32f:
+      depth   = true;
       format_ = VK_FORMAT_D32_SFLOAT;
       layout_ = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
       break;
+
+    default:
+      util::msg::fatal("unsupported texture format [", static_cast<uint32_t>(desc.format), "]");
   }
 
   extent_ = {
@@ -193,9 +224,8 @@ Texture::Texture(Context& ctx, const TextureDesc& desc) {
         /* .samples               = */ VK_SAMPLE_COUNT_1_BIT,
         /* .tiling                = */ VK_IMAGE_TILING_OPTIMAL,
         /* .usage                 = */
-        static_cast<VkImageUsageFlags>((layout_ == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-                                            ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
-                                            : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) |
+        static_cast<VkImageUsageFlags>((depth ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+                                              : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) |
                                        VK_IMAGE_USAGE_SAMPLED_BIT),
         /* .sharingMode           = */ VK_SHARING_MODE_EXCLUSIVE,
         /* .queueFamilyIndexCount = */ 0,
@@ -235,9 +265,8 @@ Texture::Texture(Context& ctx, const TextureDesc& desc) {
         },
         /* .subresourceRange = */
         {
-            /* .aspectMask     = */ (layout_ == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-                                         ? VK_IMAGE_ASPECT_DEPTH_BIT
-                                         : VK_IMAGE_ASPECT_COLOR_BIT),
+            /* .aspectMask     = */ static_cast<VkImageAspectFlags>(
+                depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT),
             /* .baseMipLevel   = */ 0,
             /* .levelCount     = */ 1,
             /* .baseArrayLayer = */ 0,
@@ -269,11 +298,12 @@ Texture::Texture(Context& ctx, const TextureDesc& desc) {
         /* .mipLodBias              = */ 0,
         /* .anisotropyEnable        = */ false,
         /* .maxAnisotropy           = */ 0.0f,
-        /* .compareEnable           = */ true,
+        /* .compareEnable           = */ false,
         /* .compareOp               = */ VK_COMPARE_OP_LESS,
         /* .minLod                  = */ 0.0f,
         /* .maxLod                  = */ 1.0f,
-        /* .borderColor             = */ VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
+        /* .borderColor             = */
+        depth ? VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE : VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
         /* .unnormalizedCoordinates = */ false,
     };
 

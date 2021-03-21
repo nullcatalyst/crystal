@@ -1,6 +1,8 @@
 #pragma once
 
 #include <array>
+#include <initializer_list>
+#include <tuple>
 
 #include "absl/container/inlined_vector.h"
 #include "crystal/common/render_pass_desc.hpp"
@@ -11,6 +13,7 @@ namespace crystal::vulkan {
 class Context;
 class CommandBuffer;
 class Pipeline;
+class Texture;
 
 class RenderPass {
   VkDevice                              device_           = VK_NULL_HANDLE;
@@ -42,9 +45,15 @@ private:
   friend class ::crystal::vulkan::Pipeline;
 
   RenderPass(Context& ctx);
+  RenderPass(
+      Context&                                                                ctx,
+      const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures);
+  RenderPass(Context&                                                                ctx,
+             const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
+             const std::tuple<const Texture&, AttachmentDesc>                        depth_texture);
 
   VkFramebuffer framebuffer(uint32_t swapchain_image_index) const noexcept {
-    if (framebuffers_.size() == 0) {
+    if (framebuffers_.size() == 1) {
       return framebuffers_[0];
     }
 

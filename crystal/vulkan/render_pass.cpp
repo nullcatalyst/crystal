@@ -4,17 +4,23 @@
 
 #include "crystal/vulkan/command_buffer.hpp"
 #include "crystal/vulkan/context.hpp"
+#include "crystal/vulkan/texture.hpp"
 
 namespace crystal::vulkan {
 
 RenderPass::RenderPass(RenderPass&& other)
     : device_(other.device_),
       render_pass_(other.render_pass_),
+      attachment_count_(other.attachment_count_),
+      clear_values_(std::move(other.clear_values_)),
       framebuffers_(std::move(other.framebuffers_)),
       extent_(other.extent_) {
-  other.device_      = VK_NULL_HANDLE;
-  other.render_pass_ = VK_NULL_HANDLE;
-  other.extent_      = {};
+  other.device_           = VK_NULL_HANDLE;
+  other.render_pass_      = VK_NULL_HANDLE;
+  other.attachment_count_ = 0;
+  other.clear_values_     = {};
+  other.framebuffers_.resize(0);
+  other.extent_ = {};
 }
 
 RenderPass& RenderPass::operator=(RenderPass&& other) {
@@ -23,13 +29,14 @@ RenderPass& RenderPass::operator=(RenderPass&& other) {
   device_           = other.device_;
   render_pass_      = other.render_pass_;
   attachment_count_ = other.attachment_count_;
-  clear_values_     = other.clear_values_;
+  clear_values_     = std::move(other.clear_values_);
   framebuffers_     = std::move(other.framebuffers_);
   extent_           = other.extent_;
 
   other.device_           = VK_NULL_HANDLE;
   other.render_pass_      = VK_NULL_HANDLE;
   other.attachment_count_ = 0;
+  other.clear_values_     = {};
   other.framebuffers_.resize(0);
   other.extent_ = {};
 
@@ -164,177 +171,296 @@ RenderPass::RenderPass(Context& ctx) : device_(ctx.device_) {
   }
 }
 
-// TODO: Remove screen code.
-// RenderPass::RenderPass(Context& ctx, const RenderPassDesc& desc) : device_(ctx.device_) {
-//   uint32_t                    attachment_count = 0;
-//   std::array<VkClearValue, 5> clear_values;
-//   std::array<VkImageView, 5>  attachment_views;
+RenderPass::RenderPass(
+    Context&                                                                ctx,
+    const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures)
+    : device_(ctx.device_), attachment_count_(0) {
+  std::array<VkImageView, 5> attachment_views;
 
-//   {  // Create render pass.
-//     std::array<VkAttachmentDescription, 5> attachment_descriptions;
-//     std::array<VkAttachmentReference, 5>   attachment_references;
+  {  // Save the dimensions of the framebuffer.
+    const auto& [texture, desc] = color_textures.begin()[0];
+    extent_                     = texture.extent_;
+  }
 
-//     for (uint32_t i = 0; i < desc.attachments.size(); ++i) {
-//       const auto& attachment = desc.attachments.begin()[i];
+  {  // Create render pass.
+    std::array<VkAttachmentDescription, 5> attachment_descriptions;
+    std::array<VkAttachmentReference, 5>   attachment_references;
 
-//       attachment_descriptions[attachment_count] = VkAttachmentDescription{
-//           /* .flags          = */ 0,
-//           /* .format         = */ attachment.screen ? ctx.swapchain_.create_info_.imageFormat
-//                                                     : VK_FORMAT_UNDEFINED,
-//           /* .samples        = */ VK_SAMPLE_COUNT_1_BIT,
-//           /* .loadOp         = */ attachment.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR
-//                                                    : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-//           /* .storeOp        = */ VK_ATTACHMENT_STORE_OP_STORE,
-//           /* .stencilLoadOp  = */ VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-//           /* .stencilStoreOp = */ VK_ATTACHMENT_STORE_OP_DONT_CARE,
-//           /* .initialLayout  = */ VK_IMAGE_LAYOUT_UNDEFINED,
-//           /* .finalLayout    = */ attachment.screen ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-//                                                     : VK_IMAGE_LAYOUT_UNDEFINED,
-//       };
+    for (uint32_t i = 0; i < color_textures.size(); ++i) {
+      const auto& [texture, desc] = color_textures.begin()[i];
 
-//       attachment_references[attachment_count] = VkAttachmentReference{
-//           /* .attachment = */ attachment_count,
-//           /* .layout     = */ VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-//       };
+      if (extent_.width != texture.extent_.width || extent_.height != texture.extent_.height) {
+        util::msg::fatal(
+            "all textures in a framebuffer must be of the same size: framebuffer width=",
+            extent_.width, " height=", extent_.height, ", texture width=", texture.extent_.width,
+            " height=", texture.extent_.height);
+      }
 
-//       clear_values[attachment_count] = VkClearValue{
-//           .color =
-//               {
-//                   attachment.clear_value.red,
-//                   attachment.clear_value.green,
-//                   attachment.clear_value.blue,
-//                   attachment.clear_value.alpha,
-//               },
-//       };
+      attachment_descriptions[attachment_count_] = VkAttachmentDescription{
+          /* .flags          = */ 0,
+          /* .format         = */ texture.format_,
+          /* .samples        = */ VK_SAMPLE_COUNT_1_BIT,
+          /* .loadOp         = */ desc.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR
+                                             : VK_ATTACHMENT_LOAD_OP_LOAD,
+          /* .storeOp        = */ VK_ATTACHMENT_STORE_OP_STORE,
+          /* .stencilLoadOp  = */ VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+          /* .stencilStoreOp = */ VK_ATTACHMENT_STORE_OP_DONT_CARE,
+          /* .initialLayout  = */ VK_IMAGE_LAYOUT_UNDEFINED,
+          /* .finalLayout    = */ VK_IMAGE_LAYOUT_GENERAL,
+      };
 
-//       attachment_views[attachment_count] = VK_NULL_HANDLE;  //< Set as screen.
+      attachment_references[attachment_count_] = VkAttachmentReference{
+          /* .attachment = */ attachment_count_,
+          /* .layout     = */ VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+      };
 
-//       ++attachment_count;
-//     }
+      clear_values_[attachment_count_] = VkClearValue{
+          .color =
+              {
+                  desc.clear_value.color.red,
+                  desc.clear_value.color.green,
+                  desc.clear_value.color.blue,
+                  desc.clear_value.color.alpha,
+              },
+      };
 
-//     if (desc.depth_attachment.use_depth) {
-//       attachment_descriptions[attachment_count] = VkAttachmentDescription{
-//           /* .flags          = */ 0,
-//           /* .format         = */ VK_FORMAT_D32_SFLOAT,
-//           /* .samples        = */ VK_SAMPLE_COUNT_1_BIT,
-//           /* .loadOp         = */ VK_ATTACHMENT_LOAD_OP_CLEAR,
-//           /* .storeOp        = */ VK_ATTACHMENT_STORE_OP_STORE,
-//           /* .stencilLoadOp  = */ VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-//           /* .stencilStoreOp = */ VK_ATTACHMENT_STORE_OP_DONT_CARE,
-//           /* .initialLayout  = */ VK_IMAGE_LAYOUT_UNDEFINED,
-//           /* .finalLayout    = */ VK_IMAGE_LAYOUT_GENERAL,
-//       };
+      attachment_views[attachment_count_] = texture.image_view_;
 
-//       attachment_references[attachment_count] = VkAttachmentReference{
-//           /* .attachment = */ attachment_count,
-//           /* .layout     = */ VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-//       };
+      ++attachment_count_;
+    }
 
-//       clear_values[attachment_count] = VkClearValue{
-//           .depthStencil = {
-//               /* .depth   = */ desc.depth_attachment.clear_depth,
-//               /* .stencil = */ 0,
-//           },
-//       };
+    const VkSubpassDescription subpasses[] = {
+        {
+            /* .flags                   = */ 0,
+            /* .pipelineBindPoint       = */ VK_PIPELINE_BIND_POINT_GRAPHICS,
+            /* .inputAttachmentCount    = */ 0,
+            /* .pInputAttachments       = */ nullptr,
+            /* .colorAttachmentCount    = */ attachment_count_,
+            /* .pColorAttachments       = */ attachment_references.data(),
+            /* .pResolveAttachments     = */ nullptr,
+            /* .pDepthStencilAttachment = */ nullptr,
+            /* .preserveAttachmentCount = */ 0,
+            /* .pPreserveAttachments    = */ nullptr,
+        },
+    };
 
-//       // TODO: flag screen depth differently somehow.
-//       attachment_views[attachment_count] = nullptr;
+    const std::array<VkSubpassDependency, 2> subpass_dependencies{
+        VkSubpassDependency{
+            /* srcSubpass      = */ VK_SUBPASS_EXTERNAL,
+            /* dstSubpass      = */ 0,
+            /* srcStageMask    = */ VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            /* dstStageMask    = */ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            /* srcAccessMask   = */ VK_ACCESS_SHADER_READ_BIT,
+            /* dstAccessMask   = */ VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            /* dependencyFlags = */ VK_DEPENDENCY_BY_REGION_BIT,
+        },
+        VkSubpassDependency{
+            /* srcSubpass      = */ 0,
+            /* dstSubpass      = */ VK_SUBPASS_EXTERNAL,
+            /* srcStageMask    = */ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            /* dstStageMask    = */ VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            /* srcAccessMask   = */ VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            /* dstAccessMask   = */ VK_ACCESS_SHADER_READ_BIT,
+            /* dependencyFlags = */ VK_DEPENDENCY_BY_REGION_BIT,
+        },
+    };
 
-//       ++attachment_count;
-//     }
+    const VkRenderPassCreateInfo create_info = {
+        /* .sType = */ VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+        /* .pNext           = */ nullptr,
+        /* .flags           = */ 0,
+        /* .attachmentCount = */ attachment_count_,
+        /* .pAttachments    = */ attachment_descriptions.data(),
+        /* .subpassCount    = */ 1,
+        /* .pSubpasses      = */ subpasses,
+        /* .dependencyCount = */ static_cast<uint32_t>(subpass_dependencies.size()),
+        /* .pDependencies   = */ subpass_dependencies.data(),
+    };
 
-//     const VkSubpassDescription subpasses[] = {
-//         {
-//             /* .flags                   = */ 0,
-//             /* .pipelineBindPoint       = */ VK_PIPELINE_BIND_POINT_GRAPHICS,
-//             /* .inputAttachmentCount    = */ 0,
-//             /* .pInputAttachments       = */ nullptr,
-//             /* .colorAttachmentCount    = */ attachment_count,
-//             /* .pColorAttachments       = */ attachment_references.data(),
-//             /* .pResolveAttachments     = */ nullptr,
-//             /* .pDepthStencilAttachment = */ desc.depth_attachment.use_depth
-//                 ? &attachment_references[attachment_count - 1]
-//                 : nullptr,
-//             /* .preserveAttachmentCount = */ 0,
-//             /* .pPreserveAttachments    = */ nullptr,
-//         },
-//     };
+    VK_ASSERT(vkCreateRenderPass(device_, &create_info, nullptr, &render_pass_),
+              "creating render pass");
+  }
 
-//     const VkRenderPassCreateInfo create_info = {
-//         /* .sType = */ VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-//         /* .pNext           = */ nullptr,
-//         /* .flags           = */ 0,
-//         /* .attachmentCount = */ attachment_count,
-//         /* .pAttachments    = */ attachment_descriptions.data(),
-//         /* .subpassCount    = */ 1,
-//         /* .pSubpasses      = */ subpasses,
-//         /* .dependencyCount = */ 0,
-//         /* .pDependencies   = */ nullptr,
-//     };
+  {  // Create framebuffer.
+    framebuffers_.resize(1);
+    const VkFramebufferCreateInfo create_info = {
+        /* .sType = */ VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+        /* .pNext           = */ nullptr,
+        /* .flags           = */ 0,
+        /* .renderPass      = */ render_pass_,
+        /* .attachmentCount = */ attachment_count_,
+        /* .pAttachments    = */ attachment_views.data(),
+        /* .width           = */ extent_.width,
+        /* .height          = */ extent_.height,
+        /* .layers          = */ 1,
+    };
 
-//     VK_ASSERT(vkCreateRenderPass(device_, &create_info, nullptr, &render_pass_),
-//               "creating render pass");
-//   }
+    VK_ASSERT(vkCreateFramebuffer(device_, &create_info, nullptr, &framebuffers_[0]),
+              "creating framebuffer");
+  }
+}
 
-//   {  // Create framebuffer.
-//     uint32_t                   screen_index = ~0;
-//     std::array<VkImageView, 5> attachment_views;
-//     for (uint32_t i = 0; i < attachment_count; ++i) {
-//       // attachment_views[i] = render_pass.attachment_views_[i] != nullptr
-//       //                           ? render_pass.attachment_views_[i]
-//       //                           : frame_.image_view_;
+RenderPass::RenderPass(
+    Context&                                                                ctx,
+    const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
+    const std::tuple<const Texture&, AttachmentDesc>                        depth_texture)
+    : device_(ctx.device_), attachment_count_(0) {
+  std::array<VkImageView, 5> attachment_views;
 
-//       // TODO: Handle non-screen variant.
-//       attachment_views[i] = nullptr;
-//       screen_index        = i;
-//     }
+  {  // Save the dimensions of the framebuffer.
+    const auto& [texture, desc] = depth_texture;
+    extent_                     = texture.extent_;
+  }
 
-//     if (screen_index != ~0) {
-//       // The screen is being rendered to in this render pass, we need to create multiple
-//       // framebuffers for each image in the swapchain.
+  {  // Create render pass.
+    std::array<VkAttachmentDescription, 5> attachment_descriptions;
+    std::array<VkAttachmentReference, 5>   attachment_references;
 
-//       contains_screen_ = true;
-//       extent_          = ctx.swapchain_.create_info_.imageExtent;
+    for (uint32_t i = 0; i < color_textures.size(); ++i) {
+      const auto& [texture, desc] = color_textures.begin()[i];
 
-//       framebuffers_.resize(ctx.swapchain_.images_.size());
-//       for (uint32_t i = 0; i < ctx.swapchain_.images_.size(); ++i) {
-//         attachment_views[screen_index] = ctx.swapchain_.images_[i].view;
+      if (extent_.width != texture.extent_.width || extent_.height != texture.extent_.height) {
+        util::msg::fatal(
+            "all textures in a framebuffer must be of the same size: framebuffer width=",
+            extent_.width, " height=", extent_.height, ", texture width=", texture.extent_.width,
+            " height=", texture.extent_.height);
+      }
 
-//         const VkFramebufferCreateInfo create_info = {
-//             /* .sType = */ VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-//             /* .pNext           = */ nullptr,
-//             /* .flags           = */ 0,
-//             /* .renderPass      = */ render_pass_,
-//             /* .attachmentCount = */ attachment_count,
-//             /* .pAttachments    = */ attachment_views.data(),
-//             /* .width           = */ extent_.width,
-//             /* .height          = */ extent_.height,
-//             /* .layers          = */ 1,
-//         };
+      attachment_descriptions[attachment_count_] = VkAttachmentDescription{
+          /* .flags          = */ 0,
+          /* .format         = */ texture.format_,
+          /* .samples        = */ VK_SAMPLE_COUNT_1_BIT,
+          /* .loadOp         = */ desc.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR
+                                             : VK_ATTACHMENT_LOAD_OP_LOAD,
+          /* .storeOp        = */ VK_ATTACHMENT_STORE_OP_STORE,
+          /* .stencilLoadOp  = */ VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+          /* .stencilStoreOp = */ VK_ATTACHMENT_STORE_OP_DONT_CARE,
+          /* .initialLayout  = */ VK_IMAGE_LAYOUT_UNDEFINED,
+          /* .finalLayout    = */ VK_IMAGE_LAYOUT_GENERAL,
+      };
 
-//         VK_ASSERT(vkCreateFramebuffer(device_, &create_info, nullptr, &framebuffers_[i]),
-//                   "creating framebuffer");
-//       }
-//     } else {
-//       extent_ = {};
+      attachment_references[attachment_count_] = VkAttachmentReference{
+          /* .attachment = */ attachment_count_,
+          /* .layout     = */ VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+      };
 
-//       framebuffers_.resize(1);
-//       const VkFramebufferCreateInfo create_info = {
-//           /* .sType = */ VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-//           /* .pNext           = */ nullptr,
-//           /* .flags           = */ 0,
-//           /* .renderPass      = */ render_pass_,
-//           /* .attachmentCount = */ attachment_count,
-//           /* .pAttachments    = */ attachment_views.data(),
-//           /* .width           = */ extent_.width,
-//           /* .height          = */ extent_.height,
-//           /* .layers          = */ 1,
-//       };
+      clear_values_[attachment_count_] = VkClearValue{
+          .color =
+              {
+                  desc.clear_value.color.red,
+                  desc.clear_value.color.green,
+                  desc.clear_value.color.blue,
+                  desc.clear_value.color.alpha,
+              },
+      };
 
-//       VK_ASSERT(vkCreateFramebuffer(device_, &create_info, nullptr, &framebuffers_[0]),
-//                 "creating framebuffer");
-//     }
-//   }
-// }
+      attachment_views[attachment_count_] = texture.image_view_;
+
+      ++attachment_count_;
+    }
+
+    {  // Add depth attachment.
+      const auto& [texture, desc] = depth_texture;
+
+      attachment_descriptions[attachment_count_] = VkAttachmentDescription{
+          /* .flags          = */ 0,
+          /* .format         = */ texture.format_,
+          /* .samples        = */ VK_SAMPLE_COUNT_1_BIT,
+          /* .loadOp         = */ desc.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR
+                                             : VK_ATTACHMENT_LOAD_OP_LOAD,
+          /* .storeOp        = */ VK_ATTACHMENT_STORE_OP_STORE,
+          /* .stencilLoadOp  = */ VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+          /* .stencilStoreOp = */ VK_ATTACHMENT_STORE_OP_DONT_CARE,
+          /* .initialLayout  = */ VK_IMAGE_LAYOUT_UNDEFINED,
+          /* .finalLayout    = */ VK_IMAGE_LAYOUT_GENERAL,
+      };
+
+      attachment_references[attachment_count_] = VkAttachmentReference{
+          /* .attachment = */ attachment_count_,
+          /* .layout     = */ VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+      };
+
+      clear_values_[attachment_count_] = VkClearValue{
+          .depthStencil = {
+              /* .depth   = */ desc.clear_value.depth,
+              /* .stencil = */ 0,
+          },
+      };
+
+      attachment_views[attachment_count_] = texture.image_view_;
+
+      ++attachment_count_;
+    }
+
+    const VkSubpassDescription subpasses[] = {
+        {
+            /* .flags                   = */ 0,
+            /* .pipelineBindPoint       = */ VK_PIPELINE_BIND_POINT_GRAPHICS,
+            /* .inputAttachmentCount    = */ 0,
+            /* .pInputAttachments       = */ nullptr,
+            /* .colorAttachmentCount    = */ attachment_count_ - 1,
+            /* .pColorAttachments       = */ attachment_references.data(),
+            /* .pResolveAttachments     = */ nullptr,
+            /* .pDepthStencilAttachment = */ &attachment_references[attachment_count_ - 1],
+            /* .preserveAttachmentCount = */ 0,
+            /* .pPreserveAttachments    = */ nullptr,
+        },
+    };
+
+    const VkSubpassDependency subpass_dependencies[] = {
+        VkSubpassDependency{
+            /* srcSubpass      = */ VK_SUBPASS_EXTERNAL,
+            /* dstSubpass      = */ 0,
+            /* srcStageMask    = */ VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            /* dstStageMask    = */ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            /* srcAccessMask   = */ VK_ACCESS_SHADER_READ_BIT,
+            /* dstAccessMask   = */ VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            /* dependencyFlags = */ VK_DEPENDENCY_BY_REGION_BIT,
+        },
+        VkSubpassDependency{
+            /* srcSubpass      = */ 0,
+            /* dstSubpass      = */ VK_SUBPASS_EXTERNAL,
+            /* srcStageMask    = */ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            /* dstStageMask    = */ VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            /* srcAccessMask   = */ VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            /* dstAccessMask   = */ VK_ACCESS_SHADER_READ_BIT,
+            /* dependencyFlags = */ VK_DEPENDENCY_BY_REGION_BIT,
+        },
+    };
+
+    const VkRenderPassCreateInfo create_info = {
+        /* .sType = */ VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+        /* .pNext           = */ nullptr,
+        /* .flags           = */ 0,
+        /* .attachmentCount = */ attachment_count_,
+        /* .pAttachments    = */ attachment_descriptions.data(),
+        /* .subpassCount    = */ 1,
+        /* .pSubpasses      = */ subpasses,
+        /* .dependencyCount = */ 2,
+        /* .pDependencies   = */ subpass_dependencies,
+    };
+
+    VK_ASSERT(vkCreateRenderPass(device_, &create_info, nullptr, &render_pass_),
+              "creating render pass");
+  }
+
+  {  // Create framebuffer.
+    framebuffers_.resize(1);
+    const VkFramebufferCreateInfo create_info = {
+        /* .sType = */ VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+        /* .pNext           = */ nullptr,
+        /* .flags           = */ 0,
+        /* .renderPass      = */ render_pass_,
+        /* .attachmentCount = */ attachment_count_,
+        /* .pAttachments    = */ attachment_views.data(),
+        /* .width           = */ extent_.width,
+        /* .height          = */ extent_.height,
+        /* .layers          = */ 1,
+    };
+
+    VK_ASSERT(vkCreateFramebuffer(device_, &create_info, nullptr, &framebuffers_[0]),
+              "creating framebuffer");
+  }
+}
 
 }  // namespace crystal::vulkan

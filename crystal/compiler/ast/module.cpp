@@ -273,6 +273,11 @@ void Module::make_vulkan_crystallib_(crystal::common::proto::Vulkan& vulkan_pb,
       common::proto::VKUniform* uniform_pb = pipeline_pb->add_uniforms();
       uniform_pb->set_binding(binding);
     }
+
+    for (const auto& [type, name, binding] : pipeline->textures()) {
+      common::proto::VKTexture* texture_pb = pipeline_pb->add_textures();
+      texture_pb->set_binding(binding);
+    }
   }
 }
 

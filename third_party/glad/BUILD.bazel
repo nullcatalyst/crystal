@@ -1,6 +1,25 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
 cc_library(
+    name = "gl41",
+    srcs = [
+        "glad_gl41.c",
+    ],
+    hdrs = [
+        "glad/glad_gl41.h",
+    ],
+    includes = [
+        ".",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":khr",
+    ],
+)
+
+cc_library(
     name = "gl42",
     srcs = [
         "glad_gl42.c",

@@ -10,7 +10,7 @@ namespace examples::shadow_map {
 
 Uniform create_uniform(float aspect, State state) {
   return Uniform{
-      /* .shadow_matrix     = */ glm::orthoRH_NO(-5.0f, 5.0f, -5.0f, 5.0f, -3.0f, 3.0f) *
+      /* .shadow_matrix     = */ glm::orthoRH_ZO(-5.0f, 5.0f, -5.0f, 5.0f, -3.0f, 3.0f) *
           glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(15.0f),
                                   glm::vec3(0.0f, 1.0f, 0.0f)),
                       glm::radians(75.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
@@ -59,6 +59,7 @@ public:
     shadow_texture_     = ctx.create_texture(crystal::TextureDesc{
         /* .width  = */ 2048,
         /* .height = */ 2048,
+        // /* .format = */ crystal::TextureFormat::RGBA8u,
         /* .format = */ crystal::TextureFormat::Depth32f,
         /* .sample = */ crystal::TextureSample::Linear,
         /* .repeat = */ crystal::TextureRepeat::Clamp,
@@ -68,6 +69,13 @@ public:
                                                            .clear       = true,
                                                            .clear_value = {.depth = 1.0f},
                                                        }));
+    // shadow_render_pass_ = ctx.create_render_pass({
+    //     std::make_tuple(std::ref(shadow_texture_),
+    //                     crystal::AttachmentDesc{
+    //                         .clear       = true,
+    //                         .clear_value = {.color = {0.5f, 0.5f, 0.5f, 1.0f}},
+    //                     }),
+    // });
     shadow_pipeline_  = ctx.create_pipeline(library, shadow_render_pass_, shadow_desc);
     combine_pipeline_ = ctx.create_pipeline(library, ctx.screen_render_pass(), combine_desc);
 

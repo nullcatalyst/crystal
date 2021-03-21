@@ -19,7 +19,10 @@ CommandBuffer::CommandBuffer(Context& ctx, internal::Frame& frame, uint32_t fram
       rendering_complete_semaphore_(frame.rendering_complete_semaphore_),
       fence_(frame.fence_),
       swapchain_image_index_(frame.swapchain_image_index_),
-      frame_index_(frame_index) {}
+      frame_index_(frame_index),
+      update_uniform_descriptor_set_(false),
+      update_texture_descriptor_set_(false),
+      in_render_pass_(false) {}
 
 CommandBuffer::~CommandBuffer() {
   vkCmdEndRenderPass(command_buffer_);
@@ -77,6 +80,11 @@ void CommandBuffer::use_render_pass(RenderPass& render_pass) {
   VkFramebuffer framebuffer = VK_NULL_HANDLE;
   VkExtent2D    extent      = render_pass.extent_;
 
+  if (in_render_pass_) {
+    vkCmdEndRenderPass(command_buffer_);
+  }
+  in_render_pass_ = true;
+
   {  // Begin render pass.
     VkFramebuffer framebuffer = render_pass.framebuffer(swapchain_image_index_);
 
@@ -96,16 +104,29 @@ void CommandBuffer::use_render_pass(RenderPass& render_pass) {
 
     vkCmdBeginRenderPass(command_buffer_, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
-    // Update dynamic viewport state.
-    const VkViewport viewport = {
-        /* .x        = */ 0.0f,
-        /* .y        = */ static_cast<float>(extent.height),
-        /* .width    = */ static_cast<float>(extent.width),
-        /* .height   = */ -static_cast<float>(extent.height),
-        /* .minDepth = */ 0.0f,
-        /* .maxDepth = */ 1.0f,
-    };
-    vkCmdSetViewport(command_buffer_, 0, 1, &viewport);
+    if (render_pass.framebuffers_.size() > 1) {
+      // Update dynamic viewport state.
+      const VkViewport viewport = {
+          /* .x        = */ 0.0f,
+          /* .y        = */ static_cast<float>(extent.height),
+          /* .width    = */ static_cast<float>(extent.width),
+          /* .height   = */ -static_cast<float>(extent.height),
+          /* .minDepth = */ 0.0f,
+          /* .maxDepth = */ 1.0f,
+      };
+      vkCmdSetViewport(command_buffer_, 0, 1, &viewport);
+    } else {
+      // Update dynamic viewport state.
+      const VkViewport viewport = {
+          /* .x        = */ 0.0f,
+          /* .y        = */ 0.0f,  // static_cast<float>(extent.height),
+          /* .width    = */ static_cast<float>(extent.width),
+          /* .height   = */ static_cast<float>(extent.height),
+          /* .minDepth = */ 0.0f,
+          /* .maxDepth = */ 1.0f,
+      };
+      vkCmdSetViewport(command_buffer_, 0, 1, &viewport);
+    }
 
     // Update dynamic scissor state.
     VkRect2D scissor = {
@@ -121,8 +142,9 @@ void CommandBuffer::use_render_pass(RenderPass& render_pass) {
 void CommandBuffer::use_pipeline(Pipeline& pipeline) {
   vkCmdBindPipeline(command_buffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline_);
 
-  pipeline_layout_ = pipeline.pipeline_layout_;
-  descriptor_set_  = pipeline.descriptor_sets_[frame_index_];
+  pipeline_layout_        = pipeline.pipeline_layout_;
+  uniform_descriptor_set_ = pipeline.uniform_descriptor_sets_[frame_index_];
+  texture_descriptor_set_ = pipeline.texture_descriptor_sets_[frame_index_];
 }
 
 void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t binding) {
@@ -135,7 +157,7 @@ void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t b
     const VkWriteDescriptorSet write_descriptor = {
         /* .sType = */ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
         /* .pNext            = */ nullptr,
-        /* .dstSet           = */ descriptor_set_,
+        /* .dstSet           = */ uniform_descriptor_set_,
         /* .dstBinding       = */ binding,
         /* .dstArrayElement  = */ 0,
         /* .descriptorCount  = */ 1,
@@ -148,13 +170,57 @@ void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t b
     vkUpdateDescriptorSets(device_, 1, &write_descriptor, 0, nullptr);
   }
 
-  update_descriptor_set_ = true;
+  update_uniform_descriptor_set_ = true;
+}
+
+void CommandBuffer::use_texture(Texture& texture, uint32_t binding) {
+  {  // Update the descriptor set.
+    const VkDescriptorImageInfo image_info = {
+        /* sampler     = */ texture.sampler_,
+        /* imageView   = */ texture.image_view_,
+        /* imageLayout = */ VK_IMAGE_LAYOUT_GENERAL,  // texture.layout_,
+    };
+    const VkWriteDescriptorSet write_descriptor = {
+        /* .sType = */ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        /* .pNext            = */ nullptr,
+        /* .dstSet           = */ texture_descriptor_set_,
+        /* .dstBinding       = */ binding,
+        /* .dstArrayElement  = */ 0,
+        /* .descriptorCount  = */ 1,
+        /* .descriptorType   = */ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        /* .pImageInfo       = */ &image_info,
+        /* .pBufferInfo      = */ nullptr,
+        /* .pTexelBufferView = */ nullptr,
+    };
+
+    vkUpdateDescriptorSets(device_, 1, &write_descriptor, 0, nullptr);
+  }
+
+  update_texture_descriptor_set_ = true;
 }
 
 void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count) {
-  if (update_descriptor_set_) {
+  if (update_uniform_descriptor_set_ && update_texture_descriptor_set_) {
+    const std::array<VkDescriptorSet, 2> descriptor_sets{
+        uniform_descriptor_set_,
+        texture_descriptor_set_,
+    };
     vkCmdBindDescriptorSets(command_buffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout_, 0,
-                            1, &descriptor_set_, 0, nullptr);
+                            static_cast<uint32_t>(descriptor_sets.size()), descriptor_sets.data(),
+                            0, nullptr);
+
+    update_uniform_descriptor_set_ = false;
+    update_texture_descriptor_set_ = false;
+  } else if (update_uniform_descriptor_set_) {
+    vkCmdBindDescriptorSets(command_buffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout_, 0,
+                            1, &uniform_descriptor_set_, 0, nullptr);
+
+    update_uniform_descriptor_set_ = false;
+  } else if (update_texture_descriptor_set_) {
+    vkCmdBindDescriptorSets(command_buffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout_, 1,
+                            1, &texture_descriptor_set_, 0, nullptr);
+
+    update_texture_descriptor_set_ = false;
   }
 
   const VkDeviceSize offsets[] = {0};

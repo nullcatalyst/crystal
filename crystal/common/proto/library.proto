@@ -34,10 +34,15 @@ message VKUniform {
     uint32 binding = 1;
 }
 
+message VKTexture {
+    uint32 binding = 1;
+}
+
 message VKPipeline {
     string name = 1;
     bool fragment = 2;
     repeated VKUniform uniforms = 3;
+    repeated VKTexture textures = 4;
 }
 
 message Vulkan {

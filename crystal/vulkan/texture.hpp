@@ -6,6 +6,7 @@
 namespace crystal::vulkan {
 
 class Context;
+class CommandBuffer;
 class RenderPass;
 
 class Texture {
@@ -34,6 +35,7 @@ public:
 
 private:
   friend class ::crystal::vulkan::Context;
+  friend class ::crystal::vulkan::CommandBuffer;
   friend class ::crystal::vulkan::RenderPass;
 
   Texture(Context& ctx, const TextureDesc& desc);

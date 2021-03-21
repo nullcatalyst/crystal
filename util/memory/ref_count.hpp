@@ -16,10 +16,15 @@ template <typename T>
 struct RefCounted {
 private:
   uint32_t ref_count_;
+
 #if __has_attribute(alignas)
+
   [[alignas(T)]] uint8_t value_[0];
+
 #else   // ^^^ __has_attribute(alignas) / !__has_attribute(alignas) vvv
+
   alignas(alignof(T)) uint8_t value_[0];
+
 #endif  // ^^^ !__has_attribute(alignas)
 
 public:

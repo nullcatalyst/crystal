@@ -107,44 +107,7 @@ public:
 
   ~Context();
 
-  [[nodiscard]] constexpr uint32_t    screen_width() const { return screen_render_pass_.width(); }
-  [[nodiscard]] constexpr uint32_t    screen_height() const { return screen_render_pass_.height(); }
-  [[nodiscard]] constexpr RenderPass& screen_render_pass() { return screen_render_pass_; }
-
-  void          set_active();
-  void          wait();
-  CommandBuffer next_frame();
-
-  void change_resolution(uint32_t width, uint32_t height);
-
-  // TODO:
-  // RenderPass create_render_pass(const RenderPassDesc& desc);
-  void set_clear_color(RenderPass& render_pass, uint32_t attachment, ClearValue clear_value);
-  void set_clear_depth(RenderPass& render_pass, ClearValue clear_value);
-
-  Library  create_library(const std::string_view base_path);
-  Pipeline create_pipeline(Library& library, RenderPass& render_pass, const PipelineDesc& desc);
-
-  UniformBuffer create_uniform_buffer(const size_t byte_length);
-  UniformBuffer create_uniform_buffer(const void* const data_ptr, const size_t byte_length);
-  void          update_uniform_buffer(UniformBuffer& uniform_buffer, const void* const data_ptr,
-                                      const size_t byte_length);
-
-  VertexBuffer create_vertex_buffer(const size_t byte_length);
-  VertexBuffer create_vertex_buffer(const void* const data_ptr, const size_t byte_length);
-  void         update_vertex_buffer(VertexBuffer& vertex_buffer, const void* const data_ptr,
-                                    const size_t byte_length);
-
-  IndexBuffer create_index_buffer(const size_t byte_length);
-  IndexBuffer create_index_buffer(const uint16_t* const data_ptr, const size_t byte_length);
-  void        update_index_buffer(IndexBuffer& vertex_buffer, const uint16_t* const data_ptr,
-                                  const size_t byte_length);
-
-  Mesh create_mesh(const std::initializer_list<std::tuple<uint32_t, const VertexBuffer&>> bindings);
-  Mesh create_mesh(const std::initializer_list<std::tuple<uint32_t, const VertexBuffer&>> bindings,
-                   const IndexBuffer& index_buffer);
-
-#include "crystal/common/context_helpers.inl"
+#include "crystal/common/context_methods.inl"
 
 private:
   friend CommandBuffer;
@@ -165,17 +128,30 @@ private:
   void release_buffer_(VkBuffer buffer) noexcept;
 };
 
+inline constexpr uint32_t    Context::screen_width() const { return screen_render_pass_.width(); }
+inline constexpr uint32_t    Context::screen_height() const { return screen_render_pass_.height(); }
+inline constexpr RenderPass& Context::screen_render_pass() { return screen_render_pass_; }
+
 inline void Context::set_active() {}
 
 inline void Context::wait() { vkDeviceWaitIdle(device_); }
 
+inline Texture Context::create_texture(const TextureDesc& desc) { return Texture(*this, desc); }
+
+inline RenderPass Context::create_render_pass(
+    const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures) {
+  return RenderPass(*this, color_textures);
+}
+
+inline RenderPass Context::create_render_pass(
+    const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
+    const std::tuple<const Texture&, AttachmentDesc>                        depth_texture) {
+  return RenderPass(*this, color_textures, depth_texture);
+}
+
 inline Library Context::create_library(const std::string_view spv_path) {
   return Library(device_, spv_path);
 }
-
-// inline RenderPass Context::create_render_pass(const RenderPassDesc& desc) {
-//   return RenderPass(*this, desc);
-// }
 
 inline Pipeline Context::create_pipeline(Library& library, RenderPass& render_pass,
                                          const PipelineDesc& desc) {
