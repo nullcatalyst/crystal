@@ -69,7 +69,8 @@ void update_vertex_buffer(VertexBuffer& vertex_buffer, const std::initializer_li
 
 template <typename Container>
 void update_vertex_buffer(VertexBuffer& vertex_buffer, const Container& container) {
-  return create_vertex_buffer(container.data(), sizeof(container.data()[0]) * container.size());
+  return update_vertex_buffer(vertex_buffer, container.data(),
+                              sizeof(container.data()[0]) * container.size());
 }
 
 template <typename Container>
