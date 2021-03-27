@@ -41,23 +41,22 @@ concept Context = requires(T& t, const T& ct) {
   { t.next_frame() }
   ->std::same_as<typename T::CommandBuffer>;
 
-  // TODO: Add support for rendering to textures in vulkan and metal.
-  //   { t.create_texture(std::declval<const TextureDesc&>()) }
-  //   ->std::same_as<typename T::Texture>;
+  { t.create_texture(std::declval<const TextureDesc&>()) }
+  ->std::same_as<typename T::Texture>;
 
-  //   {
-  //     t.create_render_pass(std::declval<const std::initializer_list<
-  //                              std::tuple<const typename T::Texture&, ColorAttachmentDesc>>>())
-  //   }
-  //   ->std::same_as<typename T::RenderPass>;
+  {
+    t.create_render_pass(std::declval<const std::initializer_list<
+                             std::tuple<const typename T::Texture&, ColorAttachmentDesc>>>())
+  }
+  ->std::same_as<typename T::RenderPass>;
 
-  //   {
-  //     t.create_render_pass(
-  //         std::declval<const std::initializer_list<
-  //             std::tuple<const typename T::Texture&, ColorAttachmentDesc>>>(),
-  //         std::declval<const std::tuple<const typename T::Texture&, DepthAttachmentDesc>>())
-  //   }
-  //   ->std::same_as<typename T::RenderPass>;
+  {
+    t.create_render_pass(
+        std::declval<const std::initializer_list<
+            std::tuple<const typename T::Texture&, ColorAttachmentDesc>>>(),
+        std::declval<const std::tuple<const typename T::Texture&, DepthAttachmentDesc>>())
+  }
+  ->std::same_as<typename T::RenderPass>;
 
   { t.create_library(std::declval<const std::string_view>()) }
   ->std::same_as<typename T::Library>;

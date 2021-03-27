@@ -19,7 +19,7 @@ CommandBuffer::~CommandBuffer() {
   [command_buffer_ commit];
 }
 
-void CommandBuffer::use_render_pass(RenderPass& render_pass) {
+void CommandBuffer::use_render_pass(const RenderPass& render_pass) {
   if (render_encoder_ != nullptr) {
     [render_encoder_ endEncoding];
   }
@@ -42,22 +42,22 @@ void CommandBuffer::use_render_pass(RenderPass& render_pass) {
                                   }];
 }
 
-void CommandBuffer::use_pipeline(Pipeline& pipeline) {
+void CommandBuffer::use_pipeline(const Pipeline& pipeline) {
   [render_encoder_ setRenderPipelineState:pipeline.render_pipeline_];
   [render_encoder_ setDepthStencilState:pipeline.depth_stencil_state_];
   [render_encoder_ setCullMode:pipeline.cull_mode_];
 }
 
-void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t binding) {
+void CommandBuffer::use_uniform_buffer(const UniformBuffer& uniform_buffer, uint32_t binding) {
   [render_encoder_ setVertexBuffer:uniform_buffer.buffer_ offset:0 atIndex:binding];
   [render_encoder_ setFragmentBuffer:uniform_buffer.buffer_ offset:0 atIndex:binding];
 }
 
-void CommandBuffer::use_texture(Texture& texture, uint32_t binding) {
+void CommandBuffer::use_texture(const Texture& texture, uint32_t binding) {
   [render_encoder_ setFragmentTexture:texture.texture_ atIndex:binding];
 }
 
-void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count) {
+void CommandBuffer::draw(const Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count) {
   for (int i = 0; i < mesh.binding_count_; ++i) {
     [render_encoder_ setVertexBuffer:mesh.bindings_[i].buffer
                               offset:0

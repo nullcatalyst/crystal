@@ -21,7 +21,7 @@ private:
 
   [[alignas(T)]] uint8_t value_[0];
 
-#else   // ^^^ __has_attribute(alignas) / !__has_attribute(alignas) vvv
+#else  // ^^^ __has_attribute(alignas) / !__has_attribute(alignas) vvv
 
   alignas(alignof(T)) uint8_t value_[0];
 

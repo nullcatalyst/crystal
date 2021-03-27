@@ -58,7 +58,7 @@ CommandBuffer::~CommandBuffer() { glFlush(); }
 
 #endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
 
-void CommandBuffer::use_render_pass(RenderPass& render_pass) {
+void CommandBuffer::use_render_pass(const RenderPass& render_pass) {
   render_pass_ = &render_pass;
 
   GL_ASSERT(glBindFramebuffer(GL_FRAMEBUFFER, render_pass.framebuffer_), "binding framebuffer");
@@ -77,7 +77,7 @@ void CommandBuffer::use_render_pass(RenderPass& render_pass) {
   }
 }
 
-void CommandBuffer::use_pipeline(Pipeline& pipeline) {
+void CommandBuffer::use_pipeline(const Pipeline& pipeline) {
   pipeline_ = &pipeline;
 
   GL_ASSERT(glUseProgram(pipeline.program_), "changing active shader program");
@@ -120,20 +120,21 @@ void CommandBuffer::use_pipeline(Pipeline& pipeline) {
   }
 }
 
-void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t binding) {
+void CommandBuffer::use_uniform_buffer(const UniformBuffer& uniform_buffer, uint32_t binding) {
   GL_ASSERT(glBindBufferBase(GL_UNIFORM_BUFFER, binding, uniform_buffer.buffer_),
             "setting uniform buffer base");
   GL_ASSERT(glUniformBlockBinding(pipeline_->program_, pipeline_->uniforms_[binding], binding),
             "binding uniform buffer block");
 }
 
-void CommandBuffer::use_texture(Texture& texture, uint32_t binding) {
+void CommandBuffer::use_texture(const Texture& texture, uint32_t binding) {
   // GL_ASSERT(glUniform1i(location, binding), "setting texture uniform");
   GL_ASSERT(glActiveTexture(GL_TEXTURE0 + binding), "setting active texture");
   GL_ASSERT(glBindTexture(GL_TEXTURE_2D, texture.texture_), "binding texture");
 }
 
-void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count) {
+void CommandBuffer::draw(const Mesh& mesh, uint32_t vertex_or_index_count,
+                         uint32_t instance_count) {
   const auto it = std::find_if(
       mesh.vaos_.begin(), mesh.vaos_.end(),
       [pipeline_id = pipeline_->id_](const auto& vao) { return vao.pipeline_id == pipeline_id; });

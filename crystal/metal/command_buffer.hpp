@@ -27,12 +27,12 @@ public:
 
   ~CommandBuffer();
 
-  void use_render_pass(RenderPass& render_pass);
-  void use_pipeline(Pipeline& pipeline);
-  void use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t binding);
-  void use_texture(Texture& texture, uint32_t binding);
+  void use_render_pass(const RenderPass& render_pass);
+  void use_pipeline(const Pipeline& pipeline);
+  void use_uniform_buffer(const UniformBuffer& uniform_buffer, uint32_t binding);
+  void use_texture(const Texture& texture, uint32_t binding);
 
-  void draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count);
+  void draw(const Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count);
 
 private:
   friend class ::crystal::metal::Context;

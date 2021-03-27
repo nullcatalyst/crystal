@@ -76,7 +76,7 @@ CommandBuffer::~CommandBuffer() {
   VK_ASSERT(vkQueuePresentKHR(present_queue_, &present_info), "presenting queue");
 }
 
-void CommandBuffer::use_render_pass(RenderPass& render_pass) {
+void CommandBuffer::use_render_pass(const RenderPass& render_pass) {
   VkFramebuffer framebuffer = VK_NULL_HANDLE;
   VkExtent2D    extent      = render_pass.extent_;
 
@@ -139,7 +139,7 @@ void CommandBuffer::use_render_pass(RenderPass& render_pass) {
   }
 }
 
-void CommandBuffer::use_pipeline(Pipeline& pipeline) {
+void CommandBuffer::use_pipeline(const Pipeline& pipeline) {
   vkCmdBindPipeline(command_buffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline_);
 
   pipeline_layout_        = pipeline.pipeline_layout_;
@@ -147,7 +147,7 @@ void CommandBuffer::use_pipeline(Pipeline& pipeline) {
   texture_descriptor_set_ = pipeline.texture_descriptor_sets_[frame_index_];
 }
 
-void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t binding) {
+void CommandBuffer::use_uniform_buffer(const UniformBuffer& uniform_buffer, uint32_t binding) {
   {  // Update the descriptor set.
     const VkDescriptorBufferInfo buffer_info = {
         /* .buffer = */ uniform_buffer.buffer_,
@@ -173,7 +173,7 @@ void CommandBuffer::use_uniform_buffer(UniformBuffer& uniform_buffer, uint32_t b
   update_uniform_descriptor_set_ = true;
 }
 
-void CommandBuffer::use_texture(Texture& texture, uint32_t binding) {
+void CommandBuffer::use_texture(const Texture& texture, uint32_t binding) {
   {  // Update the descriptor set.
     const VkDescriptorImageInfo image_info = {
         /* sampler     = */ texture.sampler_,
@@ -199,7 +199,8 @@ void CommandBuffer::use_texture(Texture& texture, uint32_t binding) {
   update_texture_descriptor_set_ = true;
 }
 
-void CommandBuffer::draw(Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count) {
+void CommandBuffer::draw(const Mesh& mesh, uint32_t vertex_or_index_count,
+                         uint32_t instance_count) {
   if (update_uniform_descriptor_set_ && update_texture_descriptor_set_) {
     const std::array<VkDescriptorSet, 2> descriptor_sets{
         uniform_descriptor_set_,
