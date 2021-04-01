@@ -56,6 +56,7 @@ void CommandBuffer::use_uniform_buffer(const UniformBuffer& uniform_buffer, uint
 
 void CommandBuffer::use_texture(const Texture& texture, uint32_t binding) {
   [render_encoder_ setFragmentTexture:texture.texture_ atIndex:binding];
+  [render_encoder_ setFragmentSamplerState:texture.sampler_ atIndex:binding];
 }
 
 void CommandBuffer::draw(const Mesh& mesh, uint32_t vertex_or_index_count,

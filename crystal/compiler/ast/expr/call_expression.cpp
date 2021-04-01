@@ -50,6 +50,17 @@ output::PrintLambda CallExpression::to_glsl(const output::glsl::Options opts) co
 }
 
 output::PrintLambda CallExpression::to_metal(const output::metal::Options opts) const {
+  // TODO: Typecheck to determine that the callee is a texture.
+  if (expr_ != nullptr && name_ == "sample") {
+    return output::PrintLambda{[=](std::ostream& out) {
+      out << expr_->to_metal(opts) << ".sample(" << expr_->to_metal(opts) << "_sampler";
+      for (const auto& arg : arguments_) {
+        out << ", " << arg->to_metal(opts);
+      }
+      out << ")";
+    }};
+  }
+
   const auto type = opts.mod.find_type(name_);
   if (type.has_value()) {
     return output::PrintLambda{[=](std::ostream& out) {

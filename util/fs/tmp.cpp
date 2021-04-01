@@ -7,6 +7,7 @@
 #if _WIN32
 #include <process.h>
 #else  // ^^^ _WIN32 / !_WIN32 vvv
+#include <sys/types.h>
 #include <unistd.h>
 #endif  // ^^^ !_WIN32
 

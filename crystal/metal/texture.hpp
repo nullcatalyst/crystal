@@ -12,8 +12,9 @@ class CommandBuffer;
 class RenderPass;
 
 class Texture {
-  OBJC(MTLTexture) texture_    = nullptr;
-  MTLPixelFormat pixel_format_ = static_cast<MTLPixelFormat>(0);
+  OBJC(MTLTexture) texture_      = nullptr;
+  OBJC(MTLSamplerState) sampler_ = nullptr;
+  MTLPixelFormat pixel_format_   = static_cast<MTLPixelFormat>(0);
 
 public:
   constexpr Texture() = default;

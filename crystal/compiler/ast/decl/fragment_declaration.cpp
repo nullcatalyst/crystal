@@ -179,6 +179,12 @@ void FragmentDeclaration::to_metal(std::ostream& out, const Module& mod) const {
       out << "constant " << input.type->metal_name() << "& "
           << output::metal::mangle_name{input.name} << " [[ buffer(" << input.index << ") ]]";
     }
+    if (input.input_type == decl::FragmentInputType::Texture) {
+      out << "texture2d<float> " << output::metal::mangle_name{input.name} << " [[ texture("
+          << input.index << ") ]], "
+          << "sampler " << output::metal::mangle_name{input.name + "_sampler"} << " [[ sampler("
+          << input.index << ") ]]";
+    }
   }
   out << ") {\n";
   for (const auto& stmt : implementation_) {

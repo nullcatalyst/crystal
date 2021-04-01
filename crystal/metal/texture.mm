@@ -5,8 +5,10 @@
 
 namespace crystal::metal {
 
-Texture::Texture(Texture&& other) : texture_(other.texture_), pixel_format_(other.pixel_format_) {
+Texture::Texture(Texture&& other)
+    : texture_(other.texture_), sampler_(other.sampler_), pixel_format_(other.pixel_format_) {
   other.texture_      = nullptr;
+  other.sampler_      = nullptr;
   other.pixel_format_ = static_cast<MTLPixelFormat>(0);
 }
 
@@ -14,9 +16,11 @@ Texture& Texture::operator=(Texture&& other) {
   destroy();
 
   texture_      = other.texture_;
+  sampler_      = other.sampler_;
   pixel_format_ = other.pixel_format_;
 
   other.texture_      = nullptr;
+  other.sampler_      = nullptr;
   other.pixel_format_ = static_cast<MTLPixelFormat>(0);
 
   return *this;
@@ -26,6 +30,7 @@ Texture::~Texture() { destroy(); }
 
 void Texture::destroy() noexcept {
   texture_      = nullptr;
+  sampler_      = nullptr;
   pixel_format_ = static_cast<MTLPixelFormat>(0);
 }
 
@@ -85,6 +90,13 @@ Texture::Texture(OBJC(MTLDevice) device, const TextureDesc& desc) {
 
   texture_desc.pixelFormat = pixel_format_;
   texture_                 = [device newTextureWithDescriptor:texture_desc];
+
+  MTLSamplerDescriptor* sampler_desc = [[MTLSamplerDescriptor alloc] init];
+  sampler_desc.minFilter             = MTLSamplerMinMagFilterNearest;
+  sampler_desc.magFilter             = MTLSamplerMinMagFilterLinear;
+  sampler_desc.sAddressMode          = MTLSamplerAddressModeRepeat;
+  sampler_desc.tAddressMode          = MTLSamplerAddressModeRepeat;
+  sampler_                           = [device newSamplerStateWithDescriptor:sampler_desc];
 }
 
 }  // namespace crystal::metal

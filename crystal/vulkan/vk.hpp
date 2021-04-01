@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef _WIN32
+#if _WIN32
 
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -9,11 +9,11 @@
 #include <Windows.h>
 #define VK_USE_PLATFORM_WIN32_KHR
 
-#else  // #ifdef _WIN32
+#else  // ^^^ _WIN32 / !_WIN32 vvv
 
 #include <vulkan/vulkan.h>
 
-#endif  // #ifdef _WIN32
+#endif  // ^^^ !_WIN32
 
 #ifdef _MSVC_LANG
 
