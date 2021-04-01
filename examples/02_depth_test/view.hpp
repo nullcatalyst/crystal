@@ -125,7 +125,7 @@ public:
 
     cmd.use_render_pass(ctx_.screen_render_pass());
     cmd.use_pipeline(pipeline_);
-    cmd.use_uniform_buffer(uniform_buffer_, 2);
+    cmd.use_uniform_buffer(uniform_buffer_, 0);
     cmd.draw(mesh_, 34, 2 /* instances */);
   }
 };

@@ -290,10 +290,10 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
 }
 
 void PipelineDeclaration::to_metal(std::ostream& out, const Module& mod) const {
-  vertex_function_->to_metal(out, mod);
+  vertex_function_->to_metal(out, mod, *this);
 
   if (fragment_function_ != nullptr) {
-    fragment_function_->to_metal(out, mod);
+    fragment_function_->to_metal(out, mod, *this);
   }
 }
 

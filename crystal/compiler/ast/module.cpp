@@ -315,6 +315,12 @@ void Module::make_metal_crystallib_(crystal::common::proto::Metal& metal_pb) con
     if (pipeline->fragment_function() != nullptr) {
       pipeline_pb->set_fragment_name(pipeline->fragment_function()->name());
     }
+
+    for (const auto& [type, name, binding] : pipeline->uniforms()) {
+      common::proto::MTLUniform* uniform_pb = pipeline_pb->add_uniforms();
+      uniform_pb->set_binding(binding);
+      uniform_pb->set_actual(output::metal::uniform_binding(pipeline, binding));
+    }
   }
 }
 

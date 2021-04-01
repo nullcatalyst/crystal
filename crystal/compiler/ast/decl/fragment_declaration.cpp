@@ -157,7 +157,8 @@ void FragmentDeclaration::to_glsl(std::ostream& out, const Module& mod, bool pre
   }
 }
 
-void FragmentDeclaration::to_metal(std::ostream& out, const Module& mod) const {
+void FragmentDeclaration::to_metal(std::ostream& out, const Module& mod,
+                                   const PipelineDeclaration& pipeline) const {
   const output::metal::Options opts{mod, nullptr, this, 0};
 
   // Output the function implementation.
@@ -177,7 +178,8 @@ void FragmentDeclaration::to_metal(std::ostream& out, const Module& mod) const {
     }
     if (input.input_type == decl::FragmentInputType::Uniform) {
       out << "constant " << input.type->metal_name() << "& "
-          << output::metal::mangle_name{input.name} << " [[ buffer(" << input.index << ") ]]";
+          << output::metal::mangle_name{input.name} << " [[ buffer("
+          << output::metal::uniform_binding(pipeline, input.index) << ") ]]";
     }
     if (input.input_type == decl::FragmentInputType::Texture) {
       out << "texture2d<float> " << output::metal::mangle_name{input.name} << " [[ texture("

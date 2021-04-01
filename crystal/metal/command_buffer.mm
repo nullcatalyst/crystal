@@ -7,6 +7,7 @@
 #include "crystal/metal/render_pass.hpp"
 #include "crystal/metal/texture.hpp"
 #include "crystal/metal/uniform_buffer.hpp"
+#include "util/msg/msg.hpp"
 
 namespace crystal::metal {
 
@@ -43,6 +44,8 @@ void CommandBuffer::use_render_pass(const RenderPass& render_pass) {
 }
 
 void CommandBuffer::use_pipeline(const Pipeline& pipeline) {
+  pipeline_ = &pipeline;
+
   [render_encoder_ setRenderPipelineState:pipeline.render_pipeline_];
   [render_encoder_ setDepthStencilState:pipeline.depth_stencil_state_];
   [render_encoder_ setCullMode:pipeline.cull_mode_];
@@ -50,8 +53,13 @@ void CommandBuffer::use_pipeline(const Pipeline& pipeline) {
 }
 
 void CommandBuffer::use_uniform_buffer(const UniformBuffer& uniform_buffer, uint32_t binding) {
-  [render_encoder_ setVertexBuffer:uniform_buffer.buffer_ offset:0 atIndex:binding];
-  [render_encoder_ setFragmentBuffer:uniform_buffer.buffer_ offset:0 atIndex:binding];
+  if (pipeline_ == nullptr) {
+    util::msg::fatal("using uniform buffer at binding [", binding, "] without a pipeline bound");
+  }
+
+  const auto index = pipeline_->uniforms_[binding];
+  [render_encoder_ setVertexBuffer:uniform_buffer.buffer_ offset:0 atIndex:index];
+  [render_encoder_ setFragmentBuffer:uniform_buffer.buffer_ offset:0 atIndex:index];
 }
 
 void CommandBuffer::use_texture(const Texture& texture, uint32_t binding) {

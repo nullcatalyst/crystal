@@ -32,7 +32,7 @@ pipeline shadow {
     depth_test = "less";
     depth_write = true;
 
-    uniform Uniform u : 2;
+    uniform Uniform u : 0;
 
     vertex (
         Vertex in : 0,
@@ -70,7 +70,7 @@ pipeline combine {
     depth_test = "less";
     depth_write = true;
 
-    uniform Uniform u : 2;
+    uniform Uniform u : 0;
     texture Texture2D t : 0;
 
     vertex (
@@ -91,13 +91,12 @@ pipeline combine {
     fragment (CombineVaryings in) -> CombineOut {
         vec2 shadow_coord = 0.5 + 0.5 * in.shadow_position.xy;
         //vec4 shadow_depth = t.sample(shadow_coord.xy);
-        float shadow_depth = t.sample(shadow_coord.xy).x;
+        float shadow_depth = t.sampleDepth(shadow_coord.xy);
         float diffuse = max(0.0, dot(in.normal, u.shadow_matrix * vec4(0.0, 0.0, -1.0, 0.0)));
 
         CombineOut out;
         //out.color = vec4(shadow_depth);
-        //out.color = shadow_depth;
-        out.color = (0.25 + mix(0.0, 0.75 * diffuse, float(shadow_depth + 0.0001 > in.shadow_position.z))) * in.color;
+        out.color = (0.25 + mix(0.0, 0.75 * diffuse, float(shadow_depth > in.shadow_position.z))) * in.color;
         //out.color = (0.25 + 0.75 * diffuse) * in.color;
         return out;
     }

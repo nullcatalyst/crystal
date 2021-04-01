@@ -32,7 +32,7 @@ pipeline cube {
     depth_test = "less";
     depth_write = true;
 
-    uniform Uniform u : 2;
+    uniform Uniform u : 0;
 
     vertex (
         Vertex in : 0,

@@ -152,7 +152,7 @@ public:
 
     cmd.use_render_pass(cube_render_pass_);
     cmd.use_pipeline(cube_pipeline_);
-    cmd.use_uniform_buffer(uniform_buffer_, 1);
+    cmd.use_uniform_buffer(uniform_buffer_, 0);
     cmd.draw(cube_mesh_, 34, 1);
 
     cmd.use_render_pass(ctx_.screen_render_pass());

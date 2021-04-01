@@ -18,6 +18,8 @@ class CommandBuffer {
   OBJC(MTLCommandBuffer) command_buffer_        = nullptr;
   OBJC(MTLRenderCommandEncoder) render_encoder_ = nullptr;
 
+  const Pipeline* pipeline_ = nullptr;
+
 public:
   CommandBuffer(const CommandBuffer&) = delete;
   CommandBuffer& operator=(const CommandBuffer&) = delete;

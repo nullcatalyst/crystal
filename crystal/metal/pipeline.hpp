@@ -1,9 +1,11 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 
 #include "absl/container/inlined_vector.h"
 #include "crystal/common/pipeline_desc.hpp"
+#include "crystal/config.hpp"
 #include "crystal/metal/library.hpp"
 #include "crystal/metal/mtl.hpp"
 
@@ -15,10 +17,11 @@ class Library;
 class RenderPass;
 
 class Pipeline {
-  OBJC(MTLRenderPipelineState) render_pipeline_   = nullptr;
-  OBJC(MTLDepthStencilState) depth_stencil_state_ = nullptr;
-  MTLCullMode cull_mode_                          = {};
-  MTLWinding  winding_                            = {};
+  OBJC(MTLRenderPipelineState) render_pipeline_        = nullptr;
+  OBJC(MTLDepthStencilState) depth_stencil_state_      = nullptr;
+  MTLCullMode                               cull_mode_ = {};
+  MTLWinding                                winding_   = {};
+  std::array<uint32_t, MAX_UNIFORM_BUFFERS> uniforms_  = {};
 
 public:
   constexpr Pipeline() = default;

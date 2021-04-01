@@ -54,7 +54,7 @@ message Vulkan {
 // Metal
 
 message MTLUniform {
-    string binding = 1;
+    uint32 binding = 1;
     uint32 actual = 2;
 }
 

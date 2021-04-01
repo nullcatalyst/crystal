@@ -10,7 +10,7 @@ namespace examples::shadow_map {
 
 Uniform create_uniform(float aspect, State state) {
   return Uniform{
-      /* .shadow_matrix     = */ glm::orthoRH_ZO(-5.0f, 5.0f, -5.0f, 5.0f, -3.0f, 3.0f) *
+      /* .shadow_matrix     = */ glm::orthoRH_ZO(-5.0f, 5.0f, -5.0f, 5.0f, -6.0f, 6.0f) *
           glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(15.0f),
                                   glm::vec3(0.0f, 1.0f, 0.0f)),
                       glm::radians(75.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
@@ -170,13 +170,13 @@ public:
 
     cmd.use_render_pass(shadow_render_pass_);
     cmd.use_pipeline(shadow_pipeline_);
-    cmd.use_uniform_buffer(uniform_buffer_, 2);
+    cmd.use_uniform_buffer(uniform_buffer_, 0);
     cmd.draw(cube_mesh_, 34, 2 /* instances */);
     cmd.draw(floor_mesh_, 4, 1 /* instances */);
 
     cmd.use_render_pass(ctx_.screen_render_pass());
     cmd.use_pipeline(combine_pipeline_);
-    cmd.use_uniform_buffer(uniform_buffer_, 2);
+    cmd.use_uniform_buffer(uniform_buffer_, 0);
     cmd.use_texture(shadow_texture_, 0);
     cmd.draw(cube_mesh_, 34, 2 /* instances */);
     cmd.draw(floor_mesh_, 4, 1 /* instances */);

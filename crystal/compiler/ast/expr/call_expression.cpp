@@ -17,6 +17,16 @@ output::PrintLambda CallExpression::to_glsl(const output::glsl::Options opts) co
     }};
   }
 
+  if (expr_ != nullptr && name_ == "sampleDepth") {
+    return output::PrintLambda{[=](std::ostream& out) {
+      out << "(texture(" << expr_->to_glsl(opts);
+      for (const auto& arg : arguments_) {
+        out << ", " << arg->to_glsl(opts);
+      }
+      out << ").x * 2.0 - 1.0)";
+    }};
+  }
+
   const auto type = opts.mod.find_type(name_);
   if (type.has_value()) {
     return output::PrintLambda{[=](std::ostream& out) {
@@ -54,10 +64,32 @@ output::PrintLambda CallExpression::to_metal(const output::metal::Options opts) 
   if (expr_ != nullptr && name_ == "sample") {
     return output::PrintLambda{[=](std::ostream& out) {
       out << expr_->to_metal(opts) << ".sample(" << expr_->to_metal(opts) << "_sampler";
+      bool first = true;
       for (const auto& arg : arguments_) {
-        out << ", " << arg->to_metal(opts);
+        if (first) {
+          first = false;
+          out << ", float2(" << arg->to_metal(opts) << ".x, 1.0 - " << arg->to_metal(opts) << ".y)";
+        } else {
+          out << ", " << arg->to_metal(opts);
+        }
       }
       out << ")";
+    }};
+  }
+
+  if (expr_ != nullptr && name_ == "sampleDepth") {
+    return output::PrintLambda{[=](std::ostream& out) {
+      out << expr_->to_metal(opts) << ".sample(" << expr_->to_metal(opts) << "_sampler";
+      bool first = true;
+      for (const auto& arg : arguments_) {
+        if (first) {
+          first = false;
+          out << ", float2(" << arg->to_metal(opts) << ".x, 1.0 - " << arg->to_metal(opts) << ".y)";
+        } else {
+          out << ", " << arg->to_metal(opts);
+        }
+      }
+      out << ").x";
     }};
   }
 

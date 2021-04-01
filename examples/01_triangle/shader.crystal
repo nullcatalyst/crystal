@@ -26,7 +26,7 @@ pipeline triangle {
     // blend_src = "one";
     // blend_dst = "zero";
 
-    uniform Uniform u : 1;
+    uniform Uniform u : 0;
 
     vertex (
         Vertex in : 0,

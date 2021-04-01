@@ -3,6 +3,20 @@
 #include <iostream>
 #include <string_view>
 
+namespace crystal::compiler::ast {
+
+class Module;
+
+}  // namespace crystal::compiler::ast
+
+namespace crystal::compiler::ast::decl {
+
+class PipelineDeclaration;
+class VertexDeclaration;
+class FragmentDeclaration;
+
+}  // namespace crystal::compiler::ast::decl
+
 namespace crystal::compiler::ast::output::metal {
 
 constexpr std::string_view HDR = R"(#include <metal_stdlib>
@@ -50,22 +64,6 @@ inline std::ostream& operator<<(std::ostream& out, vertex_input_name op) {
   return out << "in." << op.name;
 }
 
-// struct varying_name {
-//   uint32_t         index;
-//   std::string_view name;
-// };
-
-// inline std::ostream& operator<<(std::ostream& out, varying_name op) {
-//   return out << "v" << op.index << "_" << op.name;
-// }
-
-// struct fragment_output_name {
-//   uint32_t         index;
-//   std::string_view name;
-// };
-
-// inline std::ostream& operator<<(std::ostream& out, fragment_output_name op) {
-//   return out << "o" << op.index << "_" << op.name;
-// }
+uint32_t uniform_binding(const decl::PipelineDeclaration& vertex, uint32_t binding);
 
 }  // namespace crystal::compiler::ast::output::metal

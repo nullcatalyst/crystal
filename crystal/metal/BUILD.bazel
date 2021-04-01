@@ -25,6 +25,7 @@ objc_library(
         "//visibility:public",
     ],
     deps = [
+        "//crystal:config",
         "//crystal/common",
         "//crystal/common/proto",
         "//util/fs",
@@ -62,6 +63,7 @@ objc_library(
         "//visibility:public",
     ],
     deps = [
+        "//crystal:config",
         "//crystal/common",
         "//crystal/common/proto",
         "//third_party/glad:gl42",

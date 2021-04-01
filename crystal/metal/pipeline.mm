@@ -11,10 +11,14 @@ namespace crystal::metal {
 Pipeline::Pipeline(Pipeline&& other)
     : render_pipeline_(other.render_pipeline_),
       depth_stencil_state_(other.depth_stencil_state_),
-      cull_mode_(other.cull_mode_) {
+      cull_mode_(other.cull_mode_),
+      winding_(other.winding_),
+      uniforms_(std::move(other.uniforms_)) {
   other.render_pipeline_     = nullptr;
   other.depth_stencil_state_ = nullptr;
   other.cull_mode_           = MTLCullModeNone;
+  other.winding_             = MTLWindingClockwise;
+  other.uniforms_            = {};
 }
 
 Pipeline& Pipeline::operator=(Pipeline&& other) {
@@ -23,10 +27,14 @@ Pipeline& Pipeline::operator=(Pipeline&& other) {
   render_pipeline_     = other.render_pipeline_;
   depth_stencil_state_ = other.depth_stencil_state_;
   cull_mode_           = other.cull_mode_;
+  winding_             = other.winding_;
+  uniforms_            = std::move(other.uniforms_);
 
   other.render_pipeline_     = nullptr;
   other.depth_stencil_state_ = nullptr;
   other.cull_mode_           = MTLCullModeNone;
+  other.winding_             = MTLWindingClockwise;
+  other.uniforms_            = {};
 
   return *this;
 }
@@ -37,6 +45,8 @@ void Pipeline::destroy() noexcept {
   render_pipeline_     = nullptr;
   depth_stencil_state_ = nullptr;
   cull_mode_           = MTLCullModeNone;
+  winding_             = MTLWindingClockwise;
+  uniforms_            = {};
 }
 
 Pipeline::Pipeline(OBJC(MTLDevice) device, Library& library, RenderPass& render_pass,
@@ -52,8 +62,12 @@ Pipeline::Pipeline(OBJC(MTLDevice) device, Library& library, RenderPass& render_
                       vertex_attribute.buffer_index;
                 });
 
+  uint32_t max_buffer_index = 0;
   std::for_each(desc.vertex_buffers.begin(), desc.vertex_buffers.end(),
-                [vertex_descriptor](auto vertex_buffer) {
+                [vertex_descriptor, &max_buffer_index](auto vertex_buffer) {
+                  if (vertex_buffer.buffer_index >= max_buffer_index) {
+                    max_buffer_index = vertex_buffer.buffer_index + 1;
+                  }
                   vertex_descriptor.layouts[vertex_buffer.buffer_index].stride =
                       vertex_buffer.stride;
                   vertex_descriptor.layouts[vertex_buffer.buffer_index].stepRate = 1;
@@ -76,11 +90,11 @@ Pipeline::Pipeline(OBJC(MTLDevice) device, Library& library, RenderPass& render_
     fragment_name = pipeline_pb.fragment_name();
 
     // Initialize the uniforms.
-    // uniforms_ = {};
-    // for (const auto& uniform_pb : pipeline_pb.uniforms()) {
-    //   uniforms_[uniform_pb.binding()] = glGetUniformBlockIndex(program_,
-    //   uniform_pb.name().c_str());
-    // }
+    uniforms_ = {};
+    for (int i = 0; i < pipeline_pb.uniforms_size(); ++i) {
+      const auto& uniform_pb          = pipeline_pb.uniforms(i);
+      uniforms_[uniform_pb.binding()] = uniform_pb.actual();
+    }
 
     break;
   }
@@ -118,10 +132,10 @@ Pipeline::Pipeline(OBJC(MTLDevice) device, Library& library, RenderPass& render_
       cull_mode_ = MTLCullModeNone;
       break;
     case CullMode::Front:
-      cull_mode_ = MTLCullModeBack;
+      cull_mode_ = MTLCullModeFront;
       break;
     case CullMode::Back:
-      cull_mode_ = MTLCullModeFront;
+      cull_mode_ = MTLCullModeBack;
       break;
     default:
       cull_mode_ = MTLCullModeNone;

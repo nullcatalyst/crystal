@@ -62,7 +62,7 @@ public:
   }
 
   void to_glsl(std::ostream& out, const Module& mod, bool pretty, bool vulkan) const;
-  void to_metal(std::ostream& out, const Module& mod) const;
+  void to_metal(std::ostream& out, const Module& mod, const PipelineDeclaration& pipeline) const;
 };
 
 }  // namespace crystal::compiler::ast::decl

@@ -141,7 +141,8 @@ void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod, bool prett
   }
 }
 
-void VertexDeclaration::to_metal(std::ostream& out, const Module& mod) const {
+void VertexDeclaration::to_metal(std::ostream& out, const Module& mod,
+                                 const PipelineDeclaration& pipeline) const {
   const output::metal::Options opts{mod, this, nullptr, 0};
 
   std::string short_name = name().substr(0, name().size() - 5);
@@ -187,7 +188,8 @@ void VertexDeclaration::to_metal(std::ostream& out, const Module& mod) const {
       continue;
     }
     out << ", constant " << input.type->metal_name() << "& "
-        << output::metal::mangle_name{input.name} << " [[ buffer(" << input.index << ") ]]";
+        << output::metal::mangle_name{input.name} << " [[ buffer("
+        << output::metal::uniform_binding(pipeline, input.index) << ") ]]";
   }
   out << ") {\n";
   for (const auto& input : inputs_) {
