@@ -27,12 +27,12 @@ struct Out {
 
 pipeline cube {
     // Disable culling to force depth testing to do some work.
-    cull = "none";
+    cull = "back";
     winding = "ccw";
     depth_test = "less";
     depth_write = true;
 
-    uniform Uniform u : 1;
+    uniform Uniform u : 2;
 
     vertex (
         Vertex in : 0,

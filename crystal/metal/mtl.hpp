@@ -29,6 +29,7 @@
 
 using MTLPixelFormat = unsigned long;
 using MTLCullMode    = unsigned long;
+using MTLWinding     = unsigned long;
 
 #define OBJC($type) OBJC_NAME($type)
 

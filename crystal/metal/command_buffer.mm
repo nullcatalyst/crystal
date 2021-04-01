@@ -46,6 +46,7 @@ void CommandBuffer::use_pipeline(const Pipeline& pipeline) {
   [render_encoder_ setRenderPipelineState:pipeline.render_pipeline_];
   [render_encoder_ setDepthStencilState:pipeline.depth_stencil_state_];
   [render_encoder_ setCullMode:pipeline.cull_mode_];
+  [render_encoder_ setFrontFacingWinding:pipeline.winding_];
 }
 
 void CommandBuffer::use_uniform_buffer(const UniformBuffer& uniform_buffer, uint32_t binding) {
@@ -57,7 +58,8 @@ void CommandBuffer::use_texture(const Texture& texture, uint32_t binding) {
   [render_encoder_ setFragmentTexture:texture.texture_ atIndex:binding];
 }
 
-void CommandBuffer::draw(const Mesh& mesh, uint32_t vertex_or_index_count, uint32_t instance_count) {
+void CommandBuffer::draw(const Mesh& mesh, uint32_t vertex_or_index_count,
+                         uint32_t instance_count) {
   for (int i = 0; i < mesh.binding_count_; ++i) {
     [render_encoder_ setVertexBuffer:mesh.bindings_[i].buffer
                               offset:0

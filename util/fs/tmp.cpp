@@ -6,7 +6,9 @@
 
 #if _WIN32
 #include <process.h>
-#endif  // _WIN32
+#else  // ^^^ _WIN32 / !_WIN32 vvv
+#include <unistd.h>
+#endif  // ^^^ !_WIN32
 
 namespace util::fs {
 

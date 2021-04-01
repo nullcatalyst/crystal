@@ -45,4 +45,14 @@ void run_command(const char* command) {
 
 }  // namespace util::proc
 
-#endif  // ^^^ _WIN32
+#else  // ^^^ _WIN32 / !_WIN32 vvv
+
+#include <cstdlib>
+
+namespace util::proc {
+
+void run_command(const char* command) { std::system(command); }
+
+}  // namespace util::proc
+
+#endif  // ^^^ !_WIN32

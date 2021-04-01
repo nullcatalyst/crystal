@@ -114,6 +114,9 @@ public:
   virtual void frame(const State& state) override {
     auto cmd = ctx_.next_frame();
 
+    ctx_.set_clear_color(ctx_.screen_render_pass(), 0,
+                         crystal::ClearValue{.color = {0.25f, 0.25f, 0.25f, 0.0f}});
+
     {  // Update uniform buffer.
       const auto aspect =
           static_cast<float>(ctx_.screen_width()) / static_cast<float>(ctx_.screen_height());
@@ -122,7 +125,7 @@ public:
 
     cmd.use_render_pass(ctx_.screen_render_pass());
     cmd.use_pipeline(pipeline_);
-    cmd.use_uniform_buffer(uniform_buffer_, 1);
+    cmd.use_uniform_buffer(uniform_buffer_, 2);
     cmd.draw(mesh_, 34, 2 /* instances */);
   }
 };

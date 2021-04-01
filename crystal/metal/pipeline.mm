@@ -118,13 +118,25 @@ Pipeline::Pipeline(OBJC(MTLDevice) device, Library& library, RenderPass& render_
       cull_mode_ = MTLCullModeNone;
       break;
     case CullMode::Front:
-      cull_mode_ = MTLCullModeFront;
+      cull_mode_ = MTLCullModeBack;
       break;
     case CullMode::Back:
-      cull_mode_ = MTLCullModeBack;
+      cull_mode_ = MTLCullModeFront;
       break;
     default:
       cull_mode_ = MTLCullModeNone;
+      break;
+  }
+
+  switch (desc.winding) {
+    case Winding::Clockwise:
+      winding_ = MTLWindingClockwise;
+      break;
+    case Winding::CounterClockwise:
+      winding_ = MTLWindingCounterClockwise;
+      break;
+    default:
+      winding_ = MTLWindingClockwise;
       break;
   }
 

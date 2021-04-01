@@ -18,6 +18,7 @@ class Pipeline {
   OBJC(MTLRenderPipelineState) render_pipeline_   = nullptr;
   OBJC(MTLDepthStencilState) depth_stencil_state_ = nullptr;
   MTLCullMode cull_mode_                          = {};
+  MTLWinding  winding_                            = {};
 
 public:
   constexpr Pipeline() = default;

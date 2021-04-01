@@ -20,12 +20,16 @@ void PipelineSettings::set_property(const std::string_view name, const std::stri
       cull_mode = CullMode::Front;
     } else if (value == "none") {
       cull_mode = CullMode::None;
+    } else {
+      util::msg::fatal("setting [cull] to unknown value [", value, "]");
     }
   } else if (name == "winding") {
     if (value == "cw" || value == "clockwise") {
       winding = Winding::Clockwise;
     } else if (value == "ccw" || value == "counterclockwise") {
       winding = Winding::CounterClockwise;
+    } else {
+      util::msg::fatal("setting [winding] to unknown value [", value, "]");
     }
   } else if (name == "depth_test") {
     if (value == "never") {
@@ -44,6 +48,8 @@ void PipelineSettings::set_property(const std::string_view name, const std::stri
       depth_test = DepthTest::GreaterEqual;
     } else if (value == "always") {
       depth_test = DepthTest::Always;
+    } else {
+      util::msg::fatal("setting [depth_test] to unknown value [", value, "]");
     }
   } else if (name == "blend_src") {
     if (value == "zero") {
@@ -66,6 +72,8 @@ void PipelineSettings::set_property(const std::string_view name, const std::stri
       blend_src = AlphaBlend::DstAlpha;
     } else if (value == "one_minus_dst_alpha") {
       blend_src = AlphaBlend::OneMinusDstAlpha;
+    } else {
+      util::msg::fatal("setting [blend_src] to unknown value [", value, "]");
     }
   } else if (name == "blend_dst") {
     if (value == "zero") {
@@ -88,6 +96,8 @@ void PipelineSettings::set_property(const std::string_view name, const std::stri
       blend_dst = AlphaBlend::DstAlpha;
     } else if (value == "one_minus_dst_alpha") {
       blend_dst = AlphaBlend::OneMinusDstAlpha;
+    } else {
+      util::msg::fatal("setting [blend_dst] to unknown value [", value, "]");
     }
   }
 }
