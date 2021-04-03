@@ -200,7 +200,7 @@ def crystal_dependencies():
     _maybe(
         http_archive,
         name = "glm",
-        build_file = "//third_party/external:glm.BUILD",
+        build_file = "@crystal//third_party/external:glm.BUILD",
         sha256 = "7d508ab72cb5d43227a3711420f06ff99b0a0cb63ee2f93631b162bfe1fe9592",
         strip_prefix = "glm-0.9.9.8",
         url = "https://github.com/g-truc/glm/archive/0.9.9.8.tar.gz",
@@ -210,7 +210,7 @@ def crystal_dependencies():
     _maybe(
         http_archive,
         name = "sdl2",
-        build_file = "//third_party/external:sdl2.BUILD",
+        build_file = "@crystal//third_party/external:sdl2.BUILD",
         sha256 = "632acd0ddce1639327be9bcfa0e1c5e389c2bdd9df0e4c73349e11a6b7f00570",
         strip_prefix = "SDL-mirror-863c4bd26b51892864c6042ad2db474e11b08fed",
         urls = [

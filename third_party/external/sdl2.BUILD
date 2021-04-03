@@ -457,8 +457,8 @@ objc_library(
 copy_file(
     name = "sdl2_config",
     src = select({
-        "@//:windows": "@//third_party/external:sdl_config.default.h",
-        "@//:macos": "@//third_party/external:sdl_config.macos.h",
+        "@//:windows": "@crystal//third_party/external:sdl_config.default.h",
+        "@//:macos": "@crystal//third_party/external:sdl_config.macos.h",
     }),
     out = "include/SDL_config.h",
 )
