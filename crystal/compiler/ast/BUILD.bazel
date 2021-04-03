@@ -11,8 +11,8 @@ cc_library(
         "//crystal/compiler/ast/expr",
         "//crystal/compiler/ast/stmt",
         "//crystal/compiler/ast/type",
-        "//util/memory",
         "@com_google_absl//absl/container:flat_hash_map",
+        "@mundane//util/memory",
     ],
 )
 
@@ -30,10 +30,10 @@ cc_library(
         "//crystal/compiler/ast/expr",
         "//crystal/compiler/ast/stmt",
         "//crystal/compiler/ast/type",
-        "//util/fs",
-        "//util/memory",
-        "//util/proc",
         "@com_google_absl//absl/container:flat_hash_map",
+        "@mundane//util/fs",
+        "@mundane//util/memory",
+        "@mundane//util/proc",
     ],
 )
 

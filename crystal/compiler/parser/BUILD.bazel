@@ -17,9 +17,9 @@ cc_library(
     ],
     deps = [
         "//crystal/compiler/ast",
-        "//util/fs",
-        "//util/memory",
         "@com_google_absl//absl/container:flat_hash_map",
+        "@mundane//util/fs",
+        "@mundane//util/memory",
     ],
 )
 

@@ -74,7 +74,7 @@ CommandBuffer Context::next_frame() {
 #endif  // ^^^ defined(CRYSTAL_USE_SDL2)
 
 void Context::change_resolution(uint32_t width, uint32_t height) {
-  util::msg::info("resolution size changed to ", width, ", ", height);
+  util::msg::debug("resolution size changed to ", width, ", ", height);
 
   // TODO: Change the depth texture size.
 

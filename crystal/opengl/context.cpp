@@ -67,7 +67,7 @@ CommandBuffer Context::next_frame() { return CommandBuffer(); }
 #endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
 
 void Context::change_resolution(uint32_t width, uint32_t height) {
-  util::msg::info("resolution size changed to ", width, ", ", height);
+  util::msg::debug("resolution size changed to ", width, ", ", height);
   screen_render_pass_.width_  = width;
   screen_render_pass_.height_ = height;
 }

@@ -288,11 +288,9 @@ Context::~Context() {
 }
 
 void Context::change_resolution(uint32_t width, uint32_t height) {
-  util::msg::info("resolution size changed to ", width, ", ", height);
+  util::msg::debug("resolution size changed to ", width, ", ", height);
 
-  // swapchain_.recreate();
-  // TODO: Any existing framebuffers stored in RenderPass objects need to be updated if they contain
-  // an old image view from the old swapchain.
+  // if (swapchain_.) swapchain_.recreate();
 }
 
 void Context::set_clear_color(RenderPass& render_pass, uint32_t attachment,

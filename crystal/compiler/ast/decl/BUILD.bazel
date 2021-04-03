@@ -18,10 +18,10 @@ cc_library(
         "//crystal/compiler/ast/output",
         "//crystal/compiler/ast/stmt",
         "//crystal/compiler/ast/type",
-        "//util/memory",
-        "//util/msg",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@mundane//util/memory",
+        "@mundane//util/msg",
     ],
 )
 

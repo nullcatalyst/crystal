@@ -17,7 +17,7 @@ cc_library(
         "//crystal/compiler/ast/decl:hdrs",
         "//crystal/compiler/ast/stmt:hdrs",
         "//crystal/compiler/ast/type:hdrs",
-        "//util/memory",
-        "//util/msg",
+        "@mundane//util/memory",
+        "@mundane//util/msg",
     ],
 )

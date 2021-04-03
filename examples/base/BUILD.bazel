@@ -17,8 +17,8 @@ cc_library(
     ],
     deps = [
         "//crystal",
-        "//util/msg",
         "@glm",
+        "@mundane//util/msg",
         "@sdl2",
     ],
 )

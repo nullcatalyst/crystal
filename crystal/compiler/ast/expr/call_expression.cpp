@@ -18,13 +18,23 @@ output::PrintLambda CallExpression::to_glsl(const output::glsl::Options opts) co
   }
 
   if (expr_ != nullptr && name_ == "sampleDepth") {
-    return output::PrintLambda{[=](std::ostream& out) {
-      out << "(texture(" << expr_->to_glsl(opts);
-      for (const auto& arg : arguments_) {
-        out << ", " << arg->to_glsl(opts);
-      }
-      out << ").x * 2.0 - 1.0)";
-    }};
+    if (opts.vulkan) {
+      return output::PrintLambda{[=](std::ostream& out) {
+        out << "texture(" << expr_->to_glsl(opts);
+        for (const auto& arg : arguments_) {
+          out << ", " << arg->to_glsl(opts);
+        }
+        out << ").x";
+      }};
+    } else {
+      return output::PrintLambda{[=](std::ostream& out) {
+        out << "(texture(" << expr_->to_glsl(opts);
+        for (const auto& arg : arguments_) {
+          out << ", " << arg->to_glsl(opts);
+        }
+        out << ").x * 2.0 - 1.0)";
+      }};
+    }
   }
 
   const auto type = opts.mod.find_type(name_);

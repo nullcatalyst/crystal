@@ -60,7 +60,6 @@ selects.config_setting_group(
     ],
 )
 
-
 cc_library(
     name = "common",
     hdrs = glob([
@@ -103,11 +102,11 @@ cc_library(
         ":common",
         ":interface",
         "//third_party/glad:gl42",
-        "//util/fs",
-        "//util/memory",
-        "//util/msg",
-        "//util/unsafe",
         "@com_google_absl//absl/container:inlined_vector",
+        "@mundane//util/fs",
+        "@mundane//util/memory",
+        "@mundane//util/msg",
+        "@mundane//util/unsafe",
         "@sdl2//:sdl2_hdrs",
     ],
 )
@@ -137,9 +136,9 @@ cc_library(
 #         ":common",
 #         ":interface",
 #         "//third_party/glad:es30",
-#         "//util/fs",
-#         "//util/memory",
-#         "//util/msg",
+#         "@mundane//util/fs",
+#         "@mundane//util/memory",
+#         "@mundane//util/msg",
 #         "@com_google_absl//absl/container:inlined_vector",
 #         "@sdl2//:sdl2_hdrs",
 #     ],
@@ -170,11 +169,11 @@ cc_library(
         ":common",
         ":interface",
         "//third_party/vulkan_memory_allocator",
-        "//util/fs",
-        "//util/memory",
-        "//util/msg",
-        "//util/unsafe",
         "@com_google_absl//absl/container:inlined_vector",
+        "@mundane//util/fs",
+        "@mundane//util/memory",
+        "@mundane//util/msg",
+        "@mundane//util/unsafe",
         "@sdl2//:sdl2_hdrs",
         "@vulkan",
     ],

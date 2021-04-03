@@ -143,6 +143,17 @@ def crystal_dependencies():
         name = "vulkan",
     )
 
+    # Mundane Utility Library
+    _maybe(
+        http_archive,
+        name = "mundane",
+        sha256 = "5d8bd851ce33076b31263cf8d36f08a925d441281ffd436eea407405729fc2ac",
+        strip_prefix = "mundane-6582d01924faf31ef79468a5fc61f831cfb31e05",
+        urls = [
+            "https://github.com/nullcatalyst/mundane/archive/6582d01924faf31ef79468a5fc61f831cfb31e05.tar.gz",
+        ],
+    )
+
     # GLSL Validator
     # _maybe(
     #     http_archive,
