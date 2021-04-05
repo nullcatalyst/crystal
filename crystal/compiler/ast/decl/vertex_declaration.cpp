@@ -77,10 +77,15 @@ void VertexDeclaration::to_glsl(std::ostream& out, const Module& mod, bool prett
         // Skip properties that don't have an input index.
         continue;
       }
-      out << output::glsl::indent{opts.indent} << "layout(location=" << prop.index
-          << (opts.pretty ? ") in " : ")in ") << prop.type->name() << " "
-          << output::glsl::vertex_input_name{static_cast<uint32_t>(prop.index), prop.name}
-          << (opts.pretty ? ";\n" : ";");
+
+      if (prop.type->name() == "vec4" || prop.type->name() == "mat4") {
+        out << output::glsl::indent{opts.indent} << "layout(location=" << prop.index
+            << (opts.pretty ? ") in " : ")in ") << prop.type->name() << " "
+            << output::glsl::vertex_input_name{static_cast<uint32_t>(prop.index), prop.name}
+            << (opts.pretty ? ";\n" : ";");
+      } else {
+        util::msg::fatal("unsupported vertex attribute type [", prop.type->name(), "]");
+      }
     }
   }
 

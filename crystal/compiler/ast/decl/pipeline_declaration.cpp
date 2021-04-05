@@ -260,11 +260,24 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
     out << "\n    {\n";
     // TODO: Sort these before outputting them, for my own sanity.
     for (const auto& [type, prop, attr, buffer_index] : vertex_attributes) {
-      out << "        crystal::VertexAttributeDesc{\n"
-          << "            /* .attribute    = */ " << attr << ",\n"
-          << "            /* .offset       = */ offsetof(" << type << ", " << prop << "),\n"
-          << "            /* .buffer_index = */ " << buffer_index << ",\n"
-          << "        },\n";
+      if (prop.type->name() == "vec4") {
+        out << "        crystal::VertexAttributeDesc{\n"
+            << "            /* .attribute    = */ " << attr << ",\n"
+            << "            /* .offset       = */ offsetof(" << type << ", " << prop << "),\n"
+            << "            /* .buffer_index = */ " << buffer_index << ",\n"
+            << "        },\n";
+      } else if (prop.type->name() == "mat4") {
+        for (int i = 0; i < 4; ++i) {
+          out << "        crystal::VertexAttributeDesc{\n"
+              << "            /* .attribute    = */ " << (attr + i) << ",\n"
+              << "            /* .offset       = */ offsetof(" << type << ", " << prop << ") + ("
+              << i << " * sizeof(vec4)),\n"
+              << "            /* .buffer_index = */ " << buffer_index << ",\n"
+              << "        },\n";
+        }
+      } else {
+        util::msg::fatal("unsupported vertex attribute type [", prop.type->name(), "]");
+      }
     }
     out << "    },\n";
   }

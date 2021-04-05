@@ -8,6 +8,7 @@
                 "${workspaceFolder}/bazel-bin",
                 "${workspaceFolder}/bazel-crystal/external/com_google_absl",
                 "${workspaceFolder}/bazel-crystal/external/glm",
+                "${workspaceFolder}/bazel-crystal/external/mundane",
                 "${workspaceFolder}/bazel-crystal/external/sdl2/include",
                 "${workspaceFolder}/bazel-crystal/external/vulkan/include"
             ],
