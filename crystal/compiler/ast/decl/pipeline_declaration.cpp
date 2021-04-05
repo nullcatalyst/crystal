@@ -4,6 +4,7 @@
 #include <tuple>
 
 #include "absl/container/flat_hash_set.h"
+#include "absl/hash/hash.h"
 #include "crystal/compiler/ast/decl/fragment_declaration.hpp"
 #include "crystal/compiler/ast/decl/vertex_declaration.hpp"
 #include "crystal/compiler/ast/module.hpp"
@@ -11,6 +12,27 @@
 #include "crystal/compiler/ast/type/struct_type.hpp"
 
 namespace crystal::compiler::ast::decl {
+
+namespace {
+
+struct VertexAttribute {
+  std::string                   type;
+  util::memory::Ref<type::Type> prop_type;
+  std::string                   prop_name;
+  uint32_t                      prop_attr;
+  uint32_t                      buffer_index;
+};
+
+bool operator==(const VertexAttribute& a, const VertexAttribute& b) {
+  return a.prop_attr == b.prop_attr && a.buffer_index == b.buffer_index;
+}
+
+template <typename H>
+H AbslHashValue(H h, const VertexAttribute& attribute) {
+  return H::combine(std::move(h), attribute.prop_attr, attribute.buffer_index);
+}
+
+}  // namespace
 
 void PipelineSettings::set_property(const std::string_view name, const std::string_view value) {
   if (name == "cull") {
@@ -142,10 +164,8 @@ PipelineDeclaration::PipelineDeclaration(std::string_view name, const PipelineSe
 void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const {
   // Iterate over the vertex/fragment function inputs and precalculate all of the necessary
   // information.
-  absl::flat_hash_set<uint32_t> uniforms;
-  absl::flat_hash_set<std::tuple<std::string /* type */, std::string /* prop */,
-                                 uint32_t /* attr */, uint32_t /* buffer_index */>>
-      vertex_attributes;
+  absl::flat_hash_set<uint32_t>        uniforms;
+  absl::flat_hash_set<VertexAttribute> vertex_attributes;
   absl::flat_hash_set<
       std::tuple<std::string /* type */, uint32_t /* buffer_index */, bool /* instanced */>>
       vertex_buffers;
@@ -158,8 +178,9 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
           if (prop.index < 0) {
             continue;
           }
-          vertex_attributes.emplace(
-              std::make_tuple(input.type->name(), prop.name, prop.index, input.index));
+          vertex_attributes.emplace(VertexAttribute{input.type->name(), prop.type, prop.name,
+                                                    static_cast<uint32_t>(prop.index),
+                                                    static_cast<uint32_t>(input.index)});
         }
 
         vertex_buffers.emplace(std::make_tuple(input.type->name(), input.index,
@@ -259,24 +280,25 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
   } else {
     out << "\n    {\n";
     // TODO: Sort these before outputting them, for my own sanity.
-    for (const auto& [type, prop, attr, buffer_index] : vertex_attributes) {
-      if (prop.type->name() == "vec4") {
+    for (const auto& attribute : vertex_attributes) {
+      if (attribute.prop_type->name() == "vec4") {
         out << "        crystal::VertexAttributeDesc{\n"
-            << "            /* .attribute    = */ " << attr << ",\n"
-            << "            /* .offset       = */ offsetof(" << type << ", " << prop << "),\n"
-            << "            /* .buffer_index = */ " << buffer_index << ",\n"
+            << "            /* .attribute    = */ " << attribute.prop_attr << ",\n"
+            << "            /* .offset       = */ offsetof(" << attribute.type << ", "
+            << attribute.prop_name << "),\n"
+            << "            /* .buffer_index = */ " << attribute.buffer_index << ",\n"
             << "        },\n";
-      } else if (prop.type->name() == "mat4") {
+      } else if (attribute.prop_type->name() == "mat4") {
         for (int i = 0; i < 4; ++i) {
           out << "        crystal::VertexAttributeDesc{\n"
-              << "            /* .attribute    = */ " << (attr + i) << ",\n"
-              << "            /* .offset       = */ offsetof(" << type << ", " << prop << ") + ("
-              << i << " * sizeof(vec4)),\n"
-              << "            /* .buffer_index = */ " << buffer_index << ",\n"
+              << "            /* .attribute    = */ " << (attribute.prop_attr + i) << ",\n"
+              << "            /* .offset       = */ offsetof(" << attribute.type << ", "
+              << attribute.prop_name << ") + (" << i << " * sizeof(vec4)),\n"
+              << "            /* .buffer_index = */ " << attribute.buffer_index << ",\n"
               << "        },\n";
         }
       } else {
-        util::msg::fatal("unsupported vertex attribute type [", prop.type->name(), "]");
+        util::msg::fatal("unsupported vertex attribute type [", attribute.prop_type->name(), "]");
       }
     }
     out << "    },\n";

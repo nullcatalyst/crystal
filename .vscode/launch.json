@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(win) 01 triangle",
+            "name": "(win) 01_triangle",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bazel-bin/examples/01_triangle/01_triangle.exe.runfiles/crystal/examples/01_triangle/01_triangle.exe",
@@ -17,31 +17,55 @@
             "preLaunchTask": "01_triangle"
         },
         {
-            "name": "(win) 03 render to texture",
+            "name": "(win) 02_instances",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bazel-bin/examples/03_render_to_texture/03_render_to_texture.exe.runfiles/crystal/examples/03_render_to_texture/03_render_to_texture.exe",
+            "program": "${workspaceFolder}/bazel-bin/examples/02_instances/02_instances.exe.runfiles/crystal/examples/02_instances/02_instances.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/bazel-bin/examples/03_render_to_texture/03_render_to_texture.exe.runfiles/crystal",
+            "cwd": "${workspaceFolder}/bazel-bin/examples/02_instances/02_instances.exe.runfiles/crystal",
             "environment": [],
             "console": "integratedTerminal",
-            "preLaunchTask": "03_render_to_texture"
+            "preLaunchTask": "02_instances"
         },
         {
-            "name": "(win) 04 shadow map",
+            "name": "(win) 03_depth_test",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bazel-bin/examples/04_shadow_map/04_shadow_map.exe.runfiles/crystal/examples/04_shadow_map/04_shadow_map.exe",
+            "program": "${workspaceFolder}/bazel-bin/examples/03_depth_test/03_depth_test.exe.runfiles/crystal/examples/03_depth_test/03_depth_test.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/bazel-bin/examples/04_shadow_map/04_shadow_map.exe.runfiles/crystal",
+            "cwd": "${workspaceFolder}/bazel-bin/examples/03_depth_test/03_depth_test.exe.runfiles/crystal",
             "environment": [],
             "console": "integratedTerminal",
-            "preLaunchTask": "04_shadow_map"
+            "preLaunchTask": "03_depth_test"
         },
         {
-            "name": "(mac) triangle",
+            "name": "(win) 04_render_to_texture",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/examples/04_render_to_texture/04_render_to_texture.exe.runfiles/crystal/examples/04_render_to_texture/04_render_to_texture.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/bazel-bin/examples/04_render_to_texture/04_render_to_texture.exe.runfiles/crystal",
+            "environment": [],
+            "console": "integratedTerminal",
+            "preLaunchTask": "04_render_to_texture"
+        },
+        {
+            "name": "(win) 05_shadow_map",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/examples/05_shadow_map/05_shadow_map.exe.runfiles/crystal/examples/05_shadow_map/05_shadow_map.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/bazel-bin/examples/05_shadow_map/05_shadow_map.exe.runfiles/crystal",
+            "environment": [],
+            "console": "integratedTerminal",
+            "preLaunchTask": "05_shadow_map"
+        },
+        {
+            "name": "(mac) 01_triangle",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bazel-bin/examples/triangle/metal.runfiles/crystal/examples/triangle/metal",

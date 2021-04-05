@@ -1,4 +1,4 @@
-#include "examples/03_render_to_texture/scene.hpp"
+#include "examples/02_instances/scene.hpp"
 #include "examples/base/controller.hpp"
 #include "examples/base/engine.hpp"
 #include "util/msg/msg.hpp"
@@ -19,8 +19,8 @@ int main(int argc, char* argv[]) {
 #endif  // ^^^ !CRYSTAL_USE_OPENGL && !CRYSTAL_USE_VULKAN && !CRYSTAL_USE_METAL
 
   {
-    engine::Controller ctrl(engine::create_engine<Ctx>("render to texture"),
-                            std::make_unique<examples::render_to_texture::Scene>());
+    engine::Controller ctrl(engine::create_engine<Ctx>("instances"),
+                            std::make_unique<examples::instances::Scene>());
     ctrl.run();
   }
 

@@ -1,4 +1,4 @@
-#include "examples/04_shadow_map/scene.hpp"
+#include "examples/03_depth_test/scene.hpp"
 #include "examples/base/controller.hpp"
 #include "examples/base/engine.hpp"
 #include "util/msg/msg.hpp"
@@ -19,8 +19,8 @@ int main(int argc, char* argv[]) {
 #endif  // ^^^ !CRYSTAL_USE_OPENGL && !CRYSTAL_USE_VULKAN && !CRYSTAL_USE_METAL
 
   {
-    engine::Controller ctrl(engine::create_engine<Ctx>("shadow map"),
-                            std::make_unique<examples::shadow_map::Scene>());
+    engine::Controller ctrl(engine::create_engine<Ctx>("depth test"),
+                            std::make_unique<examples::depth_test::Scene>());
     ctrl.run();
   }
 

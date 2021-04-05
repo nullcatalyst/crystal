@@ -1,7 +1,7 @@
 #pragma once
 
-#include "examples/04_shadow_map/state.hpp"
-#include "examples/04_shadow_map/view.hpp"
+#include "examples/05_shadow_map/state.hpp"
+#include "examples/05_shadow_map/view.hpp"
 #include "examples/base/controller.hpp"
 #include "examples/base/scene.hpp"
 #include "glm/glm.hpp"

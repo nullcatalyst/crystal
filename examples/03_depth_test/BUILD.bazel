@@ -1,0 +1,31 @@
+load("//tools:cc.bzl", "cc_binary")
+load("//tools:crystal.bzl", "crystal_library")
+
+cc_binary(
+    name = "03_depth_test",
+    srcs = [
+        "main.cpp",
+        "scene.hpp",
+        "state.hpp",
+        "view.hpp",
+        ":shader.hpp",
+    ],
+    data = [
+        ":shader.crystallib",
+    ],
+    deps = [
+        "//crystal:include",
+        "//examples/base",
+        "@glm",
+        "@sdl2",
+        "@sdl2//:sdl2_main",
+    ],
+)
+
+crystal_library(
+    name = "shader",
+    src = "shader.crystal",
+    visibility = [
+        "//examples/03_depth_test:__subpackages__",
+    ],
+)

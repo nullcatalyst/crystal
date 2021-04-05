@@ -54,7 +54,7 @@ void update_uniform_buffer(UniformBuffer& uniform_buffer, const T& value) {
 
 template <typename T>
 VertexBuffer create_vertex_buffer(const std::initializer_list<T> list) {
-  return create_vertex_buffer(list.begin(), sizeof(list.begin()[0]) * list.size());
+  return create_vertex_buffer(list.begin(), sizeof(T) * list.size());
 }
 
 template <typename Container>
@@ -64,7 +64,7 @@ VertexBuffer create_vertex_buffer(const Container& container) {
 
 template <typename T>
 void update_vertex_buffer(VertexBuffer& vertex_buffer, const std::initializer_list<T> list) {
-  return update_vertex_buffer(list.begin(), sizeof(list.begin()[0]) * list.size());
+  return update_vertex_buffer(vertex_buffer, list.begin(), sizeof(T) * list.size());
 }
 
 template <typename Container>

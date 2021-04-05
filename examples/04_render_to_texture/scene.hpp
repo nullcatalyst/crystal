@@ -1,7 +1,7 @@
 #pragma once
 
-#include "examples/03_render_to_texture/state.hpp"
-#include "examples/03_render_to_texture/view.hpp"
+#include "examples/04_render_to_texture/state.hpp"
+#include "examples/04_render_to_texture/view.hpp"
 #include "examples/base/controller.hpp"
 #include "examples/base/scene.hpp"
 #include "glm/glm.hpp"

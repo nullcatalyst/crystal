@@ -1,0 +1,50 @@
+namespace examples::instances;
+
+struct Uniform {
+    mat4 matrix;
+}
+
+struct Vertex {
+    vec4 position : 0;
+}
+
+struct Instance {
+    vec4 color : 1;
+    mat4 matrix : 2;
+}
+
+struct Varyings {
+    vec4 position : 0;
+    vec4 color    : 1;
+}
+
+struct Out {
+    vec4 color : 0;
+}
+
+pipeline instances {
+    cull = "none";
+    winding = "ccw";
+    depth_test = "always";
+    depth_write = false;
+    blend_src = "one";
+    blend_dst = "zero";
+
+    uniform Uniform u : 0;
+
+    vertex (
+        Vertex vert : 0,
+        Instance inst : instanced 1,
+    ) -> Varyings {
+        Varyings out;
+        out.position = u.matrix * (inst.matrix * vert.position);
+        out.color    = inst.color;
+        return out;
+    }
+
+    fragment (Varyings in) -> Out {
+        Out out;
+        out.color = in.color;
+        return out;
+    }
+}

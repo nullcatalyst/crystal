@@ -1,8 +1,8 @@
 #pragma once
 
 #include "crystal/crystal.hpp"
-#include "examples/03_render_to_texture/shader.hpp"
-#include "examples/03_render_to_texture/state.hpp"
+#include "examples/04_render_to_texture/shader.hpp"
+#include "examples/04_render_to_texture/state.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -48,7 +48,7 @@ public:
     const auto aspect = static_cast<float>(ctx_.screen_width()) / ctx_.screen_height();
     uniform_buffer_   = ctx.create_uniform_buffer(create_uniform(aspect, state));
 
-    auto library = ctx.create_library("examples/03_render_to_texture/shader.crystallib");
+    auto library = ctx.create_library("examples/04_render_to_texture/shader.crystallib");
 
     cube_texture_     = ctx.create_texture(crystal::TextureDesc{
         /* .width  = */ 1024,
@@ -157,7 +157,7 @@ public:
 
     cmd.use_render_pass(ctx_.screen_render_pass());
     cmd.use_pipeline(quad_pipeline_);
-    cmd.use_uniform_buffer(uniform_buffer_, 1);
+    cmd.use_uniform_buffer(uniform_buffer_, 0);
     cmd.use_texture(cube_texture_, 0);
     cmd.draw(quad_mesh_, 4, 1);
   }

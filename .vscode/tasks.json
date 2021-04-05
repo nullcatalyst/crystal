@@ -15,8 +15,8 @@
             "group": "build"
         },
         {
-            "label": "03_render_to_texture",
-            "command": "bazel build //examples/03_render_to_texture -c dbg",
+            "label": "02_instances",
+            "command": "bazel build //examples/02_instances -c dbg",
             "type": "shell",
             "args": [],
             "problemMatcher": [
@@ -28,8 +28,34 @@
             "group": "build"
         },
         {
-            "label": "04_shadow_map",
-            "command": "bazel build //examples/04_shadow_map -c dbg",
+            "label": "03_depth_test",
+            "command": "bazel build //examples/03_depth_test -c dbg",
+            "type": "shell",
+            "args": [],
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "presentation": {
+                "reveal": "always"
+            },
+            "group": "build"
+        },
+        {
+            "label": "04_render_to_texture",
+            "command": "bazel build //examples/04_render_to_texture -c dbg",
+            "type": "shell",
+            "args": [],
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "presentation": {
+                "reveal": "always"
+            },
+            "group": "build"
+        },
+        {
+            "label": "05_shadow_map",
+            "command": "bazel build //examples/05_shadow_map -c dbg",
             "type": "shell",
             "args": [],
             "problemMatcher": [
