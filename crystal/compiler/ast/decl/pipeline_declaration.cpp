@@ -360,6 +360,17 @@ void PipelineDeclaration::make_opengl_crystallib(crystal::common::proto::GLPipel
       uniform_pb->set_binding(binding);
     }
   }
+
+  {  // Textures.
+    for (const auto& [type, name, binding] : textures_) {
+      crystal::common::proto::GLTexture* texture_pb = pipeline_pb.add_textures();
+
+      std::stringstream sstream;
+      sstream << output::glsl::mangle_name{name};
+      texture_pb->set_name(sstream.str());
+      texture_pb->set_binding(binding);
+    }
+  }
 }
 
 }  // namespace crystal::compiler::ast::decl

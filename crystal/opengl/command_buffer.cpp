@@ -121,6 +121,10 @@ void CommandBuffer::use_pipeline(const Pipeline& pipeline) {
 }
 
 void CommandBuffer::use_uniform_buffer(const UniformBuffer& uniform_buffer, uint32_t binding) {
+  if (pipeline_ == nullptr) {
+    util::msg::fatal("setting uniform buffer with no pipeline bound");
+  }
+
   GL_ASSERT(glBindBufferBase(GL_UNIFORM_BUFFER, binding, uniform_buffer.buffer_),
             "setting uniform buffer base");
   GL_ASSERT(glUniformBlockBinding(pipeline_->program_, pipeline_->uniforms_[binding], binding),
@@ -128,7 +132,11 @@ void CommandBuffer::use_uniform_buffer(const UniformBuffer& uniform_buffer, uint
 }
 
 void CommandBuffer::use_texture(const Texture& texture, uint32_t binding) {
-  // GL_ASSERT(glUniform1i(location, binding), "setting texture uniform");
+  if (pipeline_ == nullptr) {
+    util::msg::fatal("setting texture with no pipeline bound");
+  }
+
+  GL_ASSERT(glUniform1i(pipeline_->textures_[binding], binding), "setting texture uniform");
   GL_ASSERT(glActiveTexture(GL_TEXTURE0 + binding), "setting active texture");
   GL_ASSERT(glBindTexture(GL_TEXTURE_2D, texture.texture_), "binding texture");
 }

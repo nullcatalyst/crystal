@@ -35,7 +35,8 @@ class Pipeline {
   AlphaBlend                                 blend_src_   = AlphaBlend::Zero;
   AlphaBlend                                 blend_dst_   = AlphaBlend::Zero;
   std::array<Binding, MAX_VERTEX_ATTRIBUTES> attributes_  = {};
-  std::array<GLuint, MAX_UNIFORM_BUFFERS>    uniforms_    = {};
+  std::array<GLuint, MAX_UNIFORM_BINDINGS>   uniforms_    = {};
+  std::array<GLuint, MAX_TEXTURE_BINDINGS>   textures_    = {};
 
 public:
   constexpr Pipeline() = default;

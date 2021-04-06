@@ -123,7 +123,8 @@ Pipeline::Pipeline(Pipeline&& other)
       blend_src_(other.blend_src_),
       blend_dst_(other.blend_dst_),
       attributes_(std::move(other.attributes_)),
-      uniforms_(std::move(other.uniforms_)) {
+      uniforms_(std::move(other.uniforms_)),
+      textures_(std::move(other.textures_)) {
   other.ctx_         = nullptr;
   other.id_          = 0;
   other.program_     = 0;
@@ -134,6 +135,7 @@ Pipeline::Pipeline(Pipeline&& other)
   other.blend_dst_   = AlphaBlend::Zero;
   other.attributes_  = {};
   other.uniforms_    = {};
+  other.textures_    = {};
 }
 
 Pipeline& Pipeline::operator=(Pipeline&& other) {
@@ -149,6 +151,7 @@ Pipeline& Pipeline::operator=(Pipeline&& other) {
   blend_dst_   = other.blend_dst_;
   attributes_  = std::move(other.attributes_);
   uniforms_    = std::move(other.uniforms_);
+  textures_    = std::move(other.textures_);
 
   other.ctx_         = nullptr;
   other.id_          = 0;
@@ -160,6 +163,7 @@ Pipeline& Pipeline::operator=(Pipeline&& other) {
   other.blend_dst_   = AlphaBlend::Zero;
   other.attributes_  = {};
   other.uniforms_    = {};
+  other.textures_    = {};
 
   return *this;
 }
@@ -183,6 +187,7 @@ void Pipeline::destroy() noexcept {
   blend_dst_   = AlphaBlend::Zero;
   attributes_  = {};
   uniforms_    = {};
+  textures_    = {};
 }
 
 Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
@@ -211,10 +216,16 @@ Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
       program_ = compile_program(program, pipeline_pb.vertex_source());
     }
 
-    // Initialize the uniforms.
+    // Initialize the uniforms bindings.
     uniforms_ = {};
     for (const auto& uniform_pb : pipeline_pb.uniforms()) {
       uniforms_[uniform_pb.binding()] = glGetUniformBlockIndex(program_, uniform_pb.name().c_str());
+    }
+
+    // Initialize the texture bindings.
+    textures_ = {};
+    for (const auto& texture_pb : pipeline_pb.textures()) {
+      textures_[texture_pb.binding()] = glGetUniformLocation(program_, texture_pb.name().c_str());
     }
 
     break;
