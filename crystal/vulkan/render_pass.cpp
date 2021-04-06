@@ -12,12 +12,14 @@ RenderPass::RenderPass(RenderPass&& other)
     : device_(other.device_),
       render_pass_(other.render_pass_),
       attachment_count_(other.attachment_count_),
+      has_depth_(other.has_depth_),
       clear_values_(std::move(other.clear_values_)),
       framebuffers_(std::move(other.framebuffers_)),
       extent_(other.extent_) {
   other.device_           = VK_NULL_HANDLE;
   other.render_pass_      = VK_NULL_HANDLE;
   other.attachment_count_ = 0;
+  other.has_depth_        = false;
   other.clear_values_     = {};
   other.framebuffers_.resize(0);
   other.extent_ = {};
@@ -29,6 +31,7 @@ RenderPass& RenderPass::operator=(RenderPass&& other) {
   device_           = other.device_;
   render_pass_      = other.render_pass_;
   attachment_count_ = other.attachment_count_;
+  has_depth_        = other.has_depth_;
   clear_values_     = std::move(other.clear_values_);
   framebuffers_     = std::move(other.framebuffers_);
   extent_           = other.extent_;
@@ -36,6 +39,7 @@ RenderPass& RenderPass::operator=(RenderPass&& other) {
   other.device_           = VK_NULL_HANDLE;
   other.render_pass_      = VK_NULL_HANDLE;
   other.attachment_count_ = 0;
+  other.has_depth_        = false;
   other.clear_values_     = {};
   other.framebuffers_.resize(0);
   other.extent_ = {};
@@ -58,12 +62,14 @@ void RenderPass::destroy() {
   device_           = VK_NULL_HANDLE;
   render_pass_      = VK_NULL_HANDLE;
   attachment_count_ = 0;
+  has_depth_        = false;
   framebuffers_.resize(0);
   extent_ = {};
 }
 
 RenderPass::RenderPass(Context& ctx) : device_(ctx.device_) {
-  attachment_count_ = 2;
+  attachment_count_ = 1;
+  has_depth_        = true;
   clear_values_     = {
       VkClearValue{
           .color = {0.0f, 0.0f, 0.0f, 0.0f},
@@ -131,7 +137,7 @@ RenderPass::RenderPass(Context& ctx) : device_(ctx.device_) {
         /* .sType = */ VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
         /* .pNext           = */ nullptr,
         /* .flags           = */ 0,
-        /* .attachmentCount = */ attachment_count_,
+        /* .attachmentCount = */ 2,
         /* .pAttachments    = */ attachment_descriptions.data(),
         /* .subpassCount    = */ 1,
         /* .pSubpasses      = */ subpasses,
@@ -158,7 +164,7 @@ RenderPass::RenderPass(Context& ctx) : device_(ctx.device_) {
           /* .pNext           = */ nullptr,
           /* .flags           = */ 0,
           /* .renderPass      = */ render_pass_,
-          /* .attachmentCount = */ attachment_count_,
+          /* .attachmentCount = */ 2,
           /* .pAttachments    = */ attachment_views.data(),
           /* .width           = */ extent_.width,
           /* .height          = */ extent_.height,
@@ -174,7 +180,7 @@ RenderPass::RenderPass(Context& ctx) : device_(ctx.device_) {
 RenderPass::RenderPass(
     Context&                                                                ctx,
     const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures)
-    : device_(ctx.device_), attachment_count_(0) {
+    : device_(ctx.device_), attachment_count_(0), has_depth_(false) {
   std::array<VkImageView, 5> attachment_views;
 
   {  // Save the dimensions of the framebuffer.
@@ -304,7 +310,7 @@ RenderPass::RenderPass(
     Context&                                                                ctx,
     const std::initializer_list<std::tuple<const Texture&, AttachmentDesc>> color_textures,
     const std::tuple<const Texture&, AttachmentDesc>                        depth_texture)
-    : device_(ctx.device_), attachment_count_(0) {
+    : device_(ctx.device_), attachment_count_(0), has_depth_(true) {
   std::array<VkImageView, 5> attachment_views;
 
   {  // Save the dimensions of the framebuffer.
@@ -388,8 +394,6 @@ RenderPass::RenderPass(
       };
 
       attachment_views[attachment_count_] = texture.image_view_;
-
-      ++attachment_count_;
     }
 
     const VkSubpassDescription subpasses[] = {
@@ -398,10 +402,10 @@ RenderPass::RenderPass(
             /* .pipelineBindPoint       = */ VK_PIPELINE_BIND_POINT_GRAPHICS,
             /* .inputAttachmentCount    = */ 0,
             /* .pInputAttachments       = */ nullptr,
-            /* .colorAttachmentCount    = */ attachment_count_ - 1,
+            /* .colorAttachmentCount    = */ attachment_count_,
             /* .pColorAttachments       = */ attachment_references.data(),
             /* .pResolveAttachments     = */ nullptr,
-            /* .pDepthStencilAttachment = */ &attachment_references[attachment_count_ - 1],
+            /* .pDepthStencilAttachment = */ &attachment_references[attachment_count_],
             /* .preserveAttachmentCount = */ 0,
             /* .pPreserveAttachments    = */ nullptr,
         },
@@ -432,7 +436,7 @@ RenderPass::RenderPass(
         /* .sType = */ VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
         /* .pNext           = */ nullptr,
         /* .flags           = */ 0,
-        /* .attachmentCount = */ attachment_count_,
+        /* .attachmentCount = */ attachment_count_ + 1,
         /* .pAttachments    = */ attachment_descriptions.data(),
         /* .subpassCount    = */ 1,
         /* .pSubpasses      = */ subpasses,
@@ -451,7 +455,7 @@ RenderPass::RenderPass(
         /* .pNext           = */ nullptr,
         /* .flags           = */ 0,
         /* .renderPass      = */ render_pass_,
-        /* .attachmentCount = */ attachment_count_,
+        /* .attachmentCount = */ attachment_count_ + 1,
         /* .pAttachments    = */ attachment_views.data(),
         /* .width           = */ extent_.width,
         /* .height          = */ extent_.height,

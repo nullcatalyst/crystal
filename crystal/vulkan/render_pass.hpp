@@ -19,6 +19,7 @@ class RenderPass {
   VkDevice                              device_           = VK_NULL_HANDLE;
   VkRenderPass                          render_pass_      = VK_NULL_HANDLE;
   uint32_t                              attachment_count_ = 0;
+  bool                                  has_depth_        = false;
   std::array<VkClearValue, 5>           clear_values_;
   absl::InlinedVector<VkFramebuffer, 4> framebuffers_;
   VkExtent2D                            extent_ = {};

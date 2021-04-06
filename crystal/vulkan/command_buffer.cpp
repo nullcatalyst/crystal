@@ -98,7 +98,7 @@ void CommandBuffer::use_render_pass(const RenderPass& render_pass) {
             {0, 0},
             extent,
         },
-        /* .clearValueCount = */ render_pass.attachment_count_,
+        /* .clearValueCount = */ render_pass.attachment_count_ + (render_pass.has_depth_ ? 1 : 0),
         /* .pClearValues    = */ render_pass.clear_values_.data(),
     };
 

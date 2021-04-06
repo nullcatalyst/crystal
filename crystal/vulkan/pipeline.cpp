@@ -341,7 +341,7 @@ Pipeline::Pipeline(Context& ctx, Library& library, RenderPass& render_pass,
         /* .stencilTestEnable     = */ false,
         /* .front                 = */ {},
         /* .back                  = */ {},
-        /* .minDepthBounds        = */ -1.0f,
+        /* .minDepthBounds        = */ 0.0f,
         /* .maxDepthBounds        = */ 1.0f,
     };
 
@@ -358,7 +358,7 @@ Pipeline::Pipeline(Context& ctx, Library& library, RenderPass& render_pass,
     };
 
     std::vector<VkPipelineColorBlendAttachmentState> color_blend_attachment_states(
-        /*render_pass.color_attachment_count_*/ 1, color_blend_attachment_state);
+        render_pass.attachment_count_, color_blend_attachment_state);
     const VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = {
         /* .sType = */ VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
         /* .pNext           = */ nullptr,
