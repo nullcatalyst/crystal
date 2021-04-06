@@ -5,38 +5,6 @@
 #include "crystal/vulkan/command_buffer.hpp"
 #include "crystal/vulkan/context.hpp"
 
-// namespace {
-
-// VkDeviceMemory allocate_memory(VkDevice device, VkPhysicalDevice physical_device, VkImage image)
-// {
-//   VkMemoryRequirements memory_requirements = {};
-//   vkGetImageMemoryRequirements(device, image, &memory_requirements);
-
-//   VkPhysicalDeviceMemoryProperties memory_properties = {};
-//   vkGetPhysicalDeviceMemoryProperties(physical_device, &memory_properties);
-
-//   for (uint32_t i = 0; i < memory_properties.memoryTypeCount; ++i) {
-//     if (memory_requirements.memoryTypeBits & (1 << i)) {
-//       const VkMemoryAllocateInfo memory_allocate_info = {
-//           /* sType = */ VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-//           /* pNext           = */ nullptr,
-//           /* allocationSize  = */ memory_requirements.size,
-//           /* memoryTypeIndex = */ i,
-//       };
-
-//       VkDeviceMemory memory = VK_NULL_HANDLE;
-//       VK_ASSERT(vkAllocateMemory(device, &memory_allocate_info, nullptr, &memory),
-//                 "allocating image memory");
-
-//       return memory;
-//     }
-//   }
-
-//   util::msg::fatal("allocating image memory");
-// }
-
-// }  // namespace
-
 namespace crystal::vulkan {
 
 Texture::Texture(Texture&& other)
@@ -168,44 +136,6 @@ Texture::Texture(Context& ctx, const TextureDesc& desc)
       desc.height,
   };
 
-  // {  // Create the image.
-  //   const VkImageCreateInfo create_info = {
-  //       /* .sType = */ VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-  //       /* .pNext                 = */ nullptr,
-  //       /* .flags                 = */ 0,
-  //       /* .imageType             = */ VK_IMAGE_TYPE_2D,
-  //       /* .format                = */ format_,
-  //       /* .extent                = */
-  //       {
-  //           desc.width,
-  //           desc.height,
-  //           1,
-  //       },
-  //       /* .mipLevels             = */ 1,
-  //       /* .arrayLayers           = */ 1,
-  //       /* .samples               = */ VK_SAMPLE_COUNT_1_BIT,
-  //       /* .tiling                = */ VK_IMAGE_TILING_OPTIMAL,
-  //       /* .usage                 = */
-  //       static_cast<VkImageUsageFlags>(
-  //           VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-  //           (layout_ == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-  //                ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
-  //                : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) |
-  //           (desc.sample != TextureSample::None ? VK_IMAGE_USAGE_SAMPLED_BIT : 0)),
-  //       /* .sharingMode           = */ VK_SHARING_MODE_EXCLUSIVE,
-  //       /* .queueFamilyIndexCount = */ 0,
-  //       /* .pQueueFamilyIndices   = */ nullptr,
-  //       /* .initialLayout         = */ VK_IMAGE_LAYOUT_UNDEFINED,
-  //   };
-
-  //   VK_ASSERT(vkCreateImage(device_, &create_info, nullptr, &image_), "creating image");
-  // }
-
-  // {  // Allocate device memory.
-  //   memory_ = allocate_memory(device_, ctx.physical_device_, image_);
-  //   VK_ASSERT(vkBindImageMemory(device_, image_, memory_, 0), "binding memory to image");
-  // }
-
   {  // Creating image.
     const VkImageCreateInfo create_info = {
         /* .sType = */ VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -278,13 +208,27 @@ Texture::Texture(Context& ctx, const TextureDesc& desc)
               "creating image view");
   }
 
-  if (desc.sample != TextureSample::Nearest) {  // Create sampler.
+  {  // Create sampler.
+    VkFilter filter;
+    switch (desc.sample) {
+      case TextureSample::Nearest:
+        filter = VK_FILTER_NEAREST;
+        break;
+
+      case TextureSample::Linear:
+        filter = VK_FILTER_LINEAR;
+        break;
+
+      default:
+        util::msg::fatal("unknown texture sample mode [", static_cast<int>(desc.sample), "]");
+    }
+
     const VkSamplerCreateInfo create_info = {
         /* .sType = */ VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
         /* .pNext                   = */ nullptr,
         /* .flags                   = */ 0,
-        /* .magFilter               = */ VK_FILTER_LINEAR,
-        /* .minFilter               = */ VK_FILTER_LINEAR,
+        /* .magFilter               = */ filter,
+        /* .minFilter               = */ filter,
         /* .mipmapMode              = */ VK_SAMPLER_MIPMAP_MODE_NEAREST,
         /* .addressModeU            = */
         (uint32_t(desc.repeat) & uint32_t(TextureRepeat::RepeatX))
