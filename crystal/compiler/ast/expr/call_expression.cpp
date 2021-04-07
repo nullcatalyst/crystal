@@ -17,6 +17,18 @@ output::PrintLambda CallExpression::to_glsl(const output::glsl::Options opts) co
     }};
   }
 
+  // TODO: Typecheck to determine that the callee is a texture.
+  if (expr_ != nullptr && name_ == "sampleOffset") {
+    return output::PrintLambda{[=](std::ostream& out) {
+      out << "textureOffset(" << expr_->to_glsl(opts);
+      for (const auto& arg : arguments_) {
+        out << ", " << arg->to_glsl(opts);
+      }
+      out << ")";
+    }};
+  }
+
+  // TODO: Typecheck to determine that the callee is a texture.
   if (expr_ != nullptr && name_ == "sampleDepth") {
     if (opts.vulkan) {
       return output::PrintLambda{[=](std::ostream& out) {
