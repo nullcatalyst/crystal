@@ -45,12 +45,6 @@ pipeline shadow {
         out.color = inst.color;
         return out;
     }
-
-    fragment (ShadowVaryings in) -> ShadowOut {
-        ShadowOut out;
-        out.color = in.color;
-        return out;
-    }
 }
 
 struct CombineVaryings {

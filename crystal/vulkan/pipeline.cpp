@@ -310,11 +310,13 @@ Pipeline::Pipeline(Context& ctx, Library& library, RenderPass& render_pass,
         /* .rasterizerDiscardEnable = */ VK_FALSE,
         /* .polygonMode             = */ VK_POLYGON_MODE_FILL,
         /* .cullMode                = */ static_cast<VkCullModeFlags>(desc.cull_mode),
-        /* .frontFace               = */ desc.winding == Winding::CounterClockwise
+        /* .frontFace               = */ (desc.winding == Winding::Clockwise) !=
+                (render_pass.framebuffers_.size() == 1)
             // Set Vulkan to the opposite of the winding direction that the caller set for crystal,
             // this is because we flipped the Vulkan y-axis (positive y-axis points up instead of
             // the Vulkan default of positive y-axis points down), using the
-            // VK_KHR_MAINTENANCE1_EXTENSION extension.
+            // VK_KHR_MAINTENANCE1_EXTENSION extension. This flipping only applies to the screen
+            // framebuffer.
             ? VK_FRONT_FACE_CLOCKWISE
             : VK_FRONT_FACE_COUNTER_CLOCKWISE,
         /* .depthBiasEnable         = */ false,  // desc.depth.bias_enable,

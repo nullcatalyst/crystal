@@ -343,7 +343,7 @@ void PipelineDeclaration::make_opengl_crystallib(crystal::common::proto::GLPipel
     // std::cout << "vertex=\n" << out.str() << std::endl;
   }
 
-  {  // Fragment shader.
+  if (fragment_function_ != nullptr) {  // Fragment shader.
     std::ostringstream out;
     fragment_function_->to_glsl(out, mod, false, false);
     pipeline_pb.set_fragment_source(out.str());

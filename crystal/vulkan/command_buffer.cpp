@@ -119,7 +119,7 @@ void CommandBuffer::use_render_pass(const RenderPass& render_pass) {
       // Update dynamic viewport state.
       const VkViewport viewport = {
           /* .x        = */ 0.0f,
-          /* .y        = */ 0.0f,  // static_cast<float>(extent.height),
+          /* .y        = */ 0.0f,
           /* .width    = */ static_cast<float>(extent.width),
           /* .height   = */ static_cast<float>(extent.height),
           /* .minDepth = */ 0.0f,

@@ -227,7 +227,7 @@ void Module::make_vulkan_crystallib_(crystal::common::proto::Vulkan& vulkan_pb,
       spv_partials.push_back(spv_path.string());
     }
 
-    {  // Fragment shader.
+    if (pipeline->fragment_function() != nullptr) {  // Fragment shader.
       const auto src_path = tmp_dir.path() / (pipeline->name() + ".frag.glsl");
       const auto spv_path = tmp_dir.path() / (pipeline->name() + ".frag.spv");
 
