@@ -26,17 +26,19 @@ class Pipeline {
 
   static uint32_t next_id_;
 
-  Context*                                   ctx_         = nullptr;
-  uint32_t                                   id_          = 0;
-  GLuint                                     program_     = 0;
-  CullMode                                   cull_mode_   = CullMode::None;
-  DepthTest                                  depth_test_  = DepthTest::Never;
-  DepthWrite                                 depth_write_ = DepthWrite::Disable;
-  AlphaBlend                                 blend_src_   = AlphaBlend::Zero;
-  AlphaBlend                                 blend_dst_   = AlphaBlend::Zero;
-  std::array<Binding, MAX_VERTEX_ATTRIBUTES> attributes_  = {};
-  std::array<GLuint, MAX_UNIFORM_BINDINGS>   uniforms_    = {};
-  std::array<GLuint, MAX_TEXTURE_BINDINGS>   textures_    = {};
+  Context*                                   ctx_               = nullptr;
+  uint32_t                                   id_                = 0;
+  GLuint                                     program_           = 0;
+  CullMode                                   cull_mode_         = CullMode::None;
+  DepthTest                                  depth_test_        = DepthTest::Never;
+  DepthWrite                                 depth_write_       = DepthWrite::Disable;
+  float                                      depth_bias_        = 0.0f;
+  float                                      depth_slope_scale_ = 0.0f;
+  AlphaBlend                                 blend_src_         = AlphaBlend::Zero;
+  AlphaBlend                                 blend_dst_         = AlphaBlend::Zero;
+  std::array<Binding, MAX_VERTEX_ATTRIBUTES> attributes_        = {};
+  std::array<GLuint, MAX_UNIFORM_BINDINGS>   uniforms_          = {};
+  std::array<GLuint, MAX_TEXTURE_BINDINGS>   textures_          = {};
 
 public:
   constexpr Pipeline() = default;

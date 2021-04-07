@@ -99,6 +99,14 @@ void CommandBuffer::use_pipeline(const Pipeline& pipeline) {
       break;
   }
 
+  if (pipeline_->depth_bias_ != 0.0f || pipeline_->depth_slope_scale_ != 0.0f) {
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(pipeline_->depth_slope_scale_, pipeline_->depth_bias_);
+  } else {
+    glDisable(GL_POLYGON_OFFSET_FILL);
+    // glPolygonOffset(0.0f, 0.0f);
+  }
+
   if (pipeline_->blend_src_ != AlphaBlend::One || pipeline_->blend_dst_ != AlphaBlend::Zero) {
     GL_ASSERT(glBlendFunc(convert_(pipeline_->blend_src_), convert_(pipeline_->blend_dst_)),
               "setting blend function");

@@ -120,50 +120,58 @@ Pipeline::Pipeline(Pipeline&& other)
       cull_mode_(other.cull_mode_),
       depth_test_(other.depth_test_),
       depth_write_(other.depth_write_),
+      depth_bias_(other.depth_bias_),
+      depth_slope_scale_(other.depth_slope_scale_),
       blend_src_(other.blend_src_),
       blend_dst_(other.blend_dst_),
       attributes_(std::move(other.attributes_)),
       uniforms_(std::move(other.uniforms_)),
       textures_(std::move(other.textures_)) {
-  other.ctx_         = nullptr;
-  other.id_          = 0;
-  other.program_     = 0;
-  other.cull_mode_   = CullMode::None;
-  other.depth_test_  = DepthTest::Never;
-  other.depth_write_ = DepthWrite::Disable;
-  other.blend_src_   = AlphaBlend::Zero;
-  other.blend_dst_   = AlphaBlend::Zero;
-  other.attributes_  = {};
-  other.uniforms_    = {};
-  other.textures_    = {};
+  other.ctx_               = nullptr;
+  other.id_                = 0;
+  other.program_           = 0;
+  other.cull_mode_         = CullMode::None;
+  other.depth_test_        = DepthTest::Never;
+  other.depth_write_       = DepthWrite::Disable;
+  other.depth_bias_        = 0.0f;
+  other.depth_slope_scale_ = 0.0f;
+  other.blend_src_         = AlphaBlend::Zero;
+  other.blend_dst_         = AlphaBlend::Zero;
+  other.attributes_        = {};
+  other.uniforms_          = {};
+  other.textures_          = {};
 }
 
 Pipeline& Pipeline::operator=(Pipeline&& other) {
   destroy();
 
-  ctx_         = other.ctx_;
-  id_          = other.id_;
-  program_     = other.program_;
-  cull_mode_   = other.cull_mode_;
-  depth_test_  = other.depth_test_;
-  depth_write_ = other.depth_write_;
-  blend_src_   = other.blend_src_;
-  blend_dst_   = other.blend_dst_;
-  attributes_  = std::move(other.attributes_);
-  uniforms_    = std::move(other.uniforms_);
-  textures_    = std::move(other.textures_);
+  ctx_               = other.ctx_;
+  id_                = other.id_;
+  program_           = other.program_;
+  cull_mode_         = other.cull_mode_;
+  depth_test_        = other.depth_test_;
+  depth_write_       = other.depth_write_;
+  depth_bias_        = other.depth_bias_;
+  depth_slope_scale_ = other.depth_slope_scale_;
+  blend_src_         = other.blend_src_;
+  blend_dst_         = other.blend_dst_;
+  attributes_        = std::move(other.attributes_);
+  uniforms_          = std::move(other.uniforms_);
+  textures_          = std::move(other.textures_);
 
-  other.ctx_         = nullptr;
-  other.id_          = 0;
-  other.program_     = 0;
-  other.cull_mode_   = CullMode::None;
-  other.depth_test_  = DepthTest::Never;
-  other.depth_write_ = DepthWrite::Disable;
-  other.blend_src_   = AlphaBlend::Zero;
-  other.blend_dst_   = AlphaBlend::Zero;
-  other.attributes_  = {};
-  other.uniforms_    = {};
-  other.textures_    = {};
+  other.ctx_               = nullptr;
+  other.id_                = 0;
+  other.program_           = 0;
+  other.cull_mode_         = CullMode::None;
+  other.depth_test_        = DepthTest::Never;
+  other.depth_write_       = DepthWrite::Disable;
+  other.depth_bias_        = 0.0f;
+  other.depth_slope_scale_ = 0.0f;
+  other.blend_src_         = AlphaBlend::Zero;
+  other.blend_dst_         = AlphaBlend::Zero;
+  other.attributes_        = {};
+  other.uniforms_          = {};
+  other.textures_          = {};
 
   return *this;
 }
@@ -177,17 +185,19 @@ void Pipeline::destroy() noexcept {
 
   glDeleteProgram(program_);
 
-  ctx_         = nullptr;
-  id_          = 0;
-  program_     = 0;
-  cull_mode_   = CullMode::None;
-  depth_test_  = DepthTest::Never;
-  depth_write_ = DepthWrite::Disable;
-  blend_src_   = AlphaBlend::Zero;
-  blend_dst_   = AlphaBlend::Zero;
-  attributes_  = {};
-  uniforms_    = {};
-  textures_    = {};
+  ctx_               = nullptr;
+  id_                = 0;
+  program_           = 0;
+  cull_mode_         = CullMode::None;
+  depth_test_        = DepthTest::Never;
+  depth_write_       = DepthWrite::Disable;
+  depth_bias_        = 0.0f;
+  depth_slope_scale_ = 0.0f;
+  blend_src_         = AlphaBlend::Zero;
+  blend_dst_         = AlphaBlend::Zero;
+  attributes_        = {};
+  uniforms_          = {};
+  textures_          = {};
 }
 
 Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
@@ -196,6 +206,8 @@ Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
       cull_mode_(desc.cull_mode),
       depth_test_(desc.depth_test),
       depth_write_(desc.depth_write),
+      depth_bias_(desc.depth_bias),
+      depth_slope_scale_(desc.depth_slope_scale),
       blend_src_(desc.blend_src),
       blend_dst_(desc.blend_dst) {
   const auto& opengl_pb = library.lib_pb_.opengl();

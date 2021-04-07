@@ -78,6 +78,8 @@ struct PipelineDesc {
   Winding                                    winding;
   DepthTest                                  depth_test;
   DepthWrite                                 depth_write;
+  float                                      depth_bias;
+  float                                      depth_slope_scale;
   AlphaBlend                                 blend_src;
   AlphaBlend                                 blend_dst;
   std::initializer_list<VertexAttributeDesc> vertex_attributes;

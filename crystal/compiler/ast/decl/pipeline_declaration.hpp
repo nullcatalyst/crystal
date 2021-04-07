@@ -33,14 +33,17 @@ struct PipelineSettings {
   std::vector<std::tuple<util::memory::Ref<type::Type>, std::string, uint32_t>> uniforms;
   std::vector<std::tuple<util::memory::Ref<type::Type>, std::string, uint32_t>> textures;
 
-  CullMode   cull_mode   = CullMode::None;
-  Winding    winding     = Winding::Clockwise;
-  DepthTest  depth_test  = DepthTest::Always;
-  DepthWrite depth_write = DepthWrite::Disable;
-  AlphaBlend blend_src   = AlphaBlend::One;
-  AlphaBlend blend_dst   = AlphaBlend::Zero;
+  CullMode   cull_mode         = CullMode::None;
+  Winding    winding           = Winding::Clockwise;
+  DepthTest  depth_test        = DepthTest::Always;
+  DepthWrite depth_write       = DepthWrite::Disable;
+  float      depth_bias        = 0.0f;
+  float      depth_slope_scale = 0.0f;
+  AlphaBlend blend_src         = AlphaBlend::One;
+  AlphaBlend blend_dst         = AlphaBlend::Zero;
 
   void set_property(const std::string_view name, const std::string_view value);
+  void set_property(const std::string_view name, const float value);
   void set_property(const std::string_view name, const bool value);
 };
 
@@ -54,6 +57,8 @@ class PipelineDeclaration : public Declaration {
   Winding    winding_;
   DepthTest  depth_test_;
   DepthWrite depth_write_;
+  float      depth_bias_;
+  float      depth_slope_scale_;
   AlphaBlend blend_src_;
   AlphaBlend blend_dst_;
 

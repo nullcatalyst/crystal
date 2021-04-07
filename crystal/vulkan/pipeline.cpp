@@ -319,10 +319,11 @@ Pipeline::Pipeline(Context& ctx, Library& library, RenderPass& render_pass,
             // framebuffer.
             ? VK_FRONT_FACE_CLOCKWISE
             : VK_FRONT_FACE_COUNTER_CLOCKWISE,
-        /* .depthBiasEnable         = */ false,  // desc.depth.bias_enable,
-        /* .depthBiasConstantFactor = */ 0.0f,   // desc.depth.bias,
-        /* .depthBiasClamp          = */ 0.0f,   // desc.depth.bias_clamp,
-        /* .depthBiasSlopeFactor    = */ 0.0f,   // desc.depth.bias_slope_factor,
+        /* .depthBiasEnable         = */
+        static_cast<VkBool32>(desc.depth_bias != 0.0f || desc.depth_slope_scale != 0.0f),
+        /* .depthBiasConstantFactor = */ desc.depth_bias,
+        /* .depthBiasClamp          = */ 0.0f,
+        /* .depthBiasSlopeFactor    = */ desc.depth_slope_scale,
         /* .lineWidth               = */ 1.0f,
     };
 

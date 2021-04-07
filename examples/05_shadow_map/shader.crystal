@@ -31,6 +31,8 @@ pipeline shadow {
     winding = "ccw";
     depth_test = "less";
     depth_write = true;
+    depth_bias = 1.0;
+    depth_slope_scale = 1.0;
 
     uniform Uniform u : 0;
 

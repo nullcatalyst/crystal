@@ -124,6 +124,14 @@ void PipelineSettings::set_property(const std::string_view name, const std::stri
   }
 }
 
+void PipelineSettings::set_property(const std::string_view name, const float value) {
+  if (name == "depth_bias") {
+    depth_bias = value;
+  } else if (name == "depth_slope_scale") {
+    depth_slope_scale = value;
+  }
+}
+
 void PipelineSettings::set_property(const std::string_view name, const bool value) {
   if (name == "depth_write") {
     depth_write = (value ? DepthWrite::Enable : DepthWrite::Disable);
@@ -153,12 +161,14 @@ PipelineDeclaration::PipelineDeclaration(std::string_view name, const PipelineSe
     }
   }
 
-  cull_mode_   = settings.cull_mode;
-  winding_     = settings.winding;
-  depth_test_  = settings.depth_test;
-  depth_write_ = settings.depth_write;
-  blend_src_   = settings.blend_src;
-  blend_dst_   = settings.blend_dst;
+  cull_mode_         = settings.cull_mode;
+  winding_           = settings.winding;
+  depth_test_        = settings.depth_test;
+  depth_write_       = settings.depth_write;
+  depth_bias_        = settings.depth_bias;
+  depth_slope_scale_ = settings.depth_slope_scale;
+  blend_src_         = settings.blend_src;
+  blend_dst_         = settings.blend_dst;
 }
 
 void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const {
@@ -271,6 +281,8 @@ void PipelineDeclaration::to_cpphdr(std::ostream& out, const Module& mod) const 
       << "    /* .winding           = */ crystal::Winding::" << winding_out << ",\n"
       << "    /* .depth_test        = */ crystal::DepthTest::" << depth_test_out << ",\n"
       << "    /* .depth_write       = */ crystal::DepthWrite::" << depth_write_out << ",\n"
+      << "    /* .depth_bias        = */ " << depth_bias_ << ",\n"
+      << "    /* .depth_slope_scale = */ " << depth_slope_scale_ << ",\n"
       << "    /* .blend_src         = */ crystal::AlphaBlend::" << blend_src_out << ",\n"
       << "    /* .blend_dst         = */ crystal::AlphaBlend::" << blend_dst_out << ",\n";
 
