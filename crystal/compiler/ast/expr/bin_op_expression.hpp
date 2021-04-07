@@ -19,6 +19,8 @@ enum class BinOp {
   Le,
   Gt,
   Ge,
+  And,
+  Or,
 };
 
 class BinOpExpression : public Expression {
@@ -85,6 +87,16 @@ public:
           out << lhs_->to_glsl(opts) << (opts.pretty ? " >= " : ">=") << rhs_->to_glsl(opts);
         }};
 
+      case BinOp::And:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_glsl(opts) << (opts.pretty ? " && " : "&&") << rhs_->to_glsl(opts);
+        }};
+
+      case BinOp::Or:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_glsl(opts) << (opts.pretty ? " || " : "||") << rhs_->to_glsl(opts);
+        }};
+
       default:
         util::msg::fatal("unhandled binary operator [", static_cast<uint32_t>(op_), "]");
         break;
@@ -141,6 +153,16 @@ public:
       case BinOp::Ge:
         return output::PrintLambda{[=](std::ostream& out) {
           out << lhs_->to_metal(opts) << " >= " << rhs_->to_metal(opts);
+        }};
+
+      case BinOp::And:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_metal(opts) << " && " << rhs_->to_metal(opts);
+        }};
+
+      case BinOp::Or:
+        return output::PrintLambda{[=](std::ostream& out) {
+          out << lhs_->to_metal(opts) << " || " << rhs_->to_metal(opts);
         }};
 
       default:

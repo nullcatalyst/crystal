@@ -164,6 +164,20 @@ Token Lexer::next() {
         ++next_;
         return Token{TOK_OP_EQUAL};
 
+      case '&':
+        if ((next_ + 1) != end && *(next_ + 1) == '&') {
+          next_ += 2;
+          return Token{TOK_OP_AMPAMP};
+        }
+        break;
+
+      case '|':
+        if ((next_ + 1) != end && *(next_ + 1) == '|') {
+          next_ += 2;
+          return Token{TOK_OP_PIPEPIPE};
+        }
+        break;
+
       case '!':
         if ((next_ + 1) != end && *(next_ + 1) == '=') {
           next_ += 2;

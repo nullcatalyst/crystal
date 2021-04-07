@@ -157,7 +157,11 @@ stmt(ret)           ::= expr_var(var) OP_MINUSEQUAL expr(expr) OP_SEMICOLON.    
 stmt(ret)           ::= expr_var(var) OP_STAREQUAL expr(expr) OP_SEMICOLON.     { ret = Ref<stmt::AssignmentStatement>::make(std::move(var), std::move(expr), stmt::AssignmentOp::Mul); }
 stmt(ret)           ::= expr_var(var) OP_SLASHEQUAL expr(expr) OP_SEMICOLON.    { ret = Ref<stmt::AssignmentStatement>::make(std::move(var), std::move(expr), stmt::AssignmentOp::Div); }
 
-expr                ::= expr_cmp.
+expr                ::= expr_lgc.
+
+expr_lgc(ret)       ::= expr_lgc(lhs) OP_AMPAMP expr_cmp(rhs).                  { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::And); }
+expr_lgc(ret)       ::= expr_lgc(lhs) OP_PIPEPIPE expr_cmp(rhs).                { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Or); }
+expr_lgc            ::= expr_cmp.
 
 expr_cmp(ret)       ::= expr_cmp(lhs) OP_EQUALEQUAL expr_add(rhs).              { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Eq); }
 expr_cmp(ret)       ::= expr_cmp(lhs) OP_EXCLAIMEQUAL expr_add(rhs).            { ret = Ref<expr::BinOpExpression>::make(lhs, rhs, expr::BinOp::Ne); }
