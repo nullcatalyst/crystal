@@ -29,10 +29,7 @@ class ViewImpl : public View {
 public:
   ViewImpl(Ctx& ctx, const State& state) : ctx_(ctx) {
     const auto aspect = static_cast<float>(ctx.screen_width()) / ctx.screen_height();
-    uniform_buffer_   = ctx.create_uniform_buffer(Uniform{
-        glm::rotate(glm::ortho(-aspect, aspect, -1.0f, 1.0f), state.angle,
-                    glm::vec3(0.0f, 0.0f, 1.0f)),
-    });
+    uniform_buffer_   = ctx.create_uniform_buffer(create_uniform(aspect, state));
 
     auto library = ctx.create_library("examples/01_triangle/shader.crystallib");
     pipeline_    = ctx.create_pipeline(library, ctx.screen_render_pass(), triangle_desc);
@@ -62,17 +59,21 @@ public:
     {  // Update uniform buffer.
       const auto aspect =
           static_cast<float>(ctx_.screen_width()) / static_cast<float>(ctx_.screen_height());
-      ctx_.update_uniform_buffer(
-          uniform_buffer_, Uniform{
-                               glm::rotate(glm::ortho(-aspect, aspect, -1.0f, 1.0f), state.angle,
-                                           glm::vec3(0.0f, 0.0f, 1.0f)),
-                           });
+      ctx_.update_uniform_buffer(uniform_buffer_, create_uniform(aspect, state));
     }
 
     cmd.use_render_pass(ctx_.screen_render_pass());
     cmd.use_pipeline(pipeline_);
     cmd.use_uniform_buffer(uniform_buffer_, 0);
     cmd.draw(mesh_, 3, 1);
+  }
+
+private:
+  static Uniform create_uniform(float aspect, State state) {
+    return Uniform{
+        glm::rotate(glm::ortho(-aspect, aspect, -1.0f, 1.0f), state.angle,
+                    glm::vec3(0.0f, 0.0f, 1.0f)),
+    };
   }
 };
 

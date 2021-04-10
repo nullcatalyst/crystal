@@ -1,75 +1,91 @@
 load("//tools:cc.bzl", "cc_library")
 
+_SRCS = glob([
+    "*.cpp",
+    "internal/*.cpp",
+])
+
+_HDRS = glob([
+    "*.hpp",
+    "*.inl",
+    "internal/*.hpp",
+])
+
+_DEFINES = select({
+    "//:opt": [
+        "CRYSTAL_RELEASE",
+        "CRYSTAL_USE_VULKAN",
+    ],
+    "//conditions:default": [
+        "CRYSTAL_USE_VULKAN",
+    ],
+})
+
+_DEPS = [
+    "//crystal/common",
+    "//crystal/common/proto",
+    "//third_party/vulkan_memory_allocator",
+    "@com_google_absl//absl/container:inlined_vector",
+    "@mundane//util/fs",
+    "@mundane//util/memory",
+    "@mundane//util/msg",
+    "@vulkan",
+]
+
 cc_library(
     name = "vulkan",
-    srcs = glob([
-        "*.cpp",
-        "internal/*.cpp",
-    ]),
-    hdrs = glob([
-        "*.hpp",
-        "*.inl",
-        "internal/*.hpp",
-    ]),
-    defines = select({
-        "//:opt": [
-            "CRYSTAL_RELEASE",
-            "CRYSTAL_USE_VULKAN",
-        ],
-        "//conditions:default": [
-            "CRYSTAL_USE_VULKAN",
-        ],
-    }),
+    srcs = _SRCS,
+    hdrs = _HDRS,
+    defines = _DEFINES,
     visibility = [
         "//visibility:public",
     ],
-    deps = [
-        "//crystal/common",
-        "//crystal/common/proto",
-        "//third_party/vulkan_memory_allocator",
-        "@com_google_absl//absl/container:inlined_vector",
-        "@mundane//util/fs",
-        "@mundane//util/memory",
-        "@mundane//util/msg",
-        "@sdl2//:sdl2_hdrs",
-        "@vulkan",
-    ],
+    deps = _DEPS,
 )
 
 cc_library(
     name = "vulkan_sdl2",
-    srcs = glob([
-        "*.cpp",
-        "internal/*.cpp",
-    ]),
-    hdrs = glob([
-        "*.hpp",
-        "*.inl",
-        "internal/*.hpp",
-    ]),
-    defines = select({
-        "//:opt": [
-            "CRYSTAL_RELEASE",
-            "CRYSTAL_USE_VULKAN",
-            "CRYSTAL_USE_SDL2",
-        ],
-        "//conditions:default": [
-            "CRYSTAL_USE_VULKAN",
-            "CRYSTAL_USE_SDL2",
-        ],
-    }),
+    srcs = _SRCS,
+    hdrs = _HDRS,
+    defines = _DEFINES + [
+        "CRYSTAL_USE_SDL2",
+    ],
     visibility = [
         "//visibility:public",
     ],
-    deps = [
-        "//crystal/common",
-        "//crystal/common/proto",
-        "//third_party/vulkan_memory_allocator",
-        "@com_google_absl//absl/container:inlined_vector",
-        "@mundane//util/fs",
-        "@mundane//util/memory",
-        "@mundane//util/msg",
-        "@sdl2//:sdl2_hdrs",
-        "@vulkan",
+    deps = _DEPS + [
+        "@sdl2//:hdrs",
+    ],
+)
+
+cc_library(
+    name = "vulkan_glfw",
+    srcs = _SRCS,
+    hdrs = _HDRS,
+    defines = _DEFINES + [
+        "CRYSTAL_USE_GLFW",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = _DEPS + [
+        "@glfw//:hdrs",
+    ],
+)
+
+cc_library(
+    name = "vulkan_sdl2_glfw",
+    srcs = _SRCS,
+    hdrs = _HDRS,
+    defines = _DEFINES + [
+        "CRYSTAL_USE_SDL2",
+        "CRYSTAL_USE_GLFW",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = _DEPS + [
+        "@sdl2//:hdrs",
+        "@glfw//:hdrs",
     ],
 )

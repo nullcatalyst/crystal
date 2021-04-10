@@ -4,10 +4,10 @@
 #include <string>
 #include <string_view>
 
-#include "SDL.h"
 #include "crystal/crystal.hpp"
+#include "examples/base/glfw/window.hpp"
 #include "examples/base/scene.hpp"
-#include "examples/base/window.hpp"
+#include "examples/base/sdl/window.hpp"
 
 namespace engine {
 
@@ -24,9 +24,9 @@ public:
 };
 
 #if CRYSTAL_HAS_CONCEPTS
-template <crystal::concepts::Context Ctx>
+template <typename Window, crystal::concepts::Context Ctx>
 #else   // ^^^ CRYSTAL_HAS_CONCEPTS / !CRYSTAL_HAS_CONCEPTS vvv
-template <typename Ctx>
+template <typename Window, typename Ctx>
 #endif  // ^^^ !CRYSTAL_HAS_CONCEPTS
 class EngineImpl : public Engine {
   Window window_;
@@ -50,30 +50,41 @@ public:
   virtual void update(Controller& ctrl) override { window_.update(ctrl); }
 };
 
-template <typename Ctx>
-std::unique_ptr<EngineImpl<Ctx>> create_engine(const std::string_view title) {
+template <typename Window, typename Ctx>
+std::unique_ptr<EngineImpl<Window, Ctx>> create_engine(const std::string_view title) {
   std::string orig_title(title);
   std::string cust_title(title);
 
   typename Ctx::Desc desc = {};
 
+  if constexpr (std::is_same<Window, engine::sdl::Window>::value) {
+    cust_title += " (sdl + ";
+  }
+  if constexpr (std::is_same<Window, engine::glfw::Window>::value) {
+    cust_title += " (glfw + ";
+  }
+
   if constexpr (std::is_same<Ctx, crystal::opengl::Context>::value) {
-    cust_title += " (opengl)";
+    cust_title += "opengl)";
   }
   if constexpr (std::is_same<Ctx, crystal::vulkan::Context>::value) {
     desc.application_name         = orig_title.c_str();
     desc.max_descriptor_set_count = 16;
     desc.buffer_descriptor_count  = 16;
     desc.texture_descriptor_count = 16;
-    cust_title += " (vulkan)";
+    cust_title += "vulkan)";
   }
   if constexpr (std::is_same<Ctx, crystal::metal::Context>::value) {
-    cust_title += " (metal)";
+    cust_title += "metal)";
   }
 
-  auto window = create_window<Ctx>(cust_title.c_str(), 1280, 720);
-  desc.window = window;
-  return std::make_unique<EngineImpl<Ctx>>(std::move(window), desc);
+  auto window = Window::template create_window<Ctx>(cust_title.c_str(), 1280, 720);
+  if constexpr (std::is_same<Window, engine::sdl::Window>::value) {
+    desc.sdl_window = window;
+  } else if constexpr (std::is_same<Window, engine::glfw::Window>::value) {
+    desc.glfw_window = window;
+  }
+  return std::make_unique<EngineImpl<Window, Ctx>>(std::move(window), desc);
 }
 
 }  // namespace engine

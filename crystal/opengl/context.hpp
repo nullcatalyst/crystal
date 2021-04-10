@@ -18,12 +18,14 @@
 #include "crystal/opengl/vertex_buffer.hpp"
 #include "util/memory/ref_count.hpp"
 
-#ifdef CRYSTAL_USE_SDL2
-
+#if CRYSTAL_USE_SDL2
 typedef struct SDL_Window SDL_Window;
 typedef void*             SDL_GLContext;
+#endif  // ^^^ CRYSTAL_USE_SDL2
 
-#endif  // ^^^ defined(CRYSTAL_USE_SDL2)
+#if CRYSTAL_USE_GLFW
+typedef struct GLFWwindow GLFWwindow;
+#endif  // ^^^ CRYSTAL_USE_SDL2
 
 namespace crystal::opengl {
 
@@ -49,20 +51,16 @@ public:
   using UniformBuffer = ::crystal::opengl::UniformBuffer;
   using VertexBuffer  = ::crystal::opengl::VertexBuffer;
 
-#ifdef CRYSTAL_USE_SDL2
-
   struct Desc {
-    SDL_Window* window;
+#if CRYSTAL_USE_SDL2
+    SDL_Window* sdl_window = nullptr;
+#endif  // ^^^ CRYSTAL_USE_SDL2
+#if CRYSTAL_USE_GLFW
+    GLFWwindow* glfw_window = nullptr;
+#endif  // ^^^ CRYSTAL_USE_GLFW
+    uint32_t width  = 0;
+    uint32_t height = 0;
   };
-
-#else  // ^^^ defined(CRYSTAL_USE_SDL2) / !defined(CRYSTAL_USE_SDL2) vvv
-
-  struct Desc {
-    uint32_t width;
-    uint32_t height;
-  };
-
-#endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
 
 private:
   struct RefCountedBuffer {
@@ -79,12 +77,14 @@ private:
     constexpr RefCountedTexture(GLuint id) : ref_count(1), id(id) {}
   };
 
-#ifdef CRYSTAL_USE_SDL2
+#if CRYSTAL_USE_SDL2
+  SDL_Window*   sdl_window_  = nullptr;
+  SDL_GLContext sdl_context_ = nullptr;
+#endif  // ^^^ CRYSTAL_USE_SDL2
 
-  SDL_Window*   window_;
-  SDL_GLContext context_;
-
-#endif  // ^^^ defined(CRYSTAL_USE_SDL2)
+#if CRYSTAL_USE_GLFW
+  GLFWwindow* glfw_window_ = nullptr;
+#endif  // ^^^ CRYSTAL_USE_GLFW
 
   RenderPass                     screen_render_pass_;
   std::vector<RefCountedBuffer>  buffers_;

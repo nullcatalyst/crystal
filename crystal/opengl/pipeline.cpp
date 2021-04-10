@@ -183,7 +183,7 @@ void Pipeline::destroy() noexcept {
     return;
   }
 
-  glDeleteProgram(program_);
+  GL_ASSERT(glDeleteProgram(program_), "deleting program");
 
   ctx_               = nullptr;
   id_                = 0;
@@ -231,13 +231,17 @@ Pipeline::Pipeline(Context& ctx, Library& library, const PipelineDesc& desc)
     // Initialize the uniforms bindings.
     uniforms_ = {};
     for (const auto& uniform_pb : pipeline_pb.uniforms()) {
-      uniforms_[uniform_pb.binding()] = glGetUniformBlockIndex(program_, uniform_pb.name().c_str());
+      GL_ASSERT(uniforms_[uniform_pb.binding()] =
+                    glGetUniformBlockIndex(program_, uniform_pb.name().c_str()),
+                "getting uniform block index");
     }
 
     // Initialize the texture bindings.
     textures_ = {};
     for (const auto& texture_pb : pipeline_pb.textures()) {
-      textures_[texture_pb.binding()] = glGetUniformLocation(program_, texture_pb.name().c_str());
+      GL_ASSERT(textures_[texture_pb.binding()] =
+                    glGetUniformLocation(program_, texture_pb.name().c_str()),
+                "getting texture uniform location");
     }
 
     break;

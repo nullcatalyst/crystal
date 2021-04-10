@@ -1,27 +1,54 @@
 #include "crystal/opengl/context.hpp"
 
+#if CRYSTAL_USE_SDL2
 #include "SDL.h"
+#endif  // ^^^ CRYSTAL_USE_SDL2
+
+#if CRYSTAL_USE_GLFW
+#include "GLFW/glfw3.h"
+#endif  // ^^^ CRYSTAL_USE_GLFW
 
 namespace crystal::opengl {
 
-#ifdef CRYSTAL_USE_SDL2
+Context::Context(const Context::Desc& desc) : screen_render_pass_(*this) {
+  int width  = desc.width;
+  int height = desc.height;
 
-Context::Context(const Context::Desc& desc) : window_(desc.window), screen_render_pass_(*this) {
-  context_ = SDL_GL_CreateContext(window_);
-  SDL_GL_MakeCurrent(window_, context_);
+#if CRYSTAL_USE_SDL2
+  if (desc.sdl_window != nullptr) {
+    sdl_window_  = desc.sdl_window;
+    sdl_context_ = SDL_GL_CreateContext(sdl_window_);
+    SDL_GL_MakeCurrent(sdl_window_, sdl_context_);
 
-  // gladLoadGLES2Loader(SDL_GL_GetProcAddress);
-  gladLoadGLLoader(SDL_GL_GetProcAddress);
+    // gladLoadGLES2Loader(SDL_GL_GetProcAddress);
+    gladLoadGLLoader(SDL_GL_GetProcAddress);
 
-  int width  = 0;
-  int height = 0;
-  SDL_GetWindowSize(window_, &width, &height);
-  if (width < 0 || height < 0) {
-    util::msg::fatal("window size is negative [", width, ", ", height, "]");
+    SDL_GetWindowSize(sdl_window_, &width, &height);
+    goto init_resize;
   }
+#endif  // CRYSTAL_USE_SDL2
 
+#if CRYSTAL_USE_GLFW
+  if (desc.glfw_window != nullptr) {
+    glfw_window_ = desc.glfw_window;
+    glfwMakeContextCurrent(glfw_window_);
+
+    // gladLoadGLES2Loader(glfwGetProcAddress);
+    gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
+
+    glfwGetWindowSize(glfw_window_, &width, &height);
+
+    goto init_resize;
+  }
+#endif  // CRYSTAL_USE_GLFW
+
+init_resize:
+  if (width <= 0 || height <= 0) {
+    util::msg::fatal("window size is less than or equal to zero [", width, ", ", height, "]");
+  }
   change_resolution(width, height);
-  glEnable(GL_FRAMEBUFFER_SRGB);
+  GL_ASSERT(glEnable(GL_FRAMEBUFFER_SRGB), "enabling sRGB");
+  // glEnable(GL_MULTISAMPLE);
 }
 
 Context::~Context() {
@@ -37,34 +64,52 @@ Context::~Context() {
                      textures_.size(), " remaining), leaking memory");
   }
 
-  SDL_GL_DeleteContext(context_);
+#if CRYSTAL_USE_SDL2
+  if (sdl_window_ != nullptr) {
+    SDL_GL_DeleteContext(sdl_context_);
+  }
+#endif  // ^^^ CRYSTAL_USE_SDL2
+
+#if CRYSTAL_USE_GLFW
+  if (glfw_window_ != nullptr) {
+    // There is no separate context to clean up.
+  }
+#endif  // ^^^ CRYSTAL_USE_GLFW
 }
 
-void Context::set_active() { SDL_GL_MakeCurrent(window_, context_); }
+void Context::set_active() {
+#if CRYSTAL_USE_SDL2
+  if (sdl_window_ != nullptr) {
+    SDL_GL_MakeCurrent(sdl_window_, sdl_context_);
+    return;
+  }
+#endif  // ^^^ CRYSTAL_USE_SDL2
+
+#if CRYSTAL_USE_GLFW
+  if (glfw_window_ != nullptr) {
+    glfwMakeContextCurrent(glfw_window_);
+    return;
+  }
+#endif  // ^^^ CRYSTAL_USE_GLFW
+}
 
 CommandBuffer Context::next_frame() {
-  SDL_GL_MakeCurrent(window_, context_);
-  return CommandBuffer(window_);
-}
-
-#else  // ^^^ defined(CRYSTAL_USE_SDL2) / !defined(CRYSTAL_USE_SDL2) vvv
-
-Context::Context(const Context::Desc& desc) : screen_render_pass_(*this) {
-  change_resolution(desc.width, desc.height);
-}
-
-Context::~Context() {
-  if (buffers_.size() != 0) {
-    util::msg::fatal("not all shared buffers have been released (there are still ", buffers_.size(),
-                     " remaining), leaking memory");
+#if CRYSTAL_USE_SDL2
+  if (sdl_window_ != nullptr) {
+    SDL_GL_MakeCurrent(sdl_window_, sdl_context_);
+    return CommandBuffer(sdl_window_);
   }
+#endif  // ^^^ CRYSTAL_USE_SDL2
+
+#if CRYSTAL_USE_GLFW
+  if (glfw_window_ != nullptr) {
+    glfwMakeContextCurrent(glfw_window_);
+    return CommandBuffer(glfw_window_);
+  }
+#endif  // ^^^ CRYSTAL_USE_GLFW
+
+  return CommandBuffer();
 }
-
-void Context::set_active() {}
-
-CommandBuffer Context::next_frame() { return CommandBuffer(); }
-
-#endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
 
 void Context::change_resolution(uint32_t width, uint32_t height) {
   util::msg::debug("resolution size changed to ", width, ", ", height);

@@ -217,3 +217,15 @@ def crystal_dependencies():
             "https://github.com/spurious/SDL-mirror/archive/863c4bd26b51892864c6042ad2db474e11b08fed.tar.gz",
         ],
     )
+
+    # GLFW
+    _maybe(
+        http_archive,
+        name = "glfw",
+        build_file = "@crystal//third_party/external:glfw.BUILD",
+        sha256 = "cc8ac1d024a0de5fd6f68c4133af77e1918261396319c24fd697775a6bc93b63",
+        strip_prefix = "glfw-3.3.4",
+        urls = [
+            "https://github.com/glfw/glfw/archive/refs/tags/3.3.4.tar.gz",
+        ],
+    )

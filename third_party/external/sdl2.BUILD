@@ -270,7 +270,7 @@ _SDL_DEPS = select({
 })
 
 cc_library(
-    name = "sdl2_hdrs",
+    name = "hdrs",
     hdrs = _SDL_HDRS,
     defines = _SDL_DEFINES,
     strip_include_prefix = "include",

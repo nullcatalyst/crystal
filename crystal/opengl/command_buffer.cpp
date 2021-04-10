@@ -8,9 +8,13 @@
 #include "crystal/opengl/texture.hpp"
 #include "crystal/opengl/uniform_buffer.hpp"
 
-#ifdef CRYSTAL_USE_SDL2
+#if CRYSTAL_USE_SDL2
 #include "SDL.h"
-#endif  // ^^^ defined(CRYSTAL_USE_SDL2)
+#endif  // ^^^ CRYSTAL_USE_SDL2
+
+#if CRYSTAL_USE_GLFW
+#include "GLFW/glfw3.h"
+#endif  // ^^^ CRYSTAL_USE_GLFW
 
 namespace crystal::opengl {
 
@@ -45,18 +49,23 @@ constexpr inline GLenum convert_(AlphaBlend blend) {
 
 }  // namespace
 
-#ifdef CRYSTAL_USE_SDL2
-
 CommandBuffer::~CommandBuffer() {
-  glFlush();
-  SDL_GL_SwapWindow(window_);
+  GL_ASSERT(glFlush(), "flushing command buffer");
+
+#if CRYSTAL_USE_SDL2
+  if (sdl_window_ != nullptr) {
+    SDL_GL_SwapWindow(sdl_window_);
+    return;
+  }
+#endif  // ^^^ !CRYSTAL_USE_SDL2
+
+#if CRYSTAL_USE_GLFW
+  if (glfw_window_ != nullptr) {
+    glfwSwapBuffers(glfw_window_);
+    return;
+  }
+#endif  // ^^^ !CRYSTAL_USE_GLFW
 }
-
-#else  // ^^^ defined(CRYSTAL_USE_SDL2) / !defined(CRYSTAL_USE_SDL2) vvv
-
-CommandBuffer::~CommandBuffer() { glFlush(); }
-
-#endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
 
 void CommandBuffer::use_render_pass(const RenderPass& render_pass) {
   render_pass_ = &render_pass;
@@ -100,10 +109,11 @@ void CommandBuffer::use_pipeline(const Pipeline& pipeline) {
   }
 
   if (pipeline_->depth_bias_ != 0.0f || pipeline_->depth_slope_scale_ != 0.0f) {
-    glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(pipeline_->depth_slope_scale_, pipeline_->depth_bias_);
+    GL_ASSERT(glEnable(GL_POLYGON_OFFSET_FILL), "enable polygon offset");
+    GL_ASSERT(glPolygonOffset(pipeline_->depth_slope_scale_, pipeline_->depth_bias_),
+              "setting polygon offset");
   } else {
-    glDisable(GL_POLYGON_OFFSET_FILL);
+    GL_ASSERT(glDisable(GL_POLYGON_OFFSET_FILL), "disable polygon offset");
     // glPolygonOffset(0.0f, 0.0f);
   }
 

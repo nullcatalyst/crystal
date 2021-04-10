@@ -4,10 +4,6 @@
 #include "util/msg/msg.hpp"
 
 int main(int argc, char* argv[]) {
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
-    util::msg::fatal("initializing SDL: ", SDL_GetError());
-  }
-
 #if CRYSTAL_USE_OPENGL
   using Ctx = crystal::opengl::Context;
 #elif CRYSTAL_USE_VULKAN  // ^^^ CRYSTAL_USE_OPENGL / CRYSTAL_USE_VULKAN vvv
@@ -18,12 +14,8 @@ int main(int argc, char* argv[]) {
 #error No crystal backend chosen.
 #endif  // ^^^ !CRYSTAL_USE_OPENGL && !CRYSTAL_USE_VULKAN && !CRYSTAL_USE_METAL
 
-  {
-    engine::Controller ctrl(engine::create_engine<Ctx>("render to texture"),
-                            std::make_unique<examples::render_to_texture::Scene>());
-    ctrl.run();
-  }
-
-  SDL_Quit();
+  engine::Controller ctrl(engine::create_engine<Ctx>("render to texture"),
+                          std::make_unique<examples::render_to_texture::Scene>());
+  ctrl.run();
   return 0;
 }

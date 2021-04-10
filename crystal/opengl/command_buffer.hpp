@@ -4,11 +4,13 @@
 
 #include "crystal/opengl/gl.hpp"
 
-#ifdef CRYSTAL_USE_SDL2
-
+#if CRYSTAL_USE_SDL2
 typedef struct SDL_Window SDL_Window;
+#endif  // ^^^ CRYSTAL_USE_SDL2
 
-#endif  // ^^^ defined(CRYSTAL_USE_SDL2)
+#if CRYSTAL_USE_GLFW
+typedef struct GLFWwindow GLFWwindow;
+#endif  // ^^^ CRYSTAL_USE_GLFW
 
 namespace crystal::opengl {
 
@@ -20,11 +22,13 @@ class Texture;
 class UniformBuffer;
 
 class CommandBuffer {
-#ifdef CRYSTAL_USE_SDL2
+#if CRYSTAL_USE_SDL2
+  SDL_Window* sdl_window_ = nullptr;
+#endif  // ^^^ CRYSTAL_USE_SDL2
 
-  SDL_Window* window_ = nullptr;
-
-#endif  // ^^^ defined(CRYSTAL_USE_SDL2)
+#if CRYSTAL_USE_GLFW
+  GLFWwindow* glfw_window_ = nullptr;
+#endif  // ^^^ CRYSTAL_USE_GLFW
 
   const RenderPass* render_pass_ = nullptr;
   const Pipeline*   pipeline_    = nullptr;
@@ -49,15 +53,15 @@ private:
   friend class ::crystal::opengl::Context;
   friend class ::crystal::opengl::RenderPass;
 
-#ifdef CRYSTAL_USE_SDL2
+#if CRYSTAL_USE_SDL2
+  constexpr CommandBuffer(SDL_Window* sdl_window) : sdl_window_(sdl_window) {}
+#endif  // ^^^ CRYSTAL_USE_SDL2
 
-  constexpr CommandBuffer(SDL_Window* window) : window_(window) {}
-
-#else  // ^^^ defined(CRYSTAL_USE_SDL2) / !defined(CRYSTAL_USE_SDL2) vvv
+#if CRYSTAL_USE_GLFW
+  constexpr CommandBuffer(GLFWwindow* glfw_window) : glfw_window_(glfw_window) {}
+#endif  // ^^^ CRYSTAL_USE_GLFW
 
   constexpr CommandBuffer() = default;
-
-#endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
 };
 
 }  // namespace crystal::opengl

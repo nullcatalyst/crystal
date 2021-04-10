@@ -8,22 +8,6 @@
 
 namespace examples::depth_test {
 
-Uniform create_uniform(float aspect, State state) {
-  return Uniform{
-      // /* .projection_matrix = */ glm::orthoRH_ZO(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f),
-      /* .projection_matrix = */ glm::perspectiveRH_ZO(glm::radians(60.0f), aspect, 0.01f, 10.0f) *
-          glm::translate(glm::identity<glm::mat4>(), glm::vec3(0.0f, 0.0f, -2.0f)),
-      /* .rotation_matrix   = */
-      glm::rotate(
-          glm::rotate(glm::identity<glm::mat4>(), state.pitch_angle, glm::vec3(1.0f, 0.0f, 0.0f)),
-          state.yaw_angle, glm::vec3(0.0f, 1.0f, 0.0f)),
-      /* .orbit_matrix      = */
-      glm::rotate(
-          glm::rotate(glm::identity<glm::mat4>(), glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
-          state.orbit_angle, glm::vec3(0.0f, 1.0f, 0.0f)),
-  };
-}
-
 class View {
 public:
   virtual ~View() = default;
@@ -127,6 +111,23 @@ public:
     cmd.use_pipeline(pipeline_);
     cmd.use_uniform_buffer(uniform_buffer_, 0);
     cmd.draw(mesh_, 34, 2 /* instances */);
+  }
+
+private:
+  static Uniform create_uniform(float aspect, State state) {
+    return Uniform{
+        /* .projection_matrix = */ glm::perspectiveRH_ZO(glm::radians(60.0f), aspect, 0.01f,
+                                                         10.0f) *
+            glm::translate(glm::identity<glm::mat4>(), glm::vec3(0.0f, 0.0f, -2.0f)),
+        /* .rotation_matrix   = */
+        glm::rotate(
+            glm::rotate(glm::identity<glm::mat4>(), state.pitch_angle, glm::vec3(1.0f, 0.0f, 0.0f)),
+            state.yaw_angle, glm::vec3(0.0f, 1.0f, 0.0f)),
+        /* .orbit_matrix      = */
+        glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(15.0f),
+                                glm::vec3(1.0f, 0.0f, 0.0f)),
+                    state.orbit_angle, glm::vec3(0.0f, 1.0f, 0.0f)),
+    };
   }
 };
 

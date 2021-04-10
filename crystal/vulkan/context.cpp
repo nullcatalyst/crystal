@@ -3,17 +3,23 @@
 #include <array>
 #include <vector>
 
-#include "SDL_vulkan.h"
 #include "util/msg/msg.hpp"
+
+#if CRYSTAL_USE_SDL2
+#include "SDL_vulkan.h"
+#endif  // ^^^ CRYSTAL_USE_SDL2
+
+#if CRYSTAL_USE_GLFW
+#include "GLFW/glfw3.h"
+#endif  // ^^^ CRYSTAL_USE_GLFW
 
 namespace {
 
 const std::array<const char* const, 1> INSTANCE_LAYERS{
-    // "VK_LAYER_LUNARG_standard_validation",
-    "VK_LAYER_KHRONOS_validation",  // Someday... :sigh:
+    "VK_LAYER_KHRONOS_validation",
 };
 
-const std::array<const char* const, 2> DEVICE_EXTENSIONS = {
+const std::array<const char* const, 2> DEVICE_EXTENSIONS{
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     VK_KHR_MAINTENANCE1_EXTENSION_NAME,
 };
@@ -22,29 +28,36 @@ const std::array<const char* const, 2> DEVICE_EXTENSIONS = {
 
 namespace crystal::vulkan {
 
-#ifdef CRYSTAL_USE_SDL2
-
 Context::Context(const Context::Desc& desc) {
-  int width  = 0;
-  int height = 0;
-  SDL_GetWindowSize(desc.window, &width, &height);
-  if (width < 0 || height < 0) {
-    util::msg::fatal("window size is negative [", width, ", ", height, "]");
-  }
-
-  // width_  = width;
-  // height_ = height;
+  int width  = 0;  // desc.width;
+  int height = 0;  // desc.height;
 
   {  // Create instance.
-    uint32_t instance_extension_count = 0;
-    if (!SDL_Vulkan_GetInstanceExtensions(desc.window, &instance_extension_count, nullptr)) {
-      util::msg::fatal("getting SDL vulkan extensions: ", SDL_GetError());
+    std::vector<const char*> instance_extensions;
+
+#if CRYSTAL_USE_SDL2
+    if (desc.sdl_window != nullptr) {
+      uint32_t instance_extension_count = 0;
+      if (!SDL_Vulkan_GetInstanceExtensions(desc.sdl_window, &instance_extension_count, nullptr)) {
+        util::msg::fatal("getting SDL vulkan extensions: ", SDL_GetError());
+      }
+      instance_extensions.resize(instance_extension_count);
+      if (!SDL_Vulkan_GetInstanceExtensions(desc.sdl_window, &instance_extension_count,
+                                            instance_extensions.data())) {
+        util::msg::fatal("getting SDL vulkan extensions: %s", SDL_GetError());
+      }
     }
-    std::vector<const char*> instance_extensions(instance_extension_count);
-    if (!SDL_Vulkan_GetInstanceExtensions(desc.window, &instance_extension_count,
-                                          instance_extensions.data())) {
-      util::msg::fatal("getting SDL vulkan extensions: %s", SDL_GetError());
+#endif  // ^^^ CRYSTAL_USE_SDL2
+
+#if CRYSTAL_USE_GLFW
+    if (desc.glfw_window != nullptr) {
+      uint32_t     instance_extension_count = 0;
+      const char** extensions = glfwGetRequiredInstanceExtensions(&instance_extension_count);
+
+      instance_extensions.resize(instance_extension_count);
+      std::copy(extensions, &extensions[instance_extension_count], instance_extensions.begin());
     }
+#endif  // ^^^ CRYSTAL_USE_GLFW
 
     const VkApplicationInfo app_info = {
         /* .sType = */ VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -53,7 +66,7 @@ Context::Context(const Context::Desc& desc) {
         /* .applicationVersion = */ VK_MAKE_VERSION(1, 0, 0),
         /* .pEngineName        = */ "crystal",
         /* .engineVersion      = */ VK_MAKE_VERSION(0, 1, 0),
-        /* .apiVersion         = */ VK_API_VERSION_1_0,
+        /* .apiVersion         = */ VK_API_VERSION_1_1,
     };
     const VkInstanceCreateInfo create_info = {
         /* .sType = */ VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
@@ -62,7 +75,7 @@ Context::Context(const Context::Desc& desc) {
         /* .pApplicationInfo        = */ &app_info,
         /* .enabledLayerCount       = */ INSTANCE_LAYERS.size(),
         /* .ppEnabledLayerNames     = */ INSTANCE_LAYERS.data(),
-        /* .enabledExtensionCount   = */ instance_extension_count,
+        /* .enabledExtensionCount   = */ static_cast<uint32_t>(instance_extensions.size()),
         /* .ppEnabledExtensionNames = */ instance_extensions.data(),
     };
 
@@ -70,9 +83,27 @@ Context::Context(const Context::Desc& desc) {
   }
 
   {  // Create surface.
-    if (!SDL_Vulkan_CreateSurface(desc.window, instance_, &surface_)) {
-      util::msg::fatal("creating SDL vulkan surface: ", SDL_GetError());
+#if CRYSTAL_USE_SDL2
+    if (desc.sdl_window != nullptr) {
+      SDL_GetWindowSize(desc.sdl_window, &width, &height);
+      if (width < 0 || height < 0) {
+        util::msg::fatal("window size is negative [", width, ", ", height, "]");
+      }
+
+      if (!SDL_Vulkan_CreateSurface(desc.sdl_window, instance_, &surface_)) {
+        util::msg::fatal("creating SDL vulkan surface: ", SDL_GetError());
+      }
     }
+#endif  // ^^^ CRYSTAL_USE_SDL2
+
+#if CRYSTAL_USE_GLFW
+    if (desc.glfw_window != nullptr) {
+      glfwGetWindowSize(desc.glfw_window, &width, &height);
+
+      VK_ASSERT(glfwCreateWindowSurface(instance_, desc.glfw_window, nullptr, &surface_),
+                "creating GLFW vulkan surface");
+    }
+#endif  // ^^^ CRYSTAL_USE_SDL2
   }
 
   {  // Get physical device.
@@ -242,32 +273,6 @@ Context::Context(const Context::Desc& desc) {
     frames_[i].init(*this);
   }
 
-  // {
-  //   // All depth formats may be optional, so we need to find a suitable depth format to use
-  //   const VkFormat depth_formats[] = {
-  //       // VK_FORMAT_D32_SFLOAT_S8_UINT,
-  //       VK_FORMAT_D32_SFLOAT, VK_FORMAT_D24_UNORM_S8_UINT,
-  //       VK_FORMAT_D16_UNORM_S8_UINT,  VK_FORMAT_D16_UNORM,
-  //   };
-  //   for (auto& format : depth_formats) {
-  //     VkFormatProperties formatProperties;
-  //     vkGetPhysicalDeviceFormatProperties(physical_device_, format, &formatProperties);
-  //     // Format must support depth stencil attachment for optimal tiling
-  //     if (formatProperties.optimalTilingFeatures &
-  //     VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-  //       // if (checkSamplingSupport) {
-  //       //   if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
-  //       {
-  //       //     continue;
-  //       //   }
-  //       // }
-  //       util::msg::debug("depth format=", format);
-  //       break;
-  //     }
-  //   }
-  //   // util::msg::fatal("no usable depth format");
-  // }
-
   screen_depth_texture_ = Texture(*this, TextureDesc{
                                              /* .width  = */ static_cast<uint32_t>(width),
                                              /* .height = */ static_cast<uint32_t>(height),
@@ -277,8 +282,6 @@ Context::Context(const Context::Desc& desc) {
                                          });
   screen_render_pass_   = RenderPass(*this);
 }
-
-#endif  // ^^^ defined(CRYSTAL_USE_SDL2)
 
 Context::~Context() {
   if (buffers_.size() != 0) {

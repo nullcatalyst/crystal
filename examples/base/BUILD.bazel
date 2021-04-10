@@ -4,19 +4,22 @@ cc_library(
     name = "base",
     srcs = [
         "controller.cpp",
-        "window.cpp",
+        "glfw/window.cpp",
+        "sdl/window.cpp",
     ],
     hdrs = [
         "controller.hpp",
         "engine.hpp",
+        "glfw/window.hpp",
         "scene.hpp",
-        "window.hpp",
+        "sdl/window.hpp",
     ],
     visibility = [
         "//examples:__subpackages__",
     ],
     deps = [
-        "//crystal",
+        "//crystal:crystal_sdl2_glfw",
+        "@glfw",
         "@glm",
         "@mundane//util/msg",
         "@sdl2",

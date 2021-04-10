@@ -40,6 +40,16 @@ public:
     engine_->init_graphics(*this, *scene_);
   }
 
+  template <typename CreateEngineFn>
+  void change_engine(CreateEngineFn&& create_engine) {
+    engine_->set_active();
+    scene_->destroy_graphics();
+    engine_ = nullptr;
+    engine_ = create_engine();
+    engine_->set_active();
+    engine_->init_graphics(*this, *scene_);
+  }
+
   template <typename Engine, typename... EngineArgs>
   void change_engine(EngineArgs&&... engine_args) {
     engine_->set_active();

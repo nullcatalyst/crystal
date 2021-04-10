@@ -8,25 +8,6 @@
 
 namespace examples::shadow_map {
 
-Uniform create_uniform(float aspect, State state) {
-  return Uniform{
-      /* .shadow_matrix     = */ glm::orthoRH_ZO(-5.0f, 5.0f, -5.0f, 5.0f, -6.0f, 6.0f) *
-          glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(15.0f),
-                                  glm::vec3(0.0f, 1.0f, 0.0f)),
-                      glm::radians(75.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
-      /* .projection_matrix = */ glm::perspectiveRH_ZO(glm::radians(60.0f), aspect, 0.01f, 10.0f) *
-          glm::translate(glm::identity<glm::mat4>(), glm::vec3(0.0f, 0.0f, -2.0f)),
-      /* .rotation_matrix   = */
-      glm::rotate(
-          glm::rotate(glm::identity<glm::mat4>(), state.pitch_angle, glm::vec3(1.0f, 0.0f, 0.0f)),
-          state.yaw_angle, glm::vec3(0.0f, 1.0f, 0.0f)),
-      /* .orbit_matrix      = */
-      glm::rotate(
-          glm::rotate(glm::identity<glm::mat4>(), glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
-          state.orbit_angle, glm::vec3(0.0f, 1.0f, 0.0f)),
-  };
-}
-
 class View {
 public:
   virtual ~View() = default;
@@ -69,13 +50,6 @@ public:
                                                            .clear       = true,
                                                            .clear_value = {.depth = 1.0f},
                                                        }));
-    // shadow_render_pass_ = ctx.create_render_pass({
-    //     std::make_tuple(std::ref(shadow_texture_),
-    //                     crystal::AttachmentDesc{
-    //                         .clear       = true,
-    //                         .clear_value = {.color = {0.5f, 0.5f, 0.5f, 1.0f}},
-    //                     }),
-    // });
     shadow_pipeline_  = ctx.create_pipeline(library, shadow_render_pass_, shadow_desc);
     combine_pipeline_ = ctx.create_pipeline(library, ctx.screen_render_pass(), combine_desc);
 
@@ -180,6 +154,27 @@ public:
     cmd.use_texture(shadow_texture_, 0);
     cmd.draw(cube_mesh_, 34, 2 /* instances */);
     cmd.draw(floor_mesh_, 4, 1 /* instances */);
+  }
+
+private:
+  static Uniform create_uniform(float aspect, State state) {
+    return Uniform{
+        /* .shadow_matrix     = */ glm::orthoRH_ZO(-5.0f, 5.0f, -5.0f, 5.0f, -6.0f, 6.0f) *
+            glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(15.0f),
+                                    glm::vec3(0.0f, 1.0f, 0.0f)),
+                        glm::radians(75.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+        /* .projection_matrix = */
+        glm::perspectiveRH_ZO(glm::radians(60.0f), aspect, 0.01f, 10.0f) *
+            glm::translate(glm::identity<glm::mat4>(), glm::vec3(0.0f, 0.0f, -2.0f)),
+        /* .rotation_matrix   = */
+        glm::rotate(
+            glm::rotate(glm::identity<glm::mat4>(), state.pitch_angle, glm::vec3(1.0f, 0.0f, 0.0f)),
+            state.yaw_angle, glm::vec3(0.0f, 1.0f, 0.0f)),
+        /* .orbit_matrix      = */
+        glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(15.0f),
+                                glm::vec3(1.0f, 0.0f, 0.0f)),
+                    state.orbit_angle, glm::vec3(0.0f, 1.0f, 0.0f)),
+    };
   }
 };
 

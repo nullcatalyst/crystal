@@ -19,11 +19,14 @@
 #include "crystal/vulkan/vk.hpp"
 #include "util/memory/ref_count.hpp"
 
-#ifdef CRYSTAL_USE_SDL2
-
+#if CRYSTAL_USE_SDL2
 typedef struct SDL_Window SDL_Window;
+typedef void*             SDL_GLContext;
+#endif  // ^^^ CRYSTAL_USE_SDL2
 
-#endif  // ^^^ defined(CRYSTAL_USE_SDL2)
+#if CRYSTAL_USE_GLFW
+typedef struct GLFWwindow GLFWwindow;
+#endif  // ^^^ CRYSTAL_USE_SDL2
 
 namespace crystal::vulkan {
 
@@ -49,26 +52,18 @@ public:
   using UniformBuffer = ::crystal::vulkan::UniformBuffer;
   using VertexBuffer  = ::crystal::vulkan::VertexBuffer;
 
-#ifdef CRYSTAL_USE_SDL2
-
   struct Desc {
-    SDL_Window* window;
+#if CRYSTAL_USE_SDL2
+    SDL_Window* sdl_window = nullptr;
+#endif  // ^^^ CRYSTAL_USE_SDL2
+#if CRYSTAL_USE_GLFW
+    GLFWwindow* glfw_window = nullptr;
+#endif  // ^^^ CRYSTAL_USE_GLFW
     const char* application_name;
     uint32_t    max_descriptor_set_count;
     uint32_t    buffer_descriptor_count;
     uint32_t    texture_descriptor_count;
   };
-
-#else  // ^^^ defined(CRYSTAL_USE_SDL2) / !defined(CRYSTAL_USE_SDL2) vvv
-
-  struct Desc {
-    const char* application_name;
-    uint32_t    max_descriptor_set_count;
-    uint32_t    buffer_descriptor_count;
-    uint32_t    texture_descriptor_count;
-  };
-
-#endif  // ^^^ !defined(CRYSTAL_USE_SDL2)
 
 private:
   struct Buffer {

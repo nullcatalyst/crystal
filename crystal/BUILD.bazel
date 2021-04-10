@@ -7,11 +7,68 @@ cc_library(
     ],
     deps = select({
         "@//:windows": [
+            "//crystal/opengl:opengl",
+            "//crystal/vulkan:vulkan",
+        ],
+        "@//:macos": [
+            "//crystal/opengl:opengl",
+            "//crystal/metal:metal",
+        ],
+    }) + [
+        ":include",
+    ],
+)
+
+cc_library(
+    name = "crystal_sdl2",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = select({
+        "@//:windows": [
             "//crystal/opengl:opengl_sdl2",
             "//crystal/vulkan:vulkan_sdl2",
         ],
         "@//:macos": [
             "//crystal/opengl:opengl_sdl2",
+            "//crystal/metal:metal_sdl2",
+        ],
+    }) + [
+        ":include",
+    ],
+)
+
+cc_library(
+    name = "crystal_glfw",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = select({
+        "@//:windows": [
+            "//crystal/opengl:opengl_glfw",
+            "//crystal/vulkan:vulkan_glfw",
+        ],
+        "@//:macos": [
+            "//crystal/opengl:opengl_glfw",
+            # "//crystal/metal:metal_glfw",
+        ],
+    }) + [
+        ":include",
+    ],
+)
+
+cc_library(
+    name = "crystal_sdl2_glfw",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = select({
+        "@//:windows": [
+            "//crystal/opengl:opengl_sdl2_glfw",
+            "//crystal/vulkan:vulkan_sdl2_glfw",
+        ],
+        "@//:macos": [
+            "//crystal/opengl:opengl_sdl2_glfw",
             "//crystal/metal:metal_sdl2",
         ],
     }) + [

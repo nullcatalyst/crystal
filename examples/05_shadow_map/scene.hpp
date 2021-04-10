@@ -27,22 +27,56 @@ public:
     }
   }
 
-  virtual void key_down(engine::Controller& ctrl, int scancode) override {
-    util::msg::info("key down=", scancode);
-    switch (scancode) {
-#if CRYSTAL_USE_OPENGL
-      case SDL_SCANCODE_1:
-        ctrl.change_engine(engine::create_engine<crystal::opengl::Context>("shadow map"));
+  virtual void key_down(engine::Controller& ctrl, int key) override {
+    util::msg::info("key down=", key);
+    switch (key) {
+      case 11:  // Escape
+        ctrl.exit();
+        break;
+
+#if CRYSTAL_USE_SDL2 && CRYSTAL_USE_OPENGL
+      case 1:
+        ctrl.change_engine([]() {
+          return engine::create_engine<engine::sdl::Window, crystal::opengl::Context>("shadow map");
+        });
         break;
 #endif  // ^^^ CRYSTAL_USE_OPENGL
-#if CRYSTAL_USE_VULKAN
-      case SDL_SCANCODE_2:
-        ctrl.change_engine(engine::create_engine<crystal::vulkan::Context>("shadow map"));
+#if CRYSTAL_USE_SDL2 && CRYSTAL_USE_VULKAN
+      case 2:
+        ctrl.change_engine([]() {
+          return engine::create_engine<engine::sdl::Window, crystal::vulkan::Context>("shadow map");
+        });
         break;
 #endif  // ^^^ CRYSTAL_USE_VULKAN
-#if CRYSTAL_USE_METAL
-      case SDL_SCANCODE_3:
-        ctrl.change_engine(engine::create_engine<crystal::metal::Context>("shadow map"));
+#if CRYSTAL_USE_SDL2 && CRYSTAL_USE_METAL
+      case 3:
+        ctrl.change_engine([]() {
+          return engine::create_engine<engine::sdl::Window, crystal::metal::Context>("shadow map");
+        });
+        break;
+#endif  // ^^^ CRYSTAL_USE_METAL
+
+#if CRYSTAL_USE_GLFW && CRYSTAL_USE_OPENGL
+      case 5:
+        ctrl.change_engine([]() {
+          return engine::create_engine<engine::glfw::Window, crystal::opengl::Context>(
+              "shadow map");
+        });
+        break;
+#endif  // ^^^ CRYSTAL_USE_OPENGL
+#if CRYSTAL_USE_GLFW && CRYSTAL_USE_VULKAN
+      case 6:
+        ctrl.change_engine([]() {
+          return engine::create_engine<engine::glfw::Window, crystal::vulkan::Context>(
+              "shadow map");
+        });
+        break;
+#endif  // ^^^ CRYSTAL_USE_VULKAN
+#if CRYSTAL_USE_GLFW && CRYSTAL_USE_METAL
+      case 7:
+        ctrl.change_engine([]() {
+          return engine::create_engine<engine::glfw::Window, crystal::metal::Context>("shadow map");
+        });
         break;
 #endif  // ^^^ CRYSTAL_USE_METAL
     }

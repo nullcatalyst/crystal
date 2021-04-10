@@ -67,7 +67,7 @@ void RenderPass::destroy() noexcept {
     ctx_->release_texture_(attachments_[i]);
   }
 
-  glDeleteFramebuffers(1, &framebuffer_);
+  GL_ASSERT(glDeleteFramebuffers(1, &framebuffer_), "deleting framebuffer");
 
   ctx_              = nullptr;
   framebuffer_      = 0;

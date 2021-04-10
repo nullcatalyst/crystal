@@ -1,13 +1,9 @@
 #include "examples/02_instances/scene.hpp"
 #include "examples/base/controller.hpp"
 #include "examples/base/engine.hpp"
-#include "util/msg/msg.hpp"
+#include "examples/base/glfw/window.hpp"
 
 int main(int argc, char* argv[]) {
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
-    util::msg::fatal("initializing SDL: ", SDL_GetError());
-  }
-
 #if CRYSTAL_USE_OPENGL
   using Ctx = crystal::opengl::Context;
 #elif CRYSTAL_USE_VULKAN  // ^^^ CRYSTAL_USE_OPENGL / CRYSTAL_USE_VULKAN vvv
@@ -18,12 +14,8 @@ int main(int argc, char* argv[]) {
 #error No crystal backend chosen.
 #endif  // ^^^ !CRYSTAL_USE_OPENGL && !CRYSTAL_USE_VULKAN && !CRYSTAL_USE_METAL
 
-  {
-    engine::Controller ctrl(engine::create_engine<Ctx>("instances"),
-                            std::make_unique<examples::instances::Scene>());
-    ctrl.run();
-  }
-
-  SDL_Quit();
+  engine::Controller ctrl(engine::create_engine<engine::glfw::Window, Ctx>("instances"),
+                          std::make_unique<examples::instances::Scene>());
+  ctrl.run();
   return 0;
 }

@@ -8,19 +8,6 @@
 
 namespace examples::render_to_texture {
 
-Uniform create_uniform(float aspect, State state) {
-  return Uniform{
-      /* .cube_matrix = */ glm::orthoRH_ZO(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f) *
-          glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(-30.0f),
-                                  glm::vec3(1.0f, 0.0f, 0.0f)),
-                      state.cube_angle, glm::vec3(0.0f, 1.0f, 0.0f)),
-      /* .quad_matrix = */ glm::orthoRH_ZO(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f) *
-          glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(-30.0f),
-                                  glm::vec3(1.0f, 0.0f, 0.0f)),
-                      state.quad_angle, glm::vec3(0.0f, 1.0f, 0.0f)),
-  };
-}
-
 class View {
 public:
   virtual ~View() = default;
@@ -160,6 +147,20 @@ public:
     cmd.use_uniform_buffer(uniform_buffer_, 0);
     cmd.use_texture(cube_texture_, 0);
     cmd.draw(quad_mesh_, 4, 1);
+  }
+
+private:
+  static Uniform create_uniform(float aspect, State state) {
+    return Uniform{
+        /* .cube_matrix = */ glm::orthoRH_ZO(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f) *
+            glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(-30.0f),
+                                    glm::vec3(1.0f, 0.0f, 0.0f)),
+                        state.cube_angle, glm::vec3(0.0f, 1.0f, 0.0f)),
+        /* .quad_matrix = */ glm::orthoRH_ZO(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f) *
+            glm::rotate(glm::rotate(glm::identity<glm::mat4>(), glm::radians(-30.0f),
+                                    glm::vec3(1.0f, 0.0f, 0.0f)),
+                        state.quad_angle, glm::vec3(0.0f, 1.0f, 0.0f)),
+    };
   }
 };
 

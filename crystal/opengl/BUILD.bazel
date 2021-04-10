@@ -1,70 +1,91 @@
 load("//tools:cc.bzl", "cc_library")
 
+_SRCS = glob([
+    "*.cpp",
+])
+
+_HDRS = glob([
+    "*.hpp",
+    "*.inl",
+])
+
+_DEFINES = select({
+    "//:opt": [
+        "CRYSTAL_RELEASE",
+        "CRYSTAL_USE_OPENGL",
+    ],
+    "//conditions:default": [
+        "CRYSTAL_USE_OPENGL",
+    ],
+})
+
+_DEPS = [
+    "//crystal:config",
+    "//crystal/common",
+    "//crystal/common/proto",
+    "//third_party/glad:gl41",
+    "@com_google_absl//absl/container:inlined_vector",
+    "@mundane//util/fs",
+    "@mundane//util/memory",
+    "@mundane//util/msg",
+]
+
 cc_library(
     name = "opengl",
-    srcs = glob([
-        "*.cpp",
-    ]),
-    hdrs = glob([
-        "*.hpp",
-        "*.inl",
-    ]),
-    defines = select({
-        "//:opt": [
-            "CRYSTAL_RELEASE",
-            "CRYSTAL_USE_OPENGL",
-        ],
-        "//conditions:default": [
-            "CRYSTAL_USE_OPENGL",
-        ],
-    }),
+    srcs = _SRCS,
+    hdrs = _HDRS,
+    defines = _DEFINES,
     visibility = [
         "//visibility:public",
     ],
-    deps = [
-        "//crystal/common",
-        "//crystal/common/proto",
-        "//third_party/glad:gl41",
-        "@com_google_absl//absl/container:inlined_vector",
-        "@mundane//util/fs",
-        "@mundane//util/memory",
-        "@mundane//util/msg",
-        "@sdl2//:sdl2_hdrs",
-    ],
+    deps = _DEPS,
 )
 
 cc_library(
     name = "opengl_sdl2",
-    srcs = glob([
-        "*.cpp",
-    ]),
-    hdrs = glob([
-        "*.hpp",
-        "*.inl",
-    ]),
-    defines = select({
-        "//:opt": [
-            "CRYSTAL_RELEASE",
-            "CRYSTAL_USE_OPENGL",
-            "CRYSTAL_USE_SDL2",
-        ],
-        "//conditions:default": [
-            "CRYSTAL_USE_OPENGL",
-            "CRYSTAL_USE_SDL2",
-        ],
-    }),
+    srcs = _SRCS,
+    hdrs = _HDRS,
+    defines = _DEFINES + [
+        "CRYSTAL_USE_SDL2",
+    ],
     visibility = [
         "//visibility:public",
     ],
-    deps = [
-        "//crystal:config",
-        "//crystal/common",
-        "//crystal/common/proto",
-        "//third_party/glad:gl41",
-        "@com_google_absl//absl/container:inlined_vector",
-        "@mundane//util/fs",
-        "@mundane//util/memory",
-        "@mundane//util/msg",
-        "@sdl2//:sdl2_hdrs",
+    deps = _DEPS + [
+        "@sdl2//:hdrs",
+    ],
+)
+
+cc_library(
+    name = "opengl_glfw",
+    srcs = _SRCS,
+    hdrs = _HDRS,
+    defines = _DEFINES + [
+        "CRYSTAL_USE_GLFW",
+        "GLFW_INCLUDE_NONE",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = _DEPS + [
+        "@glfw//:hdrs",
+    ],
+)
+
+cc_library(
+    name = "opengl_sdl2_glfw",
+    srcs = _SRCS,
+    hdrs = _HDRS,
+    defines = _DEFINES + [
+        "CRYSTAL_USE_SDL2",
+        "CRYSTAL_USE_GLFW",
+        "GLFW_INCLUDE_NONE",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = _DEPS + [
+        "@sdl2//:hdrs",
+        "@glfw//:hdrs",
     ],
 )
