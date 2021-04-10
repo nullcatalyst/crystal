@@ -25,3 +25,49 @@ cc_library(
         "@sdl2",
     ],
 )
+
+cc_library(
+    name = "sdl2",
+    srcs = [
+        "controller.cpp",
+        "sdl/window.cpp",
+    ],
+    hdrs = [
+        "controller.hpp",
+        "engine.hpp",
+        "scene.hpp",
+        "sdl/window.hpp",
+    ],
+    visibility = [
+        "//examples:__subpackages__",
+    ],
+    deps = [
+        "//crystal:crystal_sdl2",
+        "@glm",
+        "@mundane//util/msg",
+        "@sdl2",
+    ],
+)
+
+cc_library(
+    name = "glfw",
+    srcs = [
+        "controller.cpp",
+        "glfw/window.cpp",
+    ],
+    hdrs = [
+        "controller.hpp",
+        "engine.hpp",
+        "glfw/window.hpp",
+        "scene.hpp",
+    ],
+    visibility = [
+        "//examples:__subpackages__",
+    ],
+    deps = [
+        "//crystal:crystal_glfw",
+        "@glfw",
+        "@glm",
+        "@mundane//util/msg",
+    ],
+)

@@ -18,7 +18,7 @@ class Window {
 
 public:
   template <typename Ctx>
-  static Window create_window(const char* title, uint32_t width, uint32_t height) {
+  static Window create(const char* title, uint32_t width, uint32_t height) {
     if (!glfwInit()) {
       util::msg::fatal("initializing GLFW");
     }

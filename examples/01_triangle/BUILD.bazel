@@ -21,6 +21,45 @@ cc_binary(
     ],
 )
 
+cc_binary(
+    name = "sdl2",
+    srcs = [
+        "main.cpp",
+        "scene.hpp",
+        "state.hpp",
+        "view.hpp",
+        ":shader.hpp",
+    ],
+    data = [
+        ":shader.crystallib",
+    ],
+    deps = [
+        "//crystal:include",
+        "//examples/base:sdl2",
+        "@glm",
+        "@sdl2//:sdl2_main",
+    ],
+)
+
+cc_binary(
+    name = "glfw",
+    srcs = [
+        "main.cpp",
+        "scene.hpp",
+        "state.hpp",
+        "view.hpp",
+        ":shader.hpp",
+    ],
+    data = [
+        ":shader.crystallib",
+    ],
+    deps = [
+        "//crystal:include",
+        "//examples/base:glfw",
+        "@glm",
+    ],
+)
+
 crystal_library(
     name = "shader",
     src = "shader.crystal",

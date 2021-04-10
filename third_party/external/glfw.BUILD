@@ -2,7 +2,7 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 # mkdir build
 # cd build
-# cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DSDL_TEST=OFF -DSDL_SHARED=OFF -DSDL_STATIC=ON ..
+# cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF -DGLFW_INSTALL=OFF -DGLFW_VULKAN_STATIC=ON ..
 # cmake --build .
 # open compile_commands.json
 
@@ -72,6 +72,10 @@ _GLFW_INCLUDES = select({
 
 _GLFW_LINKOPTS = select({
     "@//:windows": [
+        "-DEFAULTLIB:kernel32",
+        "-DEFAULTLIB:user32",
+        "-DEFAULTLIB:gdi32",
+        "-DEFAULTLIB:shell32",
     ],
     "@//:macos": [
     ],

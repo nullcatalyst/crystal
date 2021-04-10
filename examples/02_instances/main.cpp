@@ -1,9 +1,16 @@
 #include "examples/02_instances/scene.hpp"
 #include "examples/base/controller.hpp"
 #include "examples/base/engine.hpp"
-#include "examples/base/glfw/window.hpp"
 
 int main(int argc, char* argv[]) {
+#if CRYSTAL_USE_SDL2
+  using Window = engine::sdl::Window;
+#elif CRYSTAL_USE_GLFW  // ^^^ CRYSTAL_USE_SDL2 / CRYSTAL_USE_GLFW vvv
+  using Window = engine::glfw::Window;
+#else
+#error No windowing engine chosen.
+#endif  // ^^^ !CRYSTAL_USE_SDL2 && !CRYSTAL_USE_GLFW
+
 #if CRYSTAL_USE_OPENGL
   using Ctx = crystal::opengl::Context;
 #elif CRYSTAL_USE_VULKAN  // ^^^ CRYSTAL_USE_OPENGL / CRYSTAL_USE_VULKAN vvv
@@ -14,7 +21,7 @@ int main(int argc, char* argv[]) {
 #error No crystal backend chosen.
 #endif  // ^^^ !CRYSTAL_USE_OPENGL && !CRYSTAL_USE_VULKAN && !CRYSTAL_USE_METAL
 
-  engine::Controller ctrl(engine::create_engine<engine::glfw::Window, Ctx>("instances"),
+  engine::Controller ctrl(engine::create_engine<Window, Ctx>("instances"),
                           std::make_unique<examples::instances::Scene>());
   ctrl.run();
   return 0;

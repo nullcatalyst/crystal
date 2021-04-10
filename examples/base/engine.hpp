@@ -5,9 +5,15 @@
 #include <string_view>
 
 #include "crystal/crystal.hpp"
-#include "examples/base/glfw/window.hpp"
 #include "examples/base/scene.hpp"
+
+#if CRYSTAL_USE_SDL2
 #include "examples/base/sdl/window.hpp"
+#endif  // CRYSTAL_USE_SDL2
+
+#if CRYSTAL_USE_GLFW
+#include "examples/base/glfw/window.hpp"
+#endif  // CRYSTAL_USE_GLFW
 
 namespace engine {
 
@@ -57,16 +63,23 @@ std::unique_ptr<EngineImpl<Window, Ctx>> create_engine(const std::string_view ti
 
   typename Ctx::Desc desc = {};
 
+#if CRYSTAL_USE_SDL2
   if constexpr (std::is_same<Window, engine::sdl::Window>::value) {
     cust_title += " (sdl + ";
   }
+#endif  // CRYSTAL_USE_SDL2
+#if CRYSTAL_USE_GLFW
   if constexpr (std::is_same<Window, engine::glfw::Window>::value) {
     cust_title += " (glfw + ";
   }
+#endif  // CRYSTAL_USE_GLFW
 
+#if CRYSTAL_USE_OPENGL
   if constexpr (std::is_same<Ctx, crystal::opengl::Context>::value) {
     cust_title += "opengl)";
   }
+#endif  // CRYSTAL_USE_OPENGL
+#if CRYSTAL_USE_VULKAN
   if constexpr (std::is_same<Ctx, crystal::vulkan::Context>::value) {
     desc.application_name         = orig_title.c_str();
     desc.max_descriptor_set_count = 16;
@@ -74,16 +87,24 @@ std::unique_ptr<EngineImpl<Window, Ctx>> create_engine(const std::string_view ti
     desc.texture_descriptor_count = 16;
     cust_title += "vulkan)";
   }
+#endif  // CRYSTAL_USE_VULKAN
+#if CRYSTAL_USE_METAL
   if constexpr (std::is_same<Ctx, crystal::metal::Context>::value) {
     cust_title += "metal)";
   }
+#endif  // CRYSTAL_USE_METAL
 
-  auto window = Window::template create_window<Ctx>(cust_title.c_str(), 1280, 720);
+  auto window = Window::template create<Ctx>(cust_title.c_str(), 1280, 720);
+#if CRYSTAL_USE_SDL2
   if constexpr (std::is_same<Window, engine::sdl::Window>::value) {
     desc.sdl_window = window;
-  } else if constexpr (std::is_same<Window, engine::glfw::Window>::value) {
+  }
+#endif  // CRYSTAL_USE_SDL2
+#if CRYSTAL_USE_GLFW
+  if constexpr (std::is_same<Window, engine::glfw::Window>::value) {
     desc.glfw_window = window;
   }
+#endif  // CRYSTAL_USE_GLFW
   return std::make_unique<EngineImpl<Window, Ctx>>(std::move(window), desc);
 }
 

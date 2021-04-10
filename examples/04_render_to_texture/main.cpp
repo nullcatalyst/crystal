@@ -1,9 +1,16 @@
 #include "examples/04_render_to_texture/scene.hpp"
 #include "examples/base/controller.hpp"
 #include "examples/base/engine.hpp"
-#include "util/msg/msg.hpp"
 
 int main(int argc, char* argv[]) {
+#if CRYSTAL_USE_SDL2
+  using Window = engine::sdl::Window;
+#elif CRYSTAL_USE_GLFW  // ^^^ CRYSTAL_USE_SDL2 / CRYSTAL_USE_GLFW vvv
+  using Window = engine::glfw::Window;
+#else
+#error No windowing engine chosen.
+#endif  // ^^^ !CRYSTAL_USE_SDL2 && !CRYSTAL_USE_GLFW
+
 #if CRYSTAL_USE_OPENGL
   using Ctx = crystal::opengl::Context;
 #elif CRYSTAL_USE_VULKAN  // ^^^ CRYSTAL_USE_OPENGL / CRYSTAL_USE_VULKAN vvv
@@ -14,7 +21,7 @@ int main(int argc, char* argv[]) {
 #error No crystal backend chosen.
 #endif  // ^^^ !CRYSTAL_USE_OPENGL && !CRYSTAL_USE_VULKAN && !CRYSTAL_USE_METAL
 
-  engine::Controller ctrl(engine::create_engine<Ctx>("render to texture"),
+  engine::Controller ctrl(engine::create_engine<Window, Ctx>("render to texture"),
                           std::make_unique<examples::render_to_texture::Scene>());
   ctrl.run();
   return 0;
