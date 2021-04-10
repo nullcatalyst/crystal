@@ -2,6 +2,9 @@ load("//tools:cc.bzl", "cc_library")
 
 cc_library(
     name = "crystal",
+    hdrs = [
+        "crystal.hpp",
+    ],
     visibility = [
         "//visibility:public",
     ],
@@ -14,13 +17,14 @@ cc_library(
             "//crystal/opengl:opengl",
             "//crystal/metal:metal",
         ],
-    }) + [
-        ":include",
-    ],
+    }),
 )
 
 cc_library(
     name = "crystal_sdl2",
+    hdrs = [
+        "crystal.hpp",
+    ],
     visibility = [
         "//visibility:public",
     ],
@@ -33,13 +37,14 @@ cc_library(
             "//crystal/opengl:opengl_sdl2",
             "//crystal/metal:metal_sdl2",
         ],
-    }) + [
-        ":include",
-    ],
+    }),
 )
 
 cc_library(
     name = "crystal_glfw",
+    hdrs = [
+        "crystal.hpp",
+    ],
     visibility = [
         "//visibility:public",
     ],
@@ -52,13 +57,14 @@ cc_library(
             "//crystal/opengl:opengl_glfw",
             # "//crystal/metal:metal_glfw",
         ],
-    }) + [
-        ":include",
-    ],
+    }),
 )
 
 cc_library(
     name = "crystal_sdl2_glfw",
+    hdrs = [
+        "crystal.hpp",
+    ],
     visibility = [
         "//visibility:public",
     ],
@@ -71,9 +77,7 @@ cc_library(
             "//crystal/opengl:opengl_sdl2_glfw",
             "//crystal/metal:metal_sdl2",
         ],
-    }) + [
-        ":include",
-    ],
+    }),
 )
 
 cc_library(
