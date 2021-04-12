@@ -11,6 +11,10 @@
 
 #else  // ^^^ _WIN32 / !_WIN32 vvv
 
+#if CRYSTAL_USE_GGP
+#define VK_USE_PLATFORM_GGP 1
+#endif  // ^^^ CRYSTAL_USE_GGP
+
 #include <vulkan/vulkan.h>
 
 #endif  // ^^^ !_WIN32

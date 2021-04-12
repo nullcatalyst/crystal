@@ -30,55 +30,54 @@ CommandBuffer::~CommandBuffer() {
 
   const VkPipelineStageFlags wait_stages[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
   const VkSubmitInfo         submit_info    = {
-      /* sType */ VK_STRUCTURE_TYPE_SUBMIT_INFO,
-      /* pNext                */ nullptr,
-      /* waitSemaphoreCount   */ 1,
-      /* pWaitSemaphores      */ &image_available_semaphore_,
-      /* pWaitDstStageMask    */ wait_stages,
-      /* commandBufferCount   */ 1,
-      /* pCommandBuffers      */ &command_buffer_,
-      /* signalSemaphoreCount */ 1,
-      /* pSignalSemaphores    */ &rendering_complete_semaphore_,
+      /* .sType = */ VK_STRUCTURE_TYPE_SUBMIT_INFO,
+      /* .pNext                = */ nullptr,
+      /* .waitSemaphoreCount   = */ 1,
+      /* .pWaitSemaphores      = */ &image_available_semaphore_,
+      /* .pWaitDstStageMask    = */ wait_stages,
+      /* .commandBufferCount   = */ 1,
+      /* .pCommandBuffers      = */ &command_buffer_,
+      /* .signalSemaphoreCount = */ 1,
+      /* .pSignalSemaphores    = */ &rendering_complete_semaphore_,
   };
 
   VK_ASSERT(vkQueueSubmit(graphics_queue_, 1, &submit_info, fence_), "submitting render queue");
 
-#ifdef __ggp__
+#if CRYSTAL_USE_GGP
   const VkPresentFrameTokenGGP frame_token_metadata = {
-      /* sType */ VK_STRUCTURE_TYPE_PRESENT_FRAME_TOKEN_GGP,
-      /* pNext      */ nullptr,
-      /* frameToken */ frame_token_,
+      /* .sType = */ VK_STRUCTURE_TYPE_PRESENT_FRAME_TOKEN_GGP,
+      /* .pNext      = */ nullptr,
+      /* .frameToken = */ frame_token_,
   };
 
   const VkPresentInfoKHR present_info = {
-      /* sType */ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-      /* pNext              */ &frame_token_metadata,
-      /* waitSemaphoreCount */ 1,
-      /* pWaitSemaphores    */ &rendering_complete_semaphore_,
-      /* swapchainCount     */ 1,
-      /* pSwapchains        */ &swapchain_,
-      /* pImageIndices      */ &image_index_,
-      /* pResults           */ nullptr,
+      /* .sType = */ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+      /* .pNext              = */ &frame_token_metadata,
+      /* .waitSemaphoreCount = */ 1,
+      /* .pWaitSemaphores    = */ &rendering_complete_semaphore_,
+      /* .swapchainCount     = */ 1,
+      /* .pSwapchains        = */ &swapchain_,
+      /* .pImageIndices      = */ &swapchain_image_index_,
+      /* .pResults           = */ nullptr,
   };
-#else
+#else   // ^^^ CRYSTAL_USE_GGP / !CRYSTAL_USE_GGP vvv
   const VkPresentInfoKHR present_info = {
-      /* sType */ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-      /* pNext              */ nullptr,
-      /* waitSemaphoreCount */ 1,
-      /* pWaitSemaphores    */ &rendering_complete_semaphore_,
-      /* swapchainCount     */ 1,
-      /* pSwapchains        */ &swapchain_,
-      /* pImageIndices      */ &swapchain_image_index_,
-      /* pResults           */ nullptr,
+      /* .sType = */ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+      /* .pNext              = */ nullptr,
+      /* .waitSemaphoreCount = */ 1,
+      /* .pWaitSemaphores    = */ &rendering_complete_semaphore_,
+      /* .swapchainCount     = */ 1,
+      /* .pSwapchains        = */ &swapchain_,
+      /* .pImageIndices      = */ &swapchain_image_index_,
+      /* .pResults           = */ nullptr,
   };
-#endif  // __ggp__
+#endif  // ^^^ !CRYSTAL_USE_GGP
 
   VK_ASSERT(vkQueuePresentKHR(present_queue_, &present_info), "presenting queue");
 }
 
 void CommandBuffer::use_render_pass(const RenderPass& render_pass) {
-  VkFramebuffer framebuffer = VK_NULL_HANDLE;
-  VkExtent2D    extent      = render_pass.extent_;
+  VkExtent2D extent = render_pass.extent_;
 
   if (in_render_pass_) {
     vkCmdEndRenderPass(command_buffer_);
@@ -130,10 +129,14 @@ void CommandBuffer::use_render_pass(const RenderPass& render_pass) {
 
     // Update dynamic scissor state.
     VkRect2D scissor = {
-        /* .x       = */ 0,
-        /* .y       = */ 0,
-        /* .width   = */ render_pass.extent_.width,
-        /* .height  = */ render_pass.extent_.height,
+        .offset = {
+            /* .x       = */ 0,
+            /* .y       = */ 0,
+        },
+        .extent = {
+            /* .width   = */ render_pass.extent_.width,
+            /* .height  = */ render_pass.extent_.height,
+        },
     };
     vkCmdSetScissor(command_buffer_, 0, 1, &scissor);
   }

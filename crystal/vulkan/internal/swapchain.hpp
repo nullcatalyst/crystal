@@ -57,7 +57,6 @@ public:
   void recreate();
 
   uint32_t acquire_next_image(VkSemaphore image_available_semaphore);
-  void     present(VkSemaphore rendering_complete_semaphore, uint32_t image_index);
 
 private:
   friend class ::crystal::vulkan::Context;

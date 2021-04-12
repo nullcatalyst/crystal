@@ -196,38 +196,4 @@ uint32_t Swapchain::acquire_next_image(VkSemaphore image_available_semaphore) {
   return next_image_index;
 }
 
-void Swapchain::present(VkSemaphore rendering_complete_semaphore, uint32_t image_index) {
-#ifdef __ggp__
-  const VkPresentFrameTokenGGP frame_token_metadata = {
-      /* sType */ VK_STRUCTURE_TYPE_PRESENT_FRAME_TOKEN_GGP,
-      /* pNext      */ nullptr,
-      /* frameToken */ frame_token_,
-  };
-
-  const VkPresentInfoKHR present_info = {
-      /* sType */ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-      /* pNext              */ &frame_token_metadata,
-      /* waitSemaphoreCount */ 1,
-      /* pWaitSemaphores    */ &rendering_complete_semaphore,
-      /* swapchainCount     */ 1,
-      /* pSwapchains        */ &swapchain_,
-      /* pImageIndices      */ &image_index,
-      /* pResults           */ nullptr,
-  };
-#else
-  const VkPresentInfoKHR present_info = {
-      /* sType */ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-      /* pNext              */ nullptr,
-      /* waitSemaphoreCount */ 1,
-      /* pWaitSemaphores    */ &rendering_complete_semaphore,
-      /* swapchainCount     */ 1,
-      /* pSwapchains        */ &swapchain_,
-      /* pImageIndices      */ &image_index,
-      /* pResults           */ nullptr,
-  };
-#endif  // __ggp__
-
-  VK_ASSERT(vkQueuePresentKHR(present_queue_, &present_info), "presenting queue");
-}
-
 }  // namespace crystal::vulkan::internal

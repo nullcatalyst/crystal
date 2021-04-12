@@ -4,26 +4,37 @@ cc_library(
     name = "base",
     srcs = [
         "controller.cpp",
-        "glfw/window.cpp",
-        "sdl/window.cpp",
-    ],
+    ] + select({
+        "//conditions:default": [
+            "glfw/window.cpp",
+            "sdl/window.cpp",
+        ],
+    }),
     hdrs = [
         "controller.hpp",
+        "default_engine.inl",
         "engine.hpp",
-        "glfw/window.hpp",
         "scene.hpp",
-        "sdl/window.hpp",
-    ],
+    ] + select({
+        "//conditions:default": [
+            "glfw/window.hpp",
+            "sdl/window.hpp",
+        ],
+    }),
     visibility = [
         "//examples:__subpackages__",
     ],
     deps = [
-        "//crystal:crystal_sdl2_glfw",
-        "@glfw",
         "@glm",
         "@mundane//util/msg",
-        "@sdl2",
-    ],
+    ] + select({
+        "//conditions:default": [
+            "//crystal:crystal_sdl2_glfw",
+            "@glfw",
+            "@sdl2",
+            "@sdl2//:sdl2_main",
+        ],
+    }),
 )
 
 cc_library(
@@ -34,6 +45,7 @@ cc_library(
     ],
     hdrs = [
         "controller.hpp",
+        "default_engine.inl",
         "engine.hpp",
         "scene.hpp",
         "sdl/window.hpp",
@@ -46,6 +58,7 @@ cc_library(
         "@glm",
         "@mundane//util/msg",
         "@sdl2",
+        "@sdl2//:sdl2_main",
     ],
 )
 
@@ -57,6 +70,7 @@ cc_library(
     ],
     hdrs = [
         "controller.hpp",
+        "default_engine.inl",
         "engine.hpp",
         "glfw/window.hpp",
         "scene.hpp",

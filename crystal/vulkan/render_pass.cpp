@@ -72,7 +72,7 @@ RenderPass::RenderPass(Context& ctx) : device_(ctx.device_) {
   has_depth_        = true;
   clear_values_     = {
       VkClearValue{
-          .color = {0.0f, 0.0f, 0.0f, 0.0f},
+          .color = {.float32 = {0.0f, 0.0f, 0.0f, 0.0f}},
       },
       VkClearValue{
           .depthStencil = {
@@ -223,10 +223,13 @@ RenderPass::RenderPass(
       clear_values_[attachment_count_] = VkClearValue{
           .color =
               {
-                  desc.clear_value.color.red,
-                  desc.clear_value.color.green,
-                  desc.clear_value.color.blue,
-                  desc.clear_value.color.alpha,
+                  .float32 =
+                      {
+                          desc.clear_value.color.red,
+                          desc.clear_value.color.green,
+                          desc.clear_value.color.blue,
+                          desc.clear_value.color.alpha,
+                      },
               },
       };
 
@@ -353,10 +356,13 @@ RenderPass::RenderPass(
       clear_values_[attachment_count_] = VkClearValue{
           .color =
               {
-                  desc.clear_value.color.red,
-                  desc.clear_value.color.green,
-                  desc.clear_value.color.blue,
-                  desc.clear_value.color.alpha,
+                  .float32 =
+                      {
+                          desc.clear_value.color.red,
+                          desc.clear_value.color.green,
+                          desc.clear_value.color.blue,
+                          desc.clear_value.color.alpha,
+                      },
               },
       };
 

@@ -8,6 +8,13 @@ cc_library(
     hdrs = [
         "vk_mem_alloc.h",
     ],
+    copts = select({
+        "@//:windows": [],
+        "//conditions:default": [
+            "-Wno-unused-variable",
+            "-Wno-unused-private-field",
+        ],
+    }),
     includes = [
         ".",
     ],

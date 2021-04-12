@@ -17,7 +17,6 @@ cc_binary(
         "//crystal:include",
         "//examples/base",
         "@glm",
-        "@sdl2//:sdl2_main",
     ],
 )
 

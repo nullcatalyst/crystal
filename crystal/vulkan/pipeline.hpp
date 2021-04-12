@@ -25,7 +25,7 @@ class Pipeline {
   VkPipeline                     pipeline_        = VK_NULL_HANDLE;
 
 public:
-  constexpr Pipeline() = default;
+  Pipeline() = default;
 
   Pipeline(const Pipeline&) = delete;
   Pipeline& operator=(const Pipeline&) = delete;

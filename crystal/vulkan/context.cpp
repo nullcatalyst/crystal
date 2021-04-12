@@ -302,10 +302,13 @@ void Context::set_clear_color(RenderPass& render_pass, uint32_t attachment,
     util::msg::fatal("setting clear color for out of bounds attachment [", attachment, "]");
   }
   render_pass.clear_values_[attachment].color = {
-      clear_value.color.red,
-      clear_value.color.green,
-      clear_value.color.blue,
-      clear_value.color.alpha,
+      .float32 =
+          {
+              clear_value.color.red,
+              clear_value.color.green,
+              clear_value.color.blue,
+              clear_value.color.alpha,
+          },
   };
 }
 

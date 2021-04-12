@@ -1,4 +1,7 @@
+load("@bazel_skylib//lib:paths.bzl", "paths")
+
 _VK_SDK_PATH = "VK_SDK_PATH"
+_GGP_SDK_PATH = "GGP_SDK_PATH"
 _VK_DEFAULT_WORKSPACE_NAME = "vulkan"
 _VK_BUILD_FILE_TMPL = """
 load("@rules_cc//cc:defs.bzl", "cc_library")
@@ -45,30 +48,43 @@ def _copy_cmd(ctx, name, src, dst):
             dst.replace("/", "\\"),
         ),
     )
-    ctx.execute(["cmd.exe", "/C", bat], timeout=10)
+    ctx.execute(["cmd.exe", "/C", bat], timeout = 10)
 
-# def _copy_bash(ctx, src, dst):
-#     ctx.actions.run_shell(
-#         tools = [src],
-#         outputs = [dst],
-#         command = "cp -f \"$1\" \"$2\"",
-#         arguments = [src, dst],
-#         mnemonic = "CopyFile",
-#         progress_message = "Copying files",
-#         use_default_shell_env = True,
-#     )
+def _copy_bash(ctx, src, dst):
+    ctx.execute(["mkdir", "-p", paths.dirname(dst)], timeout = 10)
+    ctx.execute([
+        "cp",
+        "-f",  # Force (replace existing files)
+        "-r",  # Recursive
+        "-L",  # Follow symlinks
+        src,
+        dst,
+    ], timeout = 10)
 
 def _use_local_vulkan(ctx):
     env = ctx.os.environ
-    if _VK_SDK_PATH not in env:
+    if (_VK_SDK_PATH not in env) and (_GGP_SDK_PATH not in env):
         fail('Environment variable "{}" not set'.format(_VK_SDK_PATH))
 
     name = ctx.name or _VK_DEFAULT_WORKSPACE_NAME
-    ctx.file("WORKSPACE", 'workspace(name = "{}")\n'.format(name))
+    ctx.file("WORKSPACE", """
+workspace(name = "{}")
 
-    sdk_path = env[_VK_SDK_PATH]
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "1c531376ac7e5a180e0237938a2536de0c54d93f5c278634818e0efc952dd56c",
+    urls = [
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.0.3/bazel-skylib-1.0.3.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.0.3/bazel-skylib-1.0.3.tar.gz",
+    ],
+)
+""".format(name))
+
+    sdk_path = env[_VK_SDK_PATH] if _VK_SDK_PATH in env else paths.join(env[_GGP_SDK_PATH], "sysroot")
     include_path = "include"
-    lib_path = "lib"
+    lib_path = "lib/libvulkan.so"
 
     if "windows" in ctx.os.name:
         # Replace all backslashes in the path, try to prevent accidental escaping.
@@ -81,6 +97,9 @@ def _use_local_vulkan(ctx):
 
         _copy_cmd(ctx, "lib", sdk_path + "/Lib/vulkan-1.lib", "lib/")
         _copy_cmd(ctx, "include", sdk_path + "/Include/vulkan", "include/vulkan/")
+    else:
+        _copy_bash(ctx, sdk_path + "/lib/libvulkan.so", lib_path)
+        _copy_bash(ctx, sdk_path + "/usr/include/vulkan", "include/vulkan")
 
     ctx.file("BUILD.bazel", _VK_BUILD_FILE_TMPL.format(
         include = include_path,
